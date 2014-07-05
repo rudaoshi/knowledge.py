@@ -14,7 +14,7 @@ import theano.tensor as T
 from theano.tensor.shared_randomstreams import RandomStreams
 
 from utils import tile_raster_images
-from machine.neuralnetwork.layer.logistic_sgd import load_data
+from knowledge.machine.neuralnetwork.layer.logistic_sgd import load_data
 
 
 class RBM(object):

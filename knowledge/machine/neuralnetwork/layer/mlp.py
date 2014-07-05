@@ -28,7 +28,7 @@ import numpy
 import theano
 import theano.tensor as T
 
-from machine.neuralnetwork.layer.logistic_sgd import LogisticRegression, load_data
+from knowledge.machine.neuralnetwork.layer.logistic_sgd import LogisticRegression, load_data
 
 
 class HiddenLayer(object):

@@ -42,7 +42,7 @@ class WordEmbedding(object):
 
         for window in word_windows:
             window_features.append(
-                np.hstack(self._embeddings[[self._word_pos[word] for word in window ]])
+                np.hstack([self.get_word_feature(word) for word in window ])
             )
 
         return np.vstack(window_features)

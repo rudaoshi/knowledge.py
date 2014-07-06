@@ -41,43 +41,42 @@ class Corpora(object):
             sentence.id = len(self.sentences)
             self.sentences.append(sentence)
 
-            for word in sentence.words()
-                word_id = self.alloc_global_word_id(word)
-                word.id = word_id
+            for word in sentence.words():
+                word.id = self.alloc_global_word_id(word)
 
-            self.tns[document.id][word_id] += 1
+                self.tns[document.id][word.id] += 1
 
-            if word_id not in word_id_set:
+                if word.id not in word_id_set:
 
-                self.dns[word_id] += 1
-                word_id_set.add(word_id)
+                    self.dns[word.id] += 1
+                    word_id_set.add(word.id)
 
-    def filter_words(self, min_occur = None, max_occur_ratio = None):
-
-        doc_num = len(self.tns)
-
-        word_id_remove = set()
-
-        for word in self.word_id_map:
-            word_id = self.word_id_map[word]
-
-            if min_occur and self.dns[word_id] < min_occur:
-                word_id_remove.add(word_id)
-
-                continue
-
-            if max_occur_ratio and self.dns[word_id] > max_occur_ratio * doc_num:
-                word_id_remove.add(word_id)
-                continue
-
-        for word_id in word_id_remove:
-
-            del self.word_id_map[self.id_word_map[word_id]]
-            del self.id_word_map[word_id]
-            del self.dns[word_id]
-
-        for doc_id in self.tns:
-            self.tns[doc_id] = dict((k, v ) for k in self.tns[doc_id] if k not in word_id_remove)
+    # def filter_words(self, min_occur = None, max_occur_ratio = None):
+    #
+    #     doc_num = len(self.tns)
+    #
+    #     word_id_remove = set()
+    #
+    #     for word in self.word_id_map:
+    #         word_id = self.word_id_map[word]
+    #
+    #         if min_occur and self.dns[word_id] < min_occur:
+    #             word_id_remove.add(word_id)
+    #
+    #             continue
+    #
+    #         if max_occur_ratio and self.dns[word_id] > max_occur_ratio * doc_num:
+    #             word_id_remove.add(word_id)
+    #             continue
+    #
+    #     for word_id in word_id_remove:
+    #
+    #         del self.word_id_map[self.id_word_map[word_id]]
+    #         del self.id_word_map[word_id]
+    #         del self.dns[word_id]
+    #
+    #     for doc_id in self.tns:
+    #         self.tns[doc_id] = dict((k, v ) for k in self.tns[doc_id] if k not in word_id_remove)
 
 
     def save_word_dictionary(self, file_name):

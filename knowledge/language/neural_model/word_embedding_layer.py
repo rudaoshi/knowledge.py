@@ -6,7 +6,7 @@ from knowledge.language.core.word import Word
 
 class WordEmbeddingLayer(object):
 
-    def __init__(self, word_list, window_size):
+    def __init__(self, word_list, window_size, feature_num):
 
         padding_word = Word.padding_word()
 
@@ -22,11 +22,14 @@ class WordEmbeddingLayer(object):
 
         self._window_size = window_size
 
-
-    def create_random_embeddings(self, feature_num):
-
         self._embeddings = T.shared(np.random.random((len(self._word_pos), feature_num)))
         self._feature_dim = feature_num
+
+
+    def get_output_size(self):
+
+        return self._window_size * self._feature_dim
+
 
     def get_word_feature(self, word):
 

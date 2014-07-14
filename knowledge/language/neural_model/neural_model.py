@@ -1,10 +1,10 @@
 __author__ = 'Sun'
 
-
 import theano.tensor as T
+
 from knowledge.machine.neuralnetwork.layer.mlp import HiddenLayer
 from knowledge.machine.neuralnetwork.layer.logistic_sgd import LogisticRegression
-from knowledge.language.neural_model.word_embedding_layer import WordEmbeddingLayer
+from knowledge.machine.neuralnetwork.layer.lookup_table_layer import LookupTableLayer
 
 
 class NeuralLanguageModel(object):
@@ -14,40 +14,45 @@ class NeuralLanguageModel(object):
 
                  hidden_layer_size, n_outs, numpy_rng, theano_rng=None, ):
 
-        self.word_embedding_layer = WordEmbeddingLayer(wordlist, window_size, feature_dim)
 
-        self.hiddenLayer = HiddenLayer(rng=numpy_rng, input=input,
-                                       n_in = self.word_embedding_layer.get_output_size(),
+        item_idx = T.lscalars('word_index')
+        
+        self.lookup_table_layer = LookupTableLayer(wordlist, window_size, feature_dim)
+
+        self.hidden_layer = HiddenLayer(rng=numpy_rng, input=self.lookup_table_layer.output(item_idx),
+                                       n_in = self.lookup_table_layer.get_output_size(),
                                        n_out = hidden_layer_size,
                                        activation=T.tanh)
 
         # The logistic regression layer gets as input the hidden units
         # of the hidden layer
-        self.logRegressionLayer = LogisticRegression(
-            input=self.hiddenLayer.output,
-            n_in=n_hidden,
-            n_out=n_out)
+        self.output_layer = LogisticRegression(
+                                        input=self.output_layer.output,
+                                        n_in=hidden_layer_size,
+                                        n_out=n_outs)
+
+        self.params = self.lookup_table_layer.params() + self.hidden_layer.params + self.output_layer.params
 
         # L1 norm ; one regularization option is to enforce L1 norm to
         # be small
-        self.L1 = abs(self.hiddenLayer.W).sum() \
-                + abs(self.logRegressionLayer.W).sum()
+        self.L1 = abs(self.hidden_layer.W).sum() \
+                + abs(self.output_layer.W).sum()
 
         # square of L2 norm ; one regularization option is to enforce
         # square of L2 norm to be small
-        self.L2_sqr = (self.hiddenLayer.W ** 2).sum() \
-                    + (self.logRegressionLayer.W ** 2).sum()
+        self.L2_sqr = (self.hidden_layer.W ** 2).sum() \
+                    + (self.output_layer.W ** 2).sum()
 
         # negative log likelihood of the MLP is given by the negative
         # log likelihood of the output of the model, computed in the
         # logistic regression layer
-        self.negative_log_likelihood = self.logRegressionLayer.negative_log_likelihood
+        self.negative_log_likelihood = self.output_layer.negative_log_likelihood
         # same holds for the function computing the number of errors
-        self.errors = self.logRegressionLayer.errors
+        self.errors = self.output_layer.errors
 
         # the parameters of the model are the parameters of the two layer it is
         # made out of
-        self.params = self.hiddenLayer.params + self.logRegressionLayer.params
+
 
     def fit(self, cropus, learning_rate = 0.01, L1_reg = 0.00, L2_reg = 0.0001,
                  n_epochs = 10000, batch_size = 20):

@@ -1,5 +1,6 @@
 __author__ = 'Sun'
 
+import theano
 import theano.tensor as T
 
 from knowledge.machine.neuralnetwork.layer.mlp import HiddenLayer
@@ -57,6 +58,36 @@ class NeuralLanguageModel(object):
 
     def fit(self, cropus, learning_rate = 0.01, L1_reg = 0.00, L2_reg = 0.0001,
                  n_epochs = 10000, batch_size = 20):
+
+
+        y = T.ivector('y')
+        cost = self.negative_log_likelihood(y) \
+                     + L1_reg * self.L1 \
+                     + L2_reg * self.L2_sqr
+
+        gparams = []
+        for param in self.params:
+            gparam = T.grad(cost, param)
+            gparams.append(gparam)
+
+        # specify how to update the parameters of the model as a list of
+        # (variable, update expression) pairs
+        updates = []
+        # given two list the zip A = [a1, a2, a3, a4] and B = [b1, b2, b3, b4] of
+        # same length, zip generates a list C of same size, where each element
+        # is a pair formed from the two lists :
+        #    C = [(a1, b1), (a2, b2), (a3, b3), (a4, b4)]
+        for param, gparam in zip(self.params, gparams):
+            updates.append((param, param - learning_rate * gparam))
+
+        # compiling a Theano function `train_model` that returns the cost, but
+        # in the same time updates the parameter of the model based on the rules
+        # defined in `updates`
+        train_model = theano.function(inputs=[self.index], outputs=cost,
+                updates=updates,
+                givens={
+                    y: cropus.get_label(self.index)
+                })
 
 
     datasets = load_data(dataset)

@@ -49,8 +49,6 @@ class WordEmbeddingLayer(object):
 
         self.output = T.vertical_stack(window_features)
 
-    def get_words
-
     def update(self, sentence, delta):
 
         word_windows = sentence.word_windows(self._window_size)

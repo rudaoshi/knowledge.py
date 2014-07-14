@@ -14,6 +14,10 @@ class LookupTableLayer(object):
 
         self._embeddings = T.shared(np.random.random((self._table_size, feature_num)))
 
+    @property
+    def embeddings(self):
+        return self._embeddings
+
     def get_output_size(self):
 
         return self._window_size * self._feature_dim

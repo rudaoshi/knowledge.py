@@ -10,14 +10,13 @@ from knowledge.machine.neuralnetwork.layer.lookup_table_layer import LookupTable
 class NeuralLanguageModel(object):
 
 
-    def __init__(self, wordlist, window_size, feature_dim,
+    def __init__(self, word_num, window_size, feature_dim,
 
                  hidden_layer_size, n_outs, numpy_rng, theano_rng=None, ):
 
-
         item_idx = T.lscalars('word_index')
         
-        self.lookup_table_layer = LookupTableLayer(wordlist, window_size, feature_dim)
+        self.lookup_table_layer = LookupTableLayer(word_num, window_size, feature_dim)
 
         self.hidden_layer = HiddenLayer(rng=numpy_rng, input=self.lookup_table_layer.output(item_idx),
                                        n_in = self.lookup_table_layer.get_output_size(),
@@ -27,7 +26,7 @@ class NeuralLanguageModel(object):
         # The logistic regression layer gets as input the hidden units
         # of the hidden layer
         self.output_layer = LogisticRegression(
-                                        input=self.output_layer.output,
+                                        input=self.hidden_layer.output,
                                         n_in=hidden_layer_size,
                                         n_out=n_outs)
 
@@ -35,12 +34,14 @@ class NeuralLanguageModel(object):
 
         # L1 norm ; one regularization option is to enforce L1 norm to
         # be small
-        self.L1 = abs(self.hidden_layer.W).sum() \
+        self.L1 = abs(self.lookup_table_layer.embeddings).sum() \
+                + abs(self.hidden_layer.W).sum() \
                 + abs(self.output_layer.W).sum()
 
         # square of L2 norm ; one regularization option is to enforce
         # square of L2 norm to be small
-        self.L2_sqr = (self.hidden_layer.W ** 2).sum() \
+        self.L2_sqr = (self.lookup_table_layer.embeddings ** 2).sum() \
+                    + (self.hidden_layer.W ** 2).sum() \
                     + (self.output_layer.W ** 2).sum()
 
         # negative log likelihood of the MLP is given by the negative
@@ -56,37 +57,8 @@ class NeuralLanguageModel(object):
 
     def fit(self, cropus, learning_rate = 0.01, L1_reg = 0.00, L2_reg = 0.0001,
                  n_epochs = 10000, batch_size = 20):
-        pass
-
-    def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000,
-             dataset='mnist.pkl.gz', batch_size=20, n_hidden=500):
-    """
-    Demonstrate stochastic gradient descent optimization for a multilayer
-    perceptron
-
-    This is demonstrated on MNIST.
-
-    :type learning_rate: float
-    :param learning_rate: learning rate used (factor for the stochastic
-    gradient
-
-    :type L1_reg: float
-    :param L1_reg: L1-norm's weight when added to the cost (see
-    regularization)
-
-    :type L2_reg: float
-    :param L2_reg: L2-norm's weight when added to the cost (see
-    regularization)
-
-    :type n_epochs: int
-    :param n_epochs: maximal number of epochs to run the optimizer
-
-    :type dataset: string
-    :param dataset: the path of the MNIST dataset file from
-                 http://www.iro.umontreal.ca/~lisa/deep/data/mnist/mnist.pkl.gz
 
 
-   """
     datasets = load_data(dataset)
 
     train_set_x, train_set_y = datasets[0]

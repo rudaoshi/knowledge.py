@@ -4,6 +4,8 @@ __author__ = 'Sun'
 
 from collections import defaultdict, Counter
 from knowledge.language.core.word import Word
+from knowledge.language.core.sentence import Sentence
+from knowledge.language.core.document import Document
 
 class Corpora(object):
 
@@ -11,7 +13,6 @@ class Corpora(object):
 
     def __init__(self):
         self.documents = []
-        self.sentences = []
 
         self.word_id_map = dict()
         self.id_word_map = dict()
@@ -30,6 +31,30 @@ class Corpora(object):
             self.id_word_map[cur_top_idx] = word
 
         return self.word_id_map[word]
+
+
+    def load_nltk_conll2000(self):
+
+        import nltk
+
+        document = Document(0)
+
+        for idx, sentence in enumerate(nltk.corpus.conll2000.tagged_sents()):
+
+            sentence_obj = Sentence(idx)
+            for word, tag in sentence:
+                id = self.alloc_global_word_id(word)
+
+                word_obj = Word(id, word)
+                word_obj.pos = tag
+
+                sentence.add_word(word_obj)
+
+            document.add_sentence(sentence_obj)
+
+        self.documents.append(document)
+
+
 
 
     def add_document(self, document):

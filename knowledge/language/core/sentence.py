@@ -5,7 +5,7 @@ from knowledge.util.data_process import moving_window
 
 class Sentence(object):
 
-    def __init__(self, id, content):
+    def __init__(self, id, content = ""):
         self.id = id
         self.content = content
         self.words = []
@@ -14,6 +14,9 @@ class Sentence(object):
     def segement_words(self, word_segmenter):
 
         self.words = word_segmenter.segment(self.content)
+
+    def add_word(self, word_obj):
+        self.words.append(word_obj)
 
 
     def word_windows(self, windows_size):

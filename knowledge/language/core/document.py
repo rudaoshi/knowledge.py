@@ -2,10 +2,15 @@
 
 class Document(object):
 
-    def __init__(self, id, content):
+    def __init__(self, id, content = ""):
         self.id = id
         self.content = content
         self.sentences = []
+
+
+    def add_sentence(self, sentence):
+
+        self.sentences.append(sentence)
 
 
     def split_sentences(self, sentence_segmenter):

@@ -2,11 +2,15 @@ __author__ = 'Sun'
 
 import theano
 import theano.tensor as T
+import numpy
+import time
+import sys
+import os
 
 from knowledge.machine.neuralnetwork.layer.mlp import HiddenLayer
 from knowledge.machine.neuralnetwork.layer.logistic_sgd import LogisticRegression
 from knowledge.machine.neuralnetwork.layer.lookup_table_layer import LookupTableLayer
-
+from knowledge.util.theano_util import shared_dataset
 
 
 class NeuralLanguageModelCore(object):
@@ -41,7 +45,7 @@ class NeuralLanguageModel(object):
 
 
 
-    def __init__(self, word_ids, word_num, window_size, feature_num,
+    def __init__(self, word_num, window_size, feature_num,
                  hidden_layer_size, n_outs, L1_reg = 0.00, L2_reg = 0.0001,
                  numpy_rng = None, theano_rng=None, ):
 
@@ -88,7 +92,7 @@ class NeuralLanguageModel(object):
 
 
 
-    def fit(self, X, y, batch_size = 1000, n_epochs = 10000, learning_rate = 0.01,):
+    def fit(self, X, y, valid_X, valid_y,  batch_size = 1000, n_epochs = 10000, learning_rate = 0.01,):
 
         self.gparams = []
         for param in self.params:
@@ -105,17 +109,27 @@ class NeuralLanguageModel(object):
         for param, gparam in zip(self.params, self.gparams):
             updates.append((param, param - learning_rate * gparam))
 
+        train_set_X, train_set_y = shared_dataset((X,y))
+        valid_set_X, valid_set_y = shared_dataset((valid_X, valid_y))
+
         # compiling a Theano function `train_model` that returns the cost, but
         # in the same time updates the parameter of the model based on the rules
         # defined in `updates`
         train_model = theano.function(inputs=[self.index], outputs=self.cost,
                 updates=updates,
                 givens={
-                    self.input: X[self.index * batch_size:(self.index + 1) * batch_size],
-                    self.label: y[self.index * batch_size:(self.index + 1) * batch_size]
+                    self.input: train_set_X[self.index * batch_size:(self.index + 1) * batch_size],
+                    self.label: train_set_y[self.index * batch_size:(self.index + 1) * batch_size]
                 })
         n_train_batches = X.shape[0] / batch_size
 
+        validate_model = theano.function(inputs=[self.index],
+            outputs=self.cost,
+            givens={
+                self.input: valid_set_X[self.index * batch_size:(self.index + 1) * batch_size],
+                self.label: valid_set_y[self.index * batch_size:(self.index + 1) * batch_size]
+            })
+        n_valid_batches = valid_X.shape[0] / batch_size
 
 
         ###############
@@ -172,17 +186,7 @@ class NeuralLanguageModel(object):
                         best_validation_loss = this_validation_loss
                         best_iter = iter
 
-                        # test it on the test set
-                        test_losses = [test_model(i) for i
-                                       in xrange(n_test_batches)]
-                        test_score = numpy.mean(test_losses)
-
-                        print(('     epoch %i, minibatch %i/%i, test error of '
-                               'best model %f %%') %
-                              (epoch, minibatch_index + 1, n_train_batches,
-                               test_score * 100.))
-
-                if patience <= iter:
+                    if patience <= iter:
                         done_looping = True
                         break
 

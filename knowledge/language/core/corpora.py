@@ -25,7 +25,7 @@ class Corpora(object):
         self.dns = Counter()                   #doc number containing each term
 
     def alloc_global_word_id(self, word):
-        if word.content not in self.word_id_map:
+        if word not in self.word_id_map:
             cur_top_idx = len(self.word_id_map)
             self.word_id_map[word] = cur_top_idx
             self.id_word_map[cur_top_idx] = word
@@ -53,7 +53,7 @@ class Corpora(object):
                 word_obj = Word(id, word)
                 word_obj.pos = tag
 
-                sentence.add_word(word_obj)
+                sentence_obj.add_word(word_obj)
 
             document.add_sentence(sentence_obj)
 

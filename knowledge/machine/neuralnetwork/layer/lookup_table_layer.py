@@ -1,8 +1,9 @@
 __author__ = 'Sun'
 
+import theano
 import numpy as np
 import theano.tensor as T
-from knowledge.language.core.word import Word
+
 
 class LookupTableLayer(object):
 
@@ -12,9 +13,11 @@ class LookupTableLayer(object):
         self._feature_num = feature_num
         self._window_size = window_size
 
-        self._embeddings = T.shared(np.random.random((self._table_size, feature_num)))
+        self._embeddings = theano.shared(np.random.random((self._table_size, feature_num)))
 
-        self.output = T.horizontal_stack(self._embeddings[input])
+
+        self.output, _ = theano.scan(fn = lambda vec: self._embeddings[vec].flatten(), sequences = input, name='x_scan')
+        #self.output = T.horizontal_stack([self._embeddings[idx] for idx in input] )
 
     @property
     def embeddings(self):

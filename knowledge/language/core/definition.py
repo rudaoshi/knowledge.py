@@ -4,6 +4,7 @@ __author__ = 'Sun'
 class PosTags(object):
 
     POSTAG_ID_MAP = dict((tag, id) for id, tag in enumerate("""
+            #
             $
             ''
             (
@@ -48,4 +49,5 @@ class PosTags(object):
             WP
             WP$
             WRB
+            ``
         """.split()))

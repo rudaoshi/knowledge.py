@@ -54,7 +54,7 @@ class NeuralLanguageModel(object):
 
 
         self.index = T.lscalar()
-        self.input = T.matrix('input')  # the data is presented as rasterized images
+        self.input = T.imatrix('input')  # the data is presented as rasterized images
         self.label = T.ivector('label')
 
         self.core = NeuralLanguageModelCore(self.input, word_num, window_size, feature_num,
@@ -109,8 +109,20 @@ class NeuralLanguageModel(object):
         for param, gparam in zip(self.params, self.gparams):
             updates.append((param, param - learning_rate * gparam))
 
-        train_set_X, train_set_y = shared_dataset((X,y))
-        valid_set_X, valid_set_y = shared_dataset((valid_X, valid_y))
+        borrow = True
+        train_set_X = T.cast(theano.shared(numpy.asarray(X,
+                                dtype=theano.config.floatX),
+                                 borrow=borrow), "int32")
+        train_set_y = T.cast(theano.shared(numpy.asarray(y,
+                                dtype=theano.config.floatX),
+                                 borrow=borrow), "int32")
+
+        valid_set_X = T.cast(theano.shared(numpy.asarray(valid_X,
+                                dtype=theano.config.floatX),
+                                 borrow=borrow), "int32")
+        valid_set_y = T.cast(theano.shared(numpy.asarray(valid_y,
+                                dtype=theano.config.floatX),
+                                 borrow=borrow), "int32")
 
         # compiling a Theano function `train_model` that returns the cost, but
         # in the same time updates the parameter of the model based on the rules

@@ -33,6 +33,11 @@ class Corpora(object):
         return self.word_id_map[word]
 
 
+    def get_word_num(self):
+
+        return len(self.word_id_map)
+
+
     def load_nltk_conll2000(self):
 
         import nltk

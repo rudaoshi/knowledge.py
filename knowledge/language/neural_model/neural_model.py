@@ -171,10 +171,17 @@ class NeuralLanguageModel(object):
         done_looping = False
 
         while (epoch < n_epochs) and (not done_looping):
+
+            print >> sys.stderr, "begin epoch ", epoch
             epoch = epoch + 1
             for minibatch_index in xrange(n_train_batches):
 
+                print >> sys.stderr, "minibatch idx ", minibatch_index
+
                 minibatch_avg_cost = train_model(minibatch_index)
+
+                print >> sys.stderr, "minibatch cost ", minibatch_avg_cost
+
                 # iteration number
                 iter = (epoch - 1) * n_train_batches + minibatch_index
 

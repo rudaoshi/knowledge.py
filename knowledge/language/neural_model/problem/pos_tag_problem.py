@@ -4,6 +4,8 @@ __author__ = 'Sun'
 from knowledge.language.core.definition import PosTags
 import numpy as np
 
+import sys
+
 class PosTagProblem(object):
 
 

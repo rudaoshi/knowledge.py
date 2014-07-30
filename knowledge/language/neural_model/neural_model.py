@@ -40,6 +40,9 @@ class NeuralLanguageModelCore(object):
                                         n_out=n_outs)
 
 
+        self.errors = self.output_layer.errors
+
+
 
 class NeuralLanguageModel(object):
 
@@ -92,7 +95,7 @@ class NeuralLanguageModel(object):
 
 
 
-    def fit(self, X, y, valid_X, valid_y,  batch_size = 1000, n_epochs = 10000, learning_rate = 0.01,):
+    def fit(self, X, y, valid_X, valid_y,  batch_size = 10000, n_epochs = 10000, learning_rate = 0.01,):
 
         self.gparams = []
         for param in self.params:
@@ -136,7 +139,7 @@ class NeuralLanguageModel(object):
         n_train_batches = X.shape[0] / batch_size
 
         validate_model = theano.function(inputs=[self.index],
-            outputs=self.cost,
+            outputs=self.errors(self.label),
             givens={
                 self.input: valid_set_X[self.index * batch_size:(self.index + 1) * batch_size],
                 self.label: valid_set_y[self.index * batch_size:(self.index + 1) * batch_size]
@@ -182,6 +185,8 @@ class NeuralLanguageModel(object):
 
                 print >> sys.stderr, "minibatch cost ", minibatch_avg_cost
 
+                break
+
                 # iteration number
                 iter = (epoch - 1) * n_train_batches + minibatch_index
 
@@ -208,6 +213,8 @@ class NeuralLanguageModel(object):
                     if patience <= iter:
                         done_looping = True
                         break
+
+            break
 
         end_time = time.clock()
         print(('Optimization complete. Best validation score of %f %% '

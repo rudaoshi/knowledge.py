@@ -8,6 +8,7 @@ from knowledge.language.neural_model.problem.pos_tag_problem import PosTagProble
 import sklearn
 import sklearn.cross_validation
 import numpy
+import sys
 
 def test_neural_language_model():
 
@@ -26,6 +27,20 @@ def test_neural_language_model():
             X_train, y_train, test_size=0.2, random_state=0)
 
     rng = numpy.random.RandomState(1234)
+
+    print >> sys.stderr, "Problem Size: ", X.shape
+
+    print >> sys.stderr, "word num = ", corpora.get_word_num()
+
+    print >> sys.stderr, "x_train.shape ", X_train.shape
+    print >> sys.stderr, X_train
+
+
+
+    print >> sys.stderr, " y_valid shape", y_valid.shape
+    print >> sys.stderr, y_valid
+
+
 
     model = NeuralLanguageModel(word_num = corpora.get_word_num(), window_size = 11, feature_num = 100,
                  hidden_layer_size = 1000, n_outs = problem.get_tag_class_num(), L1_reg = 0.00, L2_reg = 0.0001,

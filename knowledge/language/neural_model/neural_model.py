@@ -178,7 +178,7 @@ class NeuralLanguageModel(object):
                 # iteration number
                 iter = (epoch - 1) * n_train_batches + minibatch_index
 
-                if (iter + 1) % validation_frequency == 0:
+                if True:#(iter + 1) % validation_frequency == 0:
                     # compute zero-one loss on validation set
                     validation_losses = [validate_model(i) for i
                                          in xrange(n_valid_batches)]

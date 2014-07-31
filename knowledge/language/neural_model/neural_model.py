@@ -95,7 +95,7 @@ class NeuralLanguageModel(object):
 
 
 
-    def fit(self, X, y, valid_X, valid_y,  batch_size = 10000, n_epochs = 10000, learning_rate = 0.01,):
+    def fit(self, X, y, valid_X, valid_y,  batch_size = 100, n_epochs = 10000, learning_rate = 0.01,):
 
         self.gparams = []
         for param in self.params:
@@ -185,7 +185,6 @@ class NeuralLanguageModel(object):
 
                 print >> sys.stderr, "minibatch cost ", minibatch_avg_cost
 
-                break
 
                 # iteration number
                 iter = (epoch - 1) * n_train_batches + minibatch_index

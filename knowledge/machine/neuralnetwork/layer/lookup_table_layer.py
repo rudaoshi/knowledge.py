@@ -16,7 +16,7 @@ class LookupTableLayer(object):
         self._embeddings = theano.shared(np.random.random((self._table_size, feature_num)))
 
 
-        self.output, _ = theano.scan(fn = lambda vec: self._embeddings[vec].flatten(), sequences = input, name='x_scan')
+        self.output, self.update = theano.map(fn = lambda vec: self._embeddings[vec].flatten(), sequences = input, name='x_scan')
         #self.output = T.horizontal_stack([self._embeddings[idx] for idx in input] )
 
     @property

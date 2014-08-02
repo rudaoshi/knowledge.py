@@ -24,7 +24,7 @@ class NeuralLanguageModelCore(object):
         self.L2_reg = L2_reg
 
 
-        self.lookup_table_layer = LookupTableLayer(input = word_ids, table_size = word_num,
+        self.lookup_table_layer = LookupTableLayer(inputs = word_ids, table_size = word_num,
                                                    window_size = window_size, feature_num = feature_num)
 
         self.hidden_layer = HiddenLayer(rng=numpy_rng, input=self.lookup_table_layer.output,
@@ -95,7 +95,7 @@ class NeuralLanguageModel(object):
 
 
 
-    def fit(self, X, y, valid_X, valid_y,  batch_size = 100, n_epochs = 10000, learning_rate = 0.01,):
+    def fit(self, X, y, valid_X, valid_y,  batch_size = 1000, n_epochs = 10000, learning_rate = 0.01,):
 
         self.gparams = []
         for param in self.params:
@@ -213,7 +213,6 @@ class NeuralLanguageModel(object):
                         done_looping = True
                         break
 
-            break
 
         end_time = time.clock()
         print(('Optimization complete. Best validation score of %f %% '

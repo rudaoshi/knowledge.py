@@ -95,7 +95,7 @@ class NeuralLanguageModel(object):
 
 
 
-    def fit(self, X, y, valid_X, valid_y,  batch_size = 1000, n_epochs = 10000, learning_rate = 0.01,):
+    def fit(self, X, y, valid_X, valid_y,  batch_size = 10000, n_epochs = 10000, learning_rate = 0.01,):
 
         self.gparams = []
         for param in self.params:
@@ -173,6 +173,8 @@ class NeuralLanguageModel(object):
         epoch = 0
         done_looping = False
 
+        validation_frequency = 100
+
         while (epoch < n_epochs) and (not done_looping):
 
             print >> sys.stderr, "begin epoch ", epoch
@@ -189,15 +191,15 @@ class NeuralLanguageModel(object):
                 # iteration number
                 iter = (epoch - 1) * n_train_batches + minibatch_index
 
-                if True:#(iter + 1) % validation_frequency == 0:
+                if (iter + 1) % validation_frequency == 0:
                     # compute zero-one loss on validation set
                     validation_losses = [validate_model(i) for i
                                          in xrange(n_valid_batches)]
                     this_validation_loss = numpy.mean(validation_losses)
 
-                    print('epoch %i, minibatch %i/%i, validation error %f %%' %
-                         (epoch, minibatch_index + 1, n_train_batches,
-                          this_validation_loss * 100.))
+                    print >> sys.stderr, 'epoch %i, minibatch %i/%i, validation error %f %%' % \
+                         (epoch, minibatch_index + 1, n_train_batches, \
+                          this_validation_loss * 100.)
 
                     # if we got the best validation score until now
                     if this_validation_loss < best_validation_loss:

@@ -47,3 +47,9 @@ def test_neural_language_model():
                  numpy_rng= rng)
 
     model.fit(X_train,y_train, X_valid, y_valid)
+
+
+
+if __name__ == "__main__":
+
+    test_neural_language_model()

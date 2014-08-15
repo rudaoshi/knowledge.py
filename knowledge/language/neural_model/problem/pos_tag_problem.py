@@ -13,11 +13,11 @@ class PosTagProblem(object):
 
         self.__corpora = corpora
 
-    def get_tag_class_num(self):
+    def get_class_num(self):
 
         return len(PosTags.POSTAG_ID_MAP)
 
-    def get_window_data_set(self, window_size):
+    def get_data_set(self, window_size, **kwargs):
 
         x = []
         y = []

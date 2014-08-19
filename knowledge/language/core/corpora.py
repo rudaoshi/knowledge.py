@@ -1,4 +1,4 @@
-__author__ = 'Sun'
+__author__ = 'Sun','Huang'
 
 
 
@@ -6,6 +6,7 @@ from collections import defaultdict, Counter
 from knowledge.language.core.word import Word
 from knowledge.language.core.sentence import Sentence
 from knowledge.language.core.document import Document
+import csv
 
 class Corpora(object):
 
@@ -60,6 +61,8 @@ class Corpora(object):
         self.documents.append(document)
 
 
+    def load_conll2005(self,random_order=False):
+        pass
 
 
     def add_document(self, document):
@@ -120,3 +123,64 @@ class Corpora(object):
 
             for doc_id in self.tns:
                 output.write('\n'.join("\t".join([doc_id, word_id, n] for word_id, n in self.tns[doc_id].iteritmes())))
+
+
+class Conll05(object):
+    def __init__(self):
+        pass
+
+    @staticmethod
+    def load(filename):
+        '''
+        load conll05 dataset
+        for each sentence,output as such
+        [((idx1,v1),[(w1,l1),(w2,l2),...,(wk,lk)]),
+        ((idx2,v2),...),
+        ...,
+        ((idxn,vn),...)
+        ]
+        '''
+        def is_begin(ss):
+            if ss[0] == '(':
+                return True,ss[1:]
+            else:
+                return False,None
+
+        def is_end(ss):
+            if ss[-1] == ')':
+                return True
+            else:
+                return False
+
+
+        with open(filename) as fr:
+            reader = csv.reader(fr,delimiter=' ')
+            tokens = list()
+            prelabel = list()
+            vidx = 0
+            vlst = list()
+            ret = list()
+            for idx,line in enumerate(reader):
+                if line[0] == '':
+                    # this is a empty line
+                    tokens = list()
+                    prelabel = list()
+                    vidx = 0
+                    vlst = list()
+                    continue
+                cols = [i for i in line if not i == '']
+                token = cols[0]
+                pos = cols[1]
+                labels = cols[6:]
+                if pos[0] == 'V':
+                    vlst.append(vidx)
+
+                vidx += 1
+
+
+
+                print line
+                if idx >= 60:
+                    break
+            return ret
+

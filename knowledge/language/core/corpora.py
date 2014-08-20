@@ -61,8 +61,25 @@ class Corpora(object):
         self.documents.append(document)
 
 
-    def load_conll2005(self,random_order=False):
-        pass
+    def load_conll2005(self,filename):
+        document = Document(0)
+        for idx , rawsent in enumerate(Conll05.loadraw(filename)):
+            sentence_obj = Sentence(idx)
+            for verb,vidx,sent_algined in Conll05.raw2align(rawsent):
+                for word, tag in sentence:
+                    id = self.alloc_global_word_id(word)
+
+                    word_obj = Word(id, word)
+                    word_obj.pos = tag
+
+                    sentence_obj.add_word(word_obj)
+
+                # we append verb idx in a sentence data
+                document.add_sentence([vidx,sentence_obj])
+
+        self.documents.append(document)
+
+
 
 
     def add_document(self, document):
@@ -130,16 +147,30 @@ class Conll05(object):
         pass
 
     @staticmethod
-    def load(filename):
+    def loadraw(filename):
         '''
         load conll05 dataset
-        for each sentence,output as such
-        [((idx1,v1),[(w1,l1),(w2,l2),...,(wk,lk)]),
-        ((idx2,v2),...),
-        ...,
-        ((idxn,vn),...)
-        ]
+        for each sentence,the output is:
+        [[w1,pos,l1,l2,...],
+        [w2,pos,l1,l2,...],
+        ...
+        [wn,pos,l1,l2,...]]
         '''
+
+        with open(filename) as fr:
+            reader = csv.reader(fr,delimiter=' ')
+            sentence = list()
+            for idx,line in enumerate(reader):
+                if line[0] == '':
+                    # this is a empty line
+                    yield sentence
+                    sentence = list()
+                    continue
+                cols = [i for i in line if not i == '']
+                sentence.append(cols[:1] + cols[6:])
+
+    @staticmethod
+    def raw2align(sentence):
         def is_begin(ss):
             if ss[0] == '(':
                 return True,ss[1:]
@@ -152,35 +183,39 @@ class Conll05(object):
             else:
                 return False
 
+        def is_verb(ss):
+            if '(v*)' in ss:
+                return True
+            else:
+                return False
 
-        with open(filename) as fr:
-            reader = csv.reader(fr,delimiter=' ')
-            tokens = list()
-            prelabel = list()
-            vidx = 0
-            vlst = list()
-            ret = list()
-            for idx,line in enumerate(reader):
-                if line[0] == '':
-                    # this is a empty line
-                    tokens = list()
-                    prelabel = list()
-                    vidx = 0
-                    vlst = list()
-                    continue
-                cols = [i for i in line if not i == '']
-                token = cols[0]
-                pos = cols[1]
-                labels = cols[6:]
-                if pos[0] == 'V':
-                    vlst.append(vidx)
+        verb_sz = len(sentence[0][1:])
+        tmp = zip(*sentence)
+        tokens = tmp[0]
+        sent_labels = tmp[1:]
+        for idx in xrange(verb_sz):
+            labels = sent_labels[idx]
+            vidx = min([i for i in xrange(len(labels)) if is_verb(labels[i])])
+            word_labels = list()
+            pre_lable = None
+            for widx,lb in enumerate(labels):
+                if is_verb(lb):
+                    word_labels.append((tokens[widx],'v'))
+                if pre_lable == None:
+                    b,_lb = is_begin(lb)
+                    if b:
+                        pre_lable = _lb
+                        word_labels.append((tokens[widx],_lb))
+                    else:
+                        word_labels.append((tokens[widx],None))
+                else:
+                    word_labels.append((tokens[widx],None))
+                    if not is_end(lb):
+                        pre_lable = None
 
-                vidx += 1
+
+            yield tokens[vidx], vidx, word_labels
 
 
 
-                print line
-                if idx >= 60:
-                    break
-            return ret
 

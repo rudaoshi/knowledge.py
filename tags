@@ -1,0 +1,174 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+CHUNKTYPE_ID_MAP	knowledge/language/core/definition.py	/^    CHUNKTYPE_ID_MAP = dict((tag, id) for id, tag in enumerate([$/;"	v	class:ChunkTypes
+COMPILE_MODE	knowledge/language/nn_languagemodel.py	/^COMPILE_MODE = theano.compile.Mode('c|py', 'fast_run')$/;"	v
+ChunkProblem	knowledge/language/neural_model/problem/chunk_problem.py	/^class ChunkProblem(object):$/;"	c
+ChunkTypes	knowledge/language/core/definition.py	/^class ChunkTypes(object):$/;"	c
+Conll05	knowledge/language/core/corpora.py	/^class Conll05(object):$/;"	c
+Corpora	knowledge/language/core/corpora.py	/^class Corpora(object):$/;"	c
+DBN	knowledge/machine/neuralnetwork/DBN.py	/^class DBN(object):$/;"	c
+Document	knowledge/language/core/document.py	/^class Document(object):$/;"	c
+HMC_sampler	knowledge/machine/neuralnetwork/hmc.py	/^class HMC_sampler(object):$/;"	c
+HiddenLayer	knowledge/machine/neuralnetwork/layer/mlp.py	/^class HiddenLayer(object):$/;"	c
+LeNetConvPoolLayer	knowledge/machine/neuralnetwork/convolutional_mlp.py	/^class LeNetConvPoolLayer(object):$/;"	c
+LogisticRegression	knowledge/machine/neuralnetwork/layer/logistic_sgd.py	/^class LogisticRegression(object):$/;"	c
+LookupTableLayer	knowledge/machine/neuralnetwork/layer/lookup_table_layer.py	/^class LookupTableLayer(object):$/;"	c
+MLP	knowledge/machine/neuralnetwork/layer/mlp.py	/^class MLP(object):$/;"	c
+NeuralLanguageModel	knowledge/language/neural_model/neural_model.py	/^class NeuralLanguageModel(object):$/;"	c
+NeuralLanguageModelCore	knowledge/language/neural_model/neural_model.py	/^class NeuralLanguageModelCore(object):$/;"	c
+PADDING_WORD	knowledge/language/core/corpora.py	/^    PADDING_WORD = Word.padding_word()$/;"	v	class:Corpora
+PosTagProblem	knowledge/language/neural_model/problem/pos_tag_problem.py	/^class PosTagProblem(object):$/;"	c
+PosTags	knowledge/language/core/definition.py	/^class PosTags(object):$/;"	c
+RBM	knowledge/machine/neuralnetwork/rbm.py	/^class RBM(object):$/;"	c
+SdA	knowledge/machine/neuralnetwork/SdA.py	/^class SdA(object):$/;"	c
+Sentence	knowledge/language/core/sentence.py	/^class Sentence(object):$/;"	c
+VectorSpaceModel	knowledge/language/vector_space_model/vector_space_model.py	/^class VectorSpaceModel(object):$/;"	c
+WSJPosTagDocumentProtocol	knowledge/language/protocol/WSJ_postag_document_protocol.py	/^class WSJPosTagDocumentProtocol(object):$/;"	c
+Word	knowledge/language/core/word.py	/^class Word(object):$/;"	c
+WordEmbeddingLayer	knowledge/language/neural_model/word_embedding_layer.py	/^class WordEmbeddingLayer(object):$/;"	c
+__author__	knowledge/__init__.py	/^__author__ = 'Sun'$/;"	v
+__author__	knowledge/language/__init__.py	/^__author__ = 'Sun'$/;"	v
+__author__	knowledge/language/core/__init__.py	/^__author__ = 'sun'$/;"	v
+__author__	knowledge/language/core/corpora.py	/^__author__ = 'Sun','Huang'$/;"	v
+__author__	knowledge/language/core/definition.py	/^__author__ = 'Sun'$/;"	v
+__author__	knowledge/language/core/sentence.py	/^__author__ = 'sun'$/;"	v
+__author__	knowledge/language/core/word.py	/^__author__ = 'sun'$/;"	v
+__author__	knowledge/language/neural_model/__init__.py	/^__author__ = 'Sun'$/;"	v
+__author__	knowledge/language/neural_model/neural_model.py	/^__author__ = 'Sun'$/;"	v
+__author__	knowledge/language/neural_model/problem/__init__.py	/^__author__ = 'Sun'$/;"	v
+__author__	knowledge/language/neural_model/problem/chunk_problem.py	/^__author__ = 'Sun'$/;"	v
+__author__	knowledge/language/neural_model/problem/pos_tag_problem.py	/^__author__ = 'Sun'$/;"	v
+__author__	knowledge/language/neural_model/word_embedding_layer.py	/^__author__ = 'Sun'$/;"	v
+__author__	knowledge/language/nn_languagemodel.py	/^__author__ = 'Sun'$/;"	v
+__author__	knowledge/language/protocol/WSJ_postag_document_protocol.py	/^__author__ = 'Sun'$/;"	v
+__author__	knowledge/language/protocol/__init__.py	/^__author__ = 'Sun'$/;"	v
+__author__	knowledge/language/vector_space_model/__init__.py	/^__author__ = 'Sun'$/;"	v
+__author__	knowledge/language/vector_space_model/vector_space_model.py	/^__author__ = 'Sun'$/;"	v
+__author__	knowledge/machine/__init__.py	/^__author__ = 'Sun'$/;"	v
+__author__	knowledge/machine/neuralnetwork/__init__.py	/^__author__ = 'Sun'$/;"	v
+__author__	knowledge/machine/neuralnetwork/layer/__init__.py	/^__author__ = 'Sun'$/;"	v
+__author__	knowledge/machine/neuralnetwork/layer/lookup_table_layer.py	/^__author__ = 'Sun'$/;"	v
+__author__	knowledge/util/__init__.py	/^__author__ = 'Sun'$/;"	v
+__author__	knowledge/util/data_process.py	/^__author__ = 'Sun'$/;"	v
+__author__	knowledge/util/theano_util.py	/^__author__ = 'Sun'$/;"	v
+__author__	test/__init__.py	/^__author__ = 'Sun'$/;"	v
+__author__	test/knowledge/__init__.py	/^__author__ = 'Sun'$/;"	v
+__author__	test/knowledge/language/__init__.py	/^__author__ = 'Sun'$/;"	v
+__author__	test/knowledge/language/test_neural_model.py	/^__author__ = 'Sun'$/;"	v
+__docformat__	knowledge/machine/neuralnetwork/layer/logistic_sgd.py	/^__docformat__ = 'restructedtext en'$/;"	v
+__docformat__	knowledge/machine/neuralnetwork/layer/mlp.py	/^__docformat__ = 'restructedtext en'$/;"	v
+__init__	knowledge/language/core/corpora.py	/^    def __init__(self):$/;"	m	class:Conll05
+__init__	knowledge/language/core/corpora.py	/^    def __init__(self):$/;"	m	class:Corpora
+__init__	knowledge/language/core/document.py	/^    def __init__(self, id, content = ""):$/;"	m	class:Document
+__init__	knowledge/language/core/sentence.py	/^    def __init__(self, id, content = ""):$/;"	m	class:Sentence
+__init__	knowledge/language/core/word.py	/^    def __init__(self, id, content):$/;"	m	class:Word
+__init__	knowledge/language/neural_model/neural_model.py	/^    def __init__(self, word_ids, word_num, window_size, feature_num,$/;"	m	class:NeuralLanguageModelCore
+__init__	knowledge/language/neural_model/neural_model.py	/^    def __init__(self, word_num, window_size, feature_num,$/;"	m	class:NeuralLanguageModel
+__init__	knowledge/language/neural_model/problem/chunk_problem.py	/^    def __init__(self, corpora, iob_sents):$/;"	m	class:ChunkProblem
+__init__	knowledge/language/neural_model/problem/pos_tag_problem.py	/^    def __init__(self, corpora):$/;"	m	class:PosTagProblem
+__init__	knowledge/language/neural_model/word_embedding_layer.py	/^    def __init__(self, word_list, window_size, feature_num):$/;"	m	class:WordEmbeddingLayer
+__init__	knowledge/language/vector_space_model/vector_space_model.py	/^    def __init__(self):$/;"	m	class:VectorSpaceModel
+__init__	knowledge/machine/neuralnetwork/DBN.py	/^    def __init__(self, numpy_rng, theano_rng=None, n_ins=784,$/;"	m	class:DBN
+__init__	knowledge/machine/neuralnetwork/SdA.py	/^    def __init__(self, numpy_rng, theano_rng=None, n_ins=784,$/;"	m	class:SdA
+__init__	knowledge/machine/neuralnetwork/convolutional_mlp.py	/^    def __init__(self, rng, input, filter_shape, image_shape, poolsize=(2, 2)):$/;"	m	class:LeNetConvPoolLayer
+__init__	knowledge/machine/neuralnetwork/hmc.py	/^    def __init__(self, **kwargs):$/;"	m	class:HMC_sampler
+__init__	knowledge/machine/neuralnetwork/layer/dA.py	/^    def __init__(self, numpy_rng, theano_rng=None, input=None,$/;"	m	class:dA
+__init__	knowledge/machine/neuralnetwork/layer/logistic_sgd.py	/^    def __init__(self, input, n_in, n_out):$/;"	m	class:LogisticRegression
+__init__	knowledge/machine/neuralnetwork/layer/lookup_table_layer.py	/^    def __init__(self, inputs, table_size, window_size, feature_num):$/;"	m	class:LookupTableLayer
+__init__	knowledge/machine/neuralnetwork/layer/mlp.py	/^    def __init__(self, rng, input, n_in, n_hidden, n_out):$/;"	m	class:MLP
+__init__	knowledge/machine/neuralnetwork/layer/mlp.py	/^    def __init__(self, rng, input, n_in, n_out, W=None, b=None,$/;"	m	class:HiddenLayer
+__init__	knowledge/machine/neuralnetwork/rbm.py	/^        W=None, hbias=None, vbias=None, numpy_rng=None,$/;"	m	class:RBM
+activation_function	knowledge/language/nn_languagemodel.py	/^def activation_function(r):$/;"	f
+add_document	knowledge/language/core/corpora.py	/^    def add_document(self, document):$/;"	m	class:Corpora
+add_sentence	knowledge/language/core/document.py	/^    def add_sentence(self, sentence):$/;"	m	class:Document
+add_word	knowledge/language/core/sentence.py	/^    def add_word(self, word_obj):$/;"	m	class:Sentence
+alloc_global_word_id	knowledge/language/core/corpora.py	/^    def alloc_global_word_id(self, word):$/;"	m	class:Corpora
+build_WSJ_postag_parser	knowledge/language/protocol/WSJ_postag_document_protocol.py	/^def build_WSJ_postag_parser():$/;"	f
+build_finetune_functions	knowledge/machine/neuralnetwork/DBN.py	/^    def build_finetune_functions(self, datasets, batch_size, learning_rate):$/;"	m	class:DBN
+build_finetune_functions	knowledge/machine/neuralnetwork/SdA.py	/^    def build_finetune_functions(self, datasets, batch_size, learning_rate):$/;"	m	class:SdA
+cached_functions	knowledge/language/nn_languagemodel.py	/^cached_functions = {}$/;"	v
+dA	knowledge/machine/neuralnetwork/layer/dA.py	/^class dA(object):$/;"	c
+draw	knowledge/machine/neuralnetwork/hmc.py	/^    def draw(self, **kwargs):$/;"	m	class:HMC_sampler
+embeddings	knowledge/machine/neuralnetwork/layer/lookup_table_layer.py	/^    def embeddings(self):$/;"	m	class:LookupTableLayer
+errors	knowledge/machine/neuralnetwork/layer/logistic_sgd.py	/^    def errors(self, y):$/;"	m	class:LogisticRegression
+evaluate_lenet5	knowledge/machine/neuralnetwork/convolutional_mlp.py	/^def evaluate_lenet5(learning_rate=0.1, n_epochs=200,$/;"	f
+experiment	knowledge/machine/neuralnetwork/convolutional_mlp.py	/^def experiment(state, channel):$/;"	f
+fit	knowledge/language/neural_model/neural_model.py	/^    def fit(self, X, y, valid_X, valid_y,  batch_size = 10000, n_epochs = 10000, learning_rate = 0.01,):$/;"	m	class:NeuralLanguageModel
+floatX	knowledge/language/nn_languagemodel.py	/^floatX = config.floatX$/;"	v
+free_energy	knowledge/machine/neuralnetwork/rbm.py	/^    def free_energy(self, v_sample):$/;"	m	class:RBM
+functions	knowledge/language/nn_languagemodel.py	/^def functions(sequence_length):$/;"	f
+get_class_num	knowledge/language/neural_model/problem/chunk_problem.py	/^    def get_class_num(self):$/;"	m	class:ChunkProblem
+get_class_num	knowledge/language/neural_model/problem/pos_tag_problem.py	/^    def get_class_num(self):$/;"	m	class:PosTagProblem
+get_corrupted_input	knowledge/machine/neuralnetwork/layer/dA.py	/^    def get_corrupted_input(self, input, corruption_level):$/;"	m	class:dA
+get_cost_updates	knowledge/machine/neuralnetwork/layer/dA.py	/^    def get_cost_updates(self, corruption_level, learning_rate):$/;"	m	class:dA
+get_cost_updates	knowledge/machine/neuralnetwork/rbm.py	/^    def get_cost_updates(self, lr=0.1, persistent=None, k=1):$/;"	m	class:RBM
+get_data_set	knowledge/language/neural_model/problem/chunk_problem.py	/^    def get_data_set(self, **kwargs):$/;"	m	class:ChunkProblem
+get_data_set	knowledge/language/neural_model/problem/pos_tag_problem.py	/^    def get_data_set(self, window_size, **kwargs):$/;"	m	class:PosTagProblem
+get_hidden_values	knowledge/machine/neuralnetwork/layer/dA.py	/^    def get_hidden_values(self, input):$/;"	m	class:dA
+get_output_size	knowledge/language/neural_model/word_embedding_layer.py	/^    def get_output_size(self):$/;"	m	class:WordEmbeddingLayer
+get_output_size	knowledge/machine/neuralnetwork/layer/lookup_table_layer.py	/^    def get_output_size(self):$/;"	m	class:LookupTableLayer
+get_pseudo_likelihood_cost	knowledge/machine/neuralnetwork/rbm.py	/^    def get_pseudo_likelihood_cost(self, updates):$/;"	m	class:RBM
+get_reconstructed_input	knowledge/machine/neuralnetwork/layer/dA.py	/^    def get_reconstructed_input(self, hidden):$/;"	m	class:dA
+get_reconstruction_cost	knowledge/machine/neuralnetwork/rbm.py	/^    def get_reconstruction_cost(self, updates, pre_sigmoid_nv):$/;"	m	class:RBM
+get_sentence_features	knowledge/language/neural_model/word_embedding_layer.py	/^    def get_sentence_features(self, sentence):$/;"	m	class:WordEmbeddingLayer
+get_word_feature	knowledge/language/neural_model/word_embedding_layer.py	/^    def get_word_feature(self, word):$/;"	m	class:WordEmbeddingLayer
+get_word_num	knowledge/language/core/corpora.py	/^    def get_word_num(self):$/;"	m	class:Corpora
+gibbs_hvh	knowledge/machine/neuralnetwork/rbm.py	/^    def gibbs_hvh(self, h0_sample):$/;"	m	class:RBM
+gibbs_vhv	knowledge/machine/neuralnetwork/rbm.py	/^    def gibbs_vhv(self, v0_sample):$/;"	m	class:RBM
+hamiltonian	knowledge/machine/neuralnetwork/hmc.py	/^def hamiltonian(pos, vel, energy_fn):$/;"	f
+hmc_move	knowledge/machine/neuralnetwork/hmc.py	/^def hmc_move(s_rng, positions, energy_fn, stepsize, n_steps):$/;"	f
+hmc_updates	knowledge/machine/neuralnetwork/hmc.py	/^def hmc_updates(positions, stepsize, avg_acceptance_rate, final_pos, accept,$/;"	f
+is_begin	knowledge/language/core/corpora.py	/^        def is_begin(ss):$/;"	f	function:Conll05.raw2align
+is_end	knowledge/language/core/corpora.py	/^        def is_end(ss):$/;"	f	function:Conll05.raw2align
+is_verb	knowledge/language/core/corpora.py	/^        def is_verb(ss):$/;"	f	function:Conll05.raw2align
+kinetic_energy	knowledge/machine/neuralnetwork/hmc.py	/^def kinetic_energy(vel):$/;"	f
+leapfrog	knowledge/machine/neuralnetwork/hmc.py	/^    def leapfrog(pos, vel, step):$/;"	f	function:simulate_dynamics
+load_conll2005	knowledge/language/core/corpora.py	/^    def load_conll2005(self,filename):$/;"	m	class:Corpora
+load_data	knowledge/machine/neuralnetwork/layer/logistic_sgd.py	/^def load_data(dataset):$/;"	f
+load_nltk_conll2000	knowledge/language/core/corpora.py	/^    def load_nltk_conll2000(self):$/;"	m	class:Corpora
+loadraw	knowledge/language/core/corpora.py	/^    def loadraw(filename):$/;"	m	class:Conll05
+metropolis_hastings_accept	knowledge/machine/neuralnetwork/hmc.py	/^def metropolis_hastings_accept(energy_prev, energy_next, s_rng):$/;"	f
+moving_window	knowledge/util/data_process.py	/^def moving_window(seq, window_size):$/;"	f
+negative_log_likelihood	knowledge/machine/neuralnetwork/layer/logistic_sgd.py	/^    def negative_log_likelihood(self, y):$/;"	m	class:LogisticRegression
+new_from_shared_positions	knowledge/machine/neuralnetwork/hmc.py	/^    def new_from_shared_positions(cls, shared_positions, energy_fn,$/;"	m	class:HMC_sampler
+padding_word	knowledge/language/core/word.py	/^    def padding_word(cls):$/;"	m	class:Word
+params	knowledge/machine/neuralnetwork/layer/lookup_table_layer.py	/^    def params(self):$/;"	m	class:LookupTableLayer
+predict	knowledge/language/nn_languagemodel.py	/^def predict(correct_sequence):$/;"	f
+pretraining_functions	knowledge/machine/neuralnetwork/DBN.py	/^    def pretraining_functions(self, train_set_x, batch_size, k):$/;"	m	class:DBN
+pretraining_functions	knowledge/machine/neuralnetwork/SdA.py	/^    def pretraining_functions(self, train_set_x, batch_size):$/;"	m	class:SdA
+propdown	knowledge/machine/neuralnetwork/rbm.py	/^    def propdown(self, hid):$/;"	m	class:RBM
+propup	knowledge/machine/neuralnetwork/rbm.py	/^    def propup(self, vis):$/;"	m	class:RBM
+raw2align	knowledge/language/core/corpora.py	/^    def raw2align(sentence):$/;"	m	class:Conll05
+read_document	knowledge/language/protocol/WSJ_postag_document_protocol.py	/^    def read_document(self, doc_file_path):$/;"	m	class:WSJPosTagDocumentProtocol
+sample_h_given_v	knowledge/machine/neuralnetwork/rbm.py	/^    def sample_h_given_v(self, v0_sample):$/;"	m	class:RBM
+sample_v_given_h	knowledge/machine/neuralnetwork/rbm.py	/^    def sample_v_given_h(self, h0_sample):$/;"	m	class:RBM
+save_doc_word_freq	knowledge/language/core/corpora.py	/^    def save_doc_word_freq(self, file_name):$/;"	m	class:Corpora
+save_word_dictionary	knowledge/language/core/corpora.py	/^    def save_word_dictionary(self, file_name):$/;"	m	class:Corpora
+score	knowledge/language/nn_languagemodel.py	/^def score(x):$/;"	f
+segement_words	knowledge/language/core/document.py	/^    def segement_words(self, word_segmenter):$/;"	m	class:Document
+segement_words	knowledge/language/core/sentence.py	/^    def segement_words(self, word_segmenter):$/;"	m	class:Sentence
+sgd_optimization_mnist	knowledge/machine/neuralnetwork/layer/logistic_sgd.py	/^def sgd_optimization_mnist(learning_rate=0.13, n_epochs=1000,$/;"	f
+sharedX	knowledge/machine/neuralnetwork/hmc.py	/^        shared(numpy.asarray(X, dtype=theano.config.floatX), name=name)$/;"	v
+shared_dataset	knowledge/machine/neuralnetwork/layer/logistic_sgd.py	/^    def shared_dataset(data_xy, borrow=True):$/;"	f	function:load_data
+shared_dataset	knowledge/util/theano_util.py	/^def shared_dataset(data_xy, borrow=True):$/;"	f
+simulate_dynamics	knowledge/machine/neuralnetwork/hmc.py	/^def simulate_dynamics(initial_pos, initial_vel, stepsize, n_steps, energy_fn):$/;"	f
+split_sentences	knowledge/language/core/document.py	/^    def split_sentences(self, sentence_segmenter):$/;"	m	class:Document
+stack	knowledge/language/nn_languagemodel.py	/^def stack(x):$/;"	f
+test_DBN	knowledge/machine/neuralnetwork/DBN.py	/^def test_DBN(finetune_lr=0.1, pretraining_epochs=100,$/;"	f
+test_SdA	knowledge/machine/neuralnetwork/SdA.py	/^def test_SdA(finetune_lr=0.1, pretraining_epochs=15,$/;"	f
+test_dA	knowledge/machine/neuralnetwork/layer/dA.py	/^def test_dA(learning_rate=0.1, training_epochs=15,$/;"	f
+test_mlp	knowledge/machine/neuralnetwork/layer/mlp.py	/^def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000,$/;"	f
+test_neural_language_model	test/knowledge/language/test_neural_model.py	/^def test_neural_language_model():$/;"	f
+test_rbm	knowledge/machine/neuralnetwork/rbm.py	/^def test_rbm(learning_rate=0.1, training_epochs=15,$/;"	f
+test_score	knowledge/machine/neuralnetwork/DBN.py	/^        def test_score():$/;"	f	function:DBN.build_finetune_functions
+test_score	knowledge/machine/neuralnetwork/SdA.py	/^        def test_score():$/;"	f	function:SdA.build_finetune_functions
+train	knowledge/language/nn_languagemodel.py	/^def train(correct_sequence, noise_sequence, learning_rate):$/;"	f
+update	knowledge/language/neural_model/word_embedding_layer.py	/^    def update(self, sentence, delta):$/;"	m	class:WordEmbeddingLayer
+valid_score	knowledge/machine/neuralnetwork/DBN.py	/^        def valid_score():$/;"	f	function:DBN.build_finetune_functions
+valid_score	knowledge/machine/neuralnetwork/SdA.py	/^        def valid_score():$/;"	f	function:SdA.build_finetune_functions
+verbose_predict	knowledge/language/nn_languagemodel.py	/^def verbose_predict(correct_sequence):$/;"	f
+word_windows	knowledge/language/core/sentence.py	/^    def word_windows(self, windows_size):$/;"	m	class:Sentence

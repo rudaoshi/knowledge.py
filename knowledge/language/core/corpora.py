@@ -66,7 +66,7 @@ class Corpora(object):
         for idx , rawsent in enumerate(Conll05.loadraw(filename)):
             sentence_obj = Sentence(idx)
             for verb,vidx,sent_algined in Conll05.raw2align(rawsent):
-                for word, tag in sentence:
+                for word, tag in sent_algined:
                     id = self.alloc_global_word_id(word)
 
                     word_obj = Word(id, word)
@@ -173,7 +173,7 @@ class Conll05(object):
     def raw2align(sentence):
         def is_begin(ss):
             if ss[0] == '(':
-                return True,ss[1:]
+                return True,strip_label(ss[1:])
             else:
                 return False,None
 
@@ -184,37 +184,54 @@ class Conll05(object):
                 return False
 
         def is_verb(ss):
-            if '(v*)' in ss:
+            if '(V' in ss[0:2]:
                 return True
             else:
                 return False
 
+        def strip_label(ss):
+            ss = ss.replace('*',' ')
+            ss = ss.replace('(',' ')
+            ss = ss.replace(')',' ')
+            return ss.strip()
+
         verb_sz = len(sentence[0][1:])
-        tmp = zip(*sentence)
-        tokens = tmp[0]
-        sent_labels = tmp[1:]
-        for idx in xrange(verb_sz):
-            labels = sent_labels[idx]
-            vidx = min([i for i in xrange(len(labels)) if is_verb(labels[i])])
-            word_labels = list()
-            pre_lable = None
-            for widx,lb in enumerate(labels):
-                if is_verb(lb):
-                    word_labels.append((tokens[widx],'v'))
-                if pre_lable == None:
-                    b,_lb = is_begin(lb)
-                    if b:
-                        pre_lable = _lb
-                        word_labels.append((tokens[widx],_lb))
+        if verb_sz > 0:
+            tmp = zip(*sentence)
+            tokens = tmp[0]
+            sent_labels = tmp[1:]
+            for idx in xrange(verb_sz):
+                vidx_begin = -1
+                vidx_end = -1
+                pre_verb = False
+                labels = sent_labels[idx]
+                word_labels = list()
+                pre_lable = None
+                for widx,lb in enumerate(labels):
+                    if is_verb(lb):
+                        vidx_begin = widx
+                        pre_verb = True
+                    if pre_lable == None:
+                        b,_lb = is_begin(lb)
+                        if b:
+                            pre_lable = _lb
+                            word_labels.append((tokens[widx],_lb))
+                            if is_end(lb):
+                                pre_lable = None
+                                if pre_verb:
+                                    vidx_end = widx + 1
+                                    pre_verb = False
+                        else:
+                            word_labels.append((tokens[widx],None))
                     else:
-                        word_labels.append((tokens[widx],None))
-                else:
-                    word_labels.append((tokens[widx],None))
-                    if not is_end(lb):
-                        pre_lable = None
+                        word_labels.append((tokens[widx],pre_lable))
+                        if is_end(lb):
+                            pre_lable = None
+                            if pre_verb:
+                                vidx_end = widx + 1
+                                pre_verb = False
 
-
-            yield tokens[vidx], vidx, word_labels
+                yield tokens[vidx_begin:vidx_end], xrange(vidx_begin,vidx_end), word_labels
 
 
 

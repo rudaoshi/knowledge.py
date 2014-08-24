@@ -80,3 +80,6 @@ class ChunkTypes(object):
                          'I-UCP',
                          'I-VP',
                          'O']))
+
+class SrlTypes(object):
+    SRL_ID_MAP = dict((tag,id) for id,tag in enumerate([]))

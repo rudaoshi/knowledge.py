@@ -158,6 +158,7 @@ shared_dataset	knowledge/util/theano_util.py	/^def shared_dataset(data_xy, borro
 simulate_dynamics	knowledge/machine/neuralnetwork/hmc.py	/^def simulate_dynamics(initial_pos, initial_vel, stepsize, n_steps, energy_fn):$/;"	f
 split_sentences	knowledge/language/core/document.py	/^    def split_sentences(self, sentence_segmenter):$/;"	m	class:Document
 stack	knowledge/language/nn_languagemodel.py	/^def stack(x):$/;"	f
+strip_label	knowledge/language/core/corpora.py	/^        def strip_label(ss):$/;"	f	function:Conll05.raw2align
 test_DBN	knowledge/machine/neuralnetwork/DBN.py	/^def test_DBN(finetune_lr=0.1, pretraining_epochs=100,$/;"	f
 test_SdA	knowledge/machine/neuralnetwork/SdA.py	/^def test_SdA(finetune_lr=0.1, pretraining_epochs=15,$/;"	f
 test_dA	knowledge/machine/neuralnetwork/layer/dA.py	/^def test_dA(learning_rate=0.1, training_epochs=15,$/;"	f

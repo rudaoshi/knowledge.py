@@ -15,7 +15,7 @@ class SrlConvLayer(object):
         self.feature_num_lst = feature_num_lst
         self.conv_window  = [i*self.window_size for i in self.feature_num_lst]
         if init_W == None:
-            self.W = [theano.shared(np.asarray(rng.uniform(low=-2.0, high=2.0, size=(1,1,hiden_size,self.conv_window[i])), dtype=inputs[0].dtype)
+            self.W = [theano.shared(np.asarray(rng.uniform(low=-2.0, high=2.0, size=(hiden_size,1,1,self.conv_window[i])), dtype=inputs[0].dtype)
                 ,name='srl_cov_layer_W%d' %(i)) for i in range(self.cat_num)]
         else:
             self.W = [theano.shared(init_W[i],name='srl_cov_layer_W%d' %(i)) for i in range(self.cat_num)]
@@ -27,9 +27,9 @@ class SrlConvLayer(object):
             self.b = theano.shared(init_b,name='srl_cov_layer_b')
 
 
-        self.tmp = conv.conv2d(inputs[0],self.W[0])
-        #self.linear = T.add(*[conv.conv2d(inputs[i],self.W[i]) for i in range(self.cat_num)]) + self.b.dimshuffle('x', 0, 'x', 'x')
-        self.linear = T.add(*[conv.conv2d(inputs[i],self.W[i]) for i in range(self.cat_num)])
+        self.linear = T.add(*[conv.conv2d(inputs[i],self.W[i]) for i in range(self.cat_num)]) + self.b.dimshuffle('x', 0, 'x', 'x')
+        #self.linear = T.add(*[conv.conv2d(inputs[i],self.W[i]) for i in range(self.cat_num)])
+        self.linear = self.linear.reshape((inputs[0].shape[0],self.hiden_size))
         self.out = T.nnet.sigmoid(self.linear)
 
     def pprint(self):

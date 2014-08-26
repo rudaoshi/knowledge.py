@@ -1,8 +1,5 @@
 __author__ = 'huang'
 
-
-#from knowledge.language.core.corpora import Corpora
-#from knowledge.language.neural_model.neural_model import NeuralLanguageModel
 from knowledge.machine.neuralnetwork.layer.srl_cov_layer import SrlConvLayer
 
 import theano

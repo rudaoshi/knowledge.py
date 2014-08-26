@@ -35,11 +35,11 @@ class LookupTableLayer(object):
 
 class MultiLookupTableLayer(object):
 
-    def __init__(self, inputs_lst, table_size_lst, feature_num_lst):
+    def __init__(self, inputs_lst,table_size_lst, feature_num_lst):
 
-        self.lookup_size = 1
-        self._table_size_lst = table_size
-        self._feature_num_lst = feature_num
+        self.lookup_size = len(inputs_lst)
+        self._table_size_lst = table_size_lst
+        self._feature_num_lst = feature_num_lst
 
         self._embeddings_lst = [theano.shared(np.random.random((self._table_size_lst[i], feature_num_lst[i]))) for i in range(self.lookup_size)]
 
@@ -51,7 +51,7 @@ class MultiLookupTableLayer(object):
 
     def get_output_size(self):
 
-        return self._window_size * self._feature_num
+        return self._feature_num_lst
 
     def params(self):
 

@@ -42,23 +42,42 @@ class SrlProblem(object):
         return ret
 
 
+    def pad_sent_word(sentence,max_sz = 40):
+        sz = len(sentence)
+        assert sz <= max_sz, 'maxium length of sentenc should no be greater than %d' % (d)
+        sent = sentence
+        for idx in xrange(0,max_sz - sz):
+            sent.append(Word.padding_word2(),'-','-')
+        return sent
 
 
     def get_data_set(self, **kwargs):
-
         x = []
         y = []
 
-        for sentence in self.srl_sents:
-            pass
+        for sentence in self.__iob_sents:
+            # verb position
+            vpos = sentence[0]
 
+            common_part = []
+            pading_sent = pad_sent_word(sentence[1])
+            one_x = []
+            one_y = []
+            for word, tag ,_ in  pading_sent:
+                common_part.extend([self.__corpora.alloc_global_word_id(word),PosTags.POSTAG_ID_MAP[tag]])
 
+            one_x.append(common_part)
 
+            for pos, (word, tag, vpos , srl_type) in enumerate(sentence):
+                one_x.append(self.word_dist(len(sentence[1]),pos))
+                one_y.append(srl_type)
+
+            y.append(y)
+            x.append(x)
         Y = [ChunkTypes.CHUNKTYPE_ID_MAP[type] for type in y]
         X = np.array(x)
 
         return X, Y
-
 
 
 

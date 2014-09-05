@@ -14,4 +14,10 @@ class Word(object):
         padding_word = Word(id = 0, content = "$$$$")
         return padding_word
 
+    @classmethod
+    def padding_word2(cls):
+
+        padding_word = Word(id = 1, content = "####")
+        return padding_word
+
 

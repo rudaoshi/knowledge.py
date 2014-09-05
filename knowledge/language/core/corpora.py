@@ -11,6 +11,7 @@ import csv
 class Corpora(object):
 
     PADDING_WORD = Word.padding_word()
+    PADDING_WORD2 = Word.padding_word2()
 
     def __init__(self):
         self.documents = []
@@ -21,6 +22,7 @@ class Corpora(object):
         self.sentence_id_map = dict()
 
         self.word_id_map[self.PADDING_WORD.content] = 0
+        self.word_id_map[self.PADDING_WORD2] = 1
 
         self.tns = defaultdict(Counter)        #term number in each document
         self.dns = Counter()                   #doc number containing each term

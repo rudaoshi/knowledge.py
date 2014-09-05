@@ -2,7 +2,7 @@ __author__ = 'huang'
 
 
 from knowledge.language.core.definition import PosTags
-from knowledge.language.core.definition import ChunkTypes
+from knowledge.language.core.definition import SrlTypes
 import numpy as np
 
 import sys
@@ -87,7 +87,7 @@ class SrlProblem(object):
 
             y.append(y)
             x.append(x)
-        Y = [ChunkTypes.CHUNKTYPE_ID_MAP[type] for type in y]
+        Y = [SrlTypes.SRL_ID_MAP[t] for t in y]
         X = np.array(x)
 
         return X, Y

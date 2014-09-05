@@ -10,7 +10,7 @@ import sklearn.cross_validation
 import numpy
 import sys
 
-def xtest_neural_language_model():
+def test_neural_language_model():
 
     corpora = Corpora()
     corpora.load_nltk_conll2000()
@@ -48,8 +48,3 @@ def xtest_neural_language_model():
 
     model.fit(X_train,y_train, X_valid, y_valid)
 
-
-
-if __name__ == "__main__":
-
-    test_neural_language_model()

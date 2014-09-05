@@ -41,9 +41,9 @@ class MultiLookupTableLayer(object):
         self._table_size_lst = table_size_lst
         self._feature_num_lst = feature_num_lst
 
-        self._embeddings_lst = [theano.shared(np.random.random((self._table_size_lst[i], feature_num_lst[i]))) for i in range(self.lookup_size)]
+        self._embeddings_lst = [theano.shared(np.random.random((self._table_size_lst[i], feature_num_lst[i]))) for i in xrange(self.lookup_size)]
 
-        self.output = [self._embeddings_lst[i][inputs_lst[i]].reshape((inputs_lst[i].shape[0], -1)) for i in range(self.lookup_size)]
+        self.output = [self._embeddings_lst[i][inputs_lst[i]].reshape((inputs_lst[i].shape[0], -1)) for i in xrange(self.lookup_size)]
 
     @property
     def embeddings(self):

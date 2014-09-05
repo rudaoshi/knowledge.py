@@ -28,24 +28,33 @@ class SrlProblem(object):
         #return len(self.__srl_types)
         pass
 
-    def word_dist(self,sent_sz,idx,win_sz,pading_sz):
-        ret = [0] * sent_sz
-        tpos = idx + pading_sz
-        for i in xrange(sent_sz+2*pading_sz):
+    def word_dist(self,sent_sz,idx,pos_cov_size,window_sz,max_sz):
+        assert window_sz % 2 == 1, 'windows_size should be an odd number'
+        ret = [0] * (sent_sz+window_sz-1)
+        half_win = (window_sz-1) / 2
+        tpos = idx + half_win
+        sz = len(ret)
+        for i in xrange(sz):
             pos = i - tpos
-            if pos < -win_sz:
-                pos = -win_sz
-            elif pos > win_sz:
-                pos = win_sz
-            pos += win_sz
-            ret[i] = pos
+            if pos < -pos_cov_size:
+                pos = -pos_cov_size
+            elif pos > pos_cov_size:
+                pos = pos_cov_size
+            pos += pos_cov_size
+            # all pos is add 1, because 0 is a padding position id
+            ret[i] = pos + 1
+        if sz < max_sz:
+            ret = ret + [0] * (max_sz - sz)
         return ret
 
 
-    def pad_sent_word(sentence,max_sz = 40):
-        sz = len(sentence)
-        assert sz <= max_sz, 'maxium length of sentenc should no be greater than %d' % (d)
+    def pad_sent_word(sentence,window_sz,max_sz):
+        assert window_sz % 2 == 1, 'windows_size should be an odd number'
         sent = sentence
+        pad1 = [Word.padding_word() for _i in xrange((window_sz-1)/2)]
+        sent = pad1 + sent + pad1
+        sz = len(sent)
+        assert sz <= max_sz, 'maxium length of sentenc should no be greater than %d' % (d)
         for idx in xrange(0,max_sz - sz):
             sent.append(Word.padding_word2(),'-','-')
         return sent
@@ -54,22 +63,26 @@ class SrlProblem(object):
     def get_data_set(self, **kwargs):
         x = []
         y = []
+        window_size = kwargs['window_size']
+        pos_cov_size = kwargs['pos_cov_size']
+        max_size = kwargs['max_size']
 
         for sentence in self.__iob_sents:
             # verb position
             vpos = sentence[0]
 
             common_part = []
-            pading_sent = pad_sent_word(sentence[1])
+            pading_sent = pad_sent_word(sentence[1],window_size,max_size)
             one_x = []
             one_y = []
             for word, tag ,_ in  pading_sent:
                 common_part.extend([self.__corpora.alloc_global_word_id(word),PosTags.POSTAG_ID_MAP[tag]])
 
             one_x.append(common_part)
+            one_x.append(self.word_dist(len(sentence[1]),vpos,pos_cov_size,window_size,max_size))
 
-            for pos, (word, tag, vpos , srl_type) in enumerate(sentence):
-                one_x.append(self.word_dist(len(sentence[1]),pos))
+            for pos, (word, tag, srl_type) in enumerate(sentence):
+                one_x.append(self.word_dist(len(sentence[1]),pos,pos_cov_size,window_size,max_size))
                 one_y.append(srl_type)
 
             y.append(y)

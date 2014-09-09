@@ -20,7 +20,7 @@ class SrlProblem(object):
         '''
 
         self.__corpora = corpora
-        self.srl_sents = srl_sents
+        self.__srl_sents = srl_sents
         self.feature_sz = len(self.srl_sents[0][1]) - 1
 
     def get_class_num(self):
@@ -29,7 +29,11 @@ class SrlProblem(object):
         pass
 
     def word_dist(self,sent_sz,idx,pos_cov_size,window_sz,max_sz):
+        '''
+        return the position feature
+        '''
         assert window_sz % 2 == 1, 'windows_size should be an odd number'
+        assert (sent_sz + window_sz - 1) <= max_sz, 'maxium length of sentence should not be greater than %d' %(max_sz - window_sz + 1)
         ret = [0] * (sent_sz+window_sz-1)
         half_win = (window_sz-1) / 2
         tpos = idx + half_win
@@ -41,7 +45,7 @@ class SrlProblem(object):
             elif pos > pos_cov_size:
                 pos = pos_cov_size
             pos += pos_cov_size
-            # all pos is add 1, because 0 is a padding position id
+            # all position is added 1, because 0 is a padding position id
             ret[i] = pos + 1
         if sz < max_sz:
             ret = ret + [0] * (max_sz - sz)
@@ -49,14 +53,19 @@ class SrlProblem(object):
 
 
     def pad_sent_word(sentence,window_sz,max_sz):
+        '''
+        there exist two types of padding in this version
+        pad1 is expected to have some semantics meanings,
+        while pad2 is just padding to make all sentence have the same length
+        '''
         assert window_sz % 2 == 1, 'windows_size should be an odd number'
         sent = sentence
         pad1 = [Word.padding_word() for _i in xrange((window_sz-1)/2)]
         sent = pad1 + sent + pad1
         sz = len(sent)
-        assert sz <= max_sz, 'maxium length of sentenc should no be greater than %d' % (d)
+        assert sz <= max_sz, 'maxium length of sentence should not be greater than %d' % (max_sz - window_sz + 1)
         for idx in xrange(0,max_sz - sz):
-            sent.append(Word.padding_word2(),'-','-')
+            sent.append([Word.padding_word2(),'-','-'])
         return sent
 
 
@@ -66,8 +75,11 @@ class SrlProblem(object):
         window_size = kwargs['window_size']
         pos_cov_size = kwargs['pos_cov_size']
         max_size = kwargs['max_size']
+        # max_size is the maxium size of sum of terms and paddings
+        max_term_per_sent_size = max_size - window_size + 1
+        padding_sent = [0] * max_size
 
-        for sentence in self.__iob_sents:
+        for sentence in self.__srl_sents:
             # verb position
             vpos = sentence[0]
 
@@ -81,9 +93,14 @@ class SrlProblem(object):
             one_x.append(common_part)
             one_x.append(self.word_dist(len(sentence[1]),vpos,pos_cov_size,window_size,max_size))
 
-            for pos, (word, tag, srl_type) in enumerate(sentence):
+            for pos, (word, tag, srl_type) in enumerate(sentence[1]):
                 one_x.append(self.word_dist(len(sentence[1]),pos,pos_cov_size,window_size,max_size))
                 one_y.append(srl_type)
+
+            # padding sentence
+            if len(sentence[1]) < max_term_per_sent_size:
+                one_x.append(padding_sent)
+                one_y.append('#')
 
             y.append(y)
             x.append(x)

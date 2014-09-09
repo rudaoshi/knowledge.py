@@ -7,7 +7,7 @@ import theano.tensor as T
 
 class LookupTableLayer(object):
 
-    def __init__(self, inputs, table_size, window_size, feature_num):
+    def __init__(self, inputs, table_size, window_size, feature_num,reshp=None):
 
         self._table_size = table_size
         self._feature_num = feature_num
@@ -15,7 +15,10 @@ class LookupTableLayer(object):
 
         self._embeddings = theano.shared(np.random.random((self._table_size, feature_num)))
 
-        self.output = self._embeddings[inputs].reshape((inputs.shape[0], -1))
+        if reshp == None:
+            self.output = self._embeddings[inputs].reshape((inputs.shape[0], -1))
+        else:
+            self.output = self._embeddings[inputs].reshape(reshp)
         #self.output, self.update = theano.map(fn = lambda vec: self._embeddings[vec].flatten(), sequences = inputs, name='x_scan')
         #self.output = T.horizontal_stack([self._embeddings[idx] for idx in input] )
 

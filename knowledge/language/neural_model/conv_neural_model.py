@@ -1,8 +1,8 @@
 __author__ = 'huang'
 
 from theano.tensor.signal import downsample
-import theano
 import theano.tensor as T
+import theano
 import numpy
 import time
 import sys
@@ -62,13 +62,13 @@ class SrlNeuralLanguageModelCore(object):
 
         #name,rng,inputs, hiden_size,window_size, feature_num_lst,feature_map_size=None,init_W=None,init_b=None):
         self.conv_word = SrlConvLayer('conv_word',rng,self.wordvect.output,\
-                self.conv_hidden_feature_num,self.conv_window,self.word_feature_num)
+                self.conv_hidden_feature_num,1,self.conv_window,self.word_feature_num)
         self.conv_POS = SrlConvLayer('conv_POS',rng,self.POSvect.output,\
-                self.conv_hidden_feature_num,self.conv_window,self.POS_feature_num)
+                self.conv_hidden_feature_num,1,self.conv_window,self.POS_feature_num)
         self.conv_verbpos = SrlConvLayer('conv_verbpos',rng,self.verbpos_vect.output,\
-                self.conv_hidden_feature_num,self.conv_window,self.verbpos_feature_num)
+                self.conv_hidden_feature_num,1,self.conv_window,self.verbpos_feature_num)
         self.conv_wordpos = SrlConvLayer('conv_wordpos',rng,self.wordpos_vect.output,\
-                self.conv_hidden_feature_num,self.conv_window,self.wordpos_feature_num)
+                self.conv_hidden_feature_num,max_sentence_length,self.conv_window,self.wordpos_feature_num)
 
         # conv_word.out.shape = (batch_size,1,1,max_sentence_length * word_feature_num)
         # conv_POS.out.shape = (batch_size,1,1,max_sentence_length * word_feature_num)

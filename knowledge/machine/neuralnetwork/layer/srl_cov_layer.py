@@ -11,13 +11,13 @@ class SrlConvLayer(object):
     the nonlinear part is done by the other part of nerual network
     '''
 
-    def __init__(self,name,rng,inputs, hiden_size,window_size,feature_num,init_W=None,init_b=None):
+    def __init__(self,name,rng,inputs, hiden_size,input_size,window_size,feature_num,init_W=None,init_b=None):
         self.hiden_size = hiden_size
         self.window_size = window_size
         self.feature_num = feature_num
         self.conv_window  = self.window_size * self.feature_num
         if init_W == None:
-            self.W = theano.shared(np.asarray(rng.uniform(low=-2.0, high=2.0, size=(hiden_size,1,1,self.conv_window)), dtype=inputs.dtype)
+            self.W = theano.shared(np.asarray(rng.uniform(low=-2.0, high=2.0, size=(hiden_size,input_size,1,self.conv_window)), dtype=inputs.dtype)
                 ,name='srl_cov_layer_W_%s' %(name))
         else:
             self.W = theano.shared(init_W,name='srl_cov_layer_W_%s' %(name))

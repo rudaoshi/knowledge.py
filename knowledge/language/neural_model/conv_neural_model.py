@@ -10,7 +10,7 @@ import os
 
 from knowledge.machine.neuralnetwork.layer.mlp import HiddenLayer
 from knowledge.machine.neuralnetwork.layer.logistic_sgd import LogisticRegression
-from knowledge.machine.neuralnetwork.layer.srl_cov_layer import SrlConvLayer
+from knowledge.machine.neuralnetwork.layer.conv_layer import SrlConvLayer
 from knowledge.machine.neuralnetwork.layer.lookup_table_layer import LookupTableLayer
 from knowledge.util.theano_util import shared_dataset
 
@@ -61,6 +61,10 @@ class SrlNeuralLanguageModelCore(object):
                                                    reshp = (inputs.shape[0],inputs.shape[1],1,inputs.shape[2]*wordpos_feature_num))
 
         #name,rng,inputs, hiden_size,window_size, feature_num_lst,feature_map_size=None,init_W=None,init_b=None):
+        # conv_word.out.shape = (batch_size,1,1,max_sentence_length * word_feature_num)
+        # conv_POS.out.shape = (batch_size,1,1,max_sentence_length * word_feature_num)
+        # conv_verbpos.out.shape = (batch_size,1,1,max_sentence_length * word_feature_num)
+        # conv_wordpos.out.shape = (batch_size,max_sentence_length,1,max_sentence_length * word_feature_num)
         self.conv_word = SrlConvLayer('conv_word',rng,self.wordvect.output,\
                 self.conv_hidden_feature_num,1,self.conv_window,self.word_feature_num)
         self.conv_POS = SrlConvLayer('conv_POS',rng,self.POSvect.output,\
@@ -70,25 +74,23 @@ class SrlNeuralLanguageModelCore(object):
         self.conv_wordpos = SrlConvLayer('conv_wordpos',rng,self.wordpos_vect.output,\
                 self.conv_hidden_feature_num,max_sentence_length,self.conv_window,self.wordpos_feature_num)
 
-        # conv_word.out.shape = (batch_size,1,1,max_sentence_length * word_feature_num)
-        # conv_POS.out.shape = (batch_size,1,1,max_sentence_length * word_feature_num)
-        # conv_verbpos.out.shape = (batch_size,1,1,max_sentence_length * word_feature_num)
-        # conv_wordpos.out.shape = (batch_size,max_sentence_length,1,max_sentence_length * word_feature_num)
 
-        # conv_out shape: (batch_size,conv_hidden_feature_num,1,max_sentence_length)
         # the first max_sentence_length means each element of it is one prediction for that word
         # the second max_sentence_length means each element of it is one output of conv
-        self.conv_word.out.dimshuffle(0,'x',1,2)
-        self.conv_POS.out.dimshuffle(0,'x',1,2)
-        self.conv_verbpos.out.dimshuffle(0,'x',1,2)
+
+        #self.conv_word.out.dimshuffle(0,'x',1,2)
+        #self.conv_POS.out.dimshuffle(0,'x',1,2)
+        #self.conv_verbpos.out.dimshuffle(0,'x',1,2)
+        # conv_out shape: (batch_size,conv_hidden_feature_num,1,max_sentence_length)
         self.conv_out = self.conv_word.out + self.conv_POS + self.conv_verbpos + self.conv_wordpos
 
         # max_out shape: (batch_size,max_sentence_length,conv_hidden_feature_num)
-        maxpool_shape = (1,1)
-        self.max_out = downsample.max_pool_2d(self.conv_out, maxpool_shape, ignore_border=True)
+        # maxpool_shape = (1,1)
+        # self.max_out = downsample.max_pool_2d(self.conv_out, maxpool_shape, ignore_border=True)
+        self.max_out = T.max(self.conv_out,axis=3)
 
-        self.hidden_layer = HiddenLayer(rng=numpy_rng, input=self.conv_out,
-                                       n_in = self.lookup_table_layer.get_output_size(),
+        self.hidden_layer = HiddenLayer(rng=rng, input=self.max_out,
+                                       n_in = self.conv_hidden_feature_num,
                                        n_out = hidden_layer_size,
                                        activation=T.tanh)
 

@@ -37,6 +37,7 @@ class SrlNeuralLanguageModelCore(object):
         self.conv_window = conv_window
         self.conv_hidden_feature_num = conv_hidden_feature_num
 
+        self.hidden_layer_size = hidden_layer_size
 
         # we have 4 lookup tables here:
         # 1,word vector
@@ -61,10 +62,11 @@ class SrlNeuralLanguageModelCore(object):
                                                    reshp = (inputs.shape[0],inputs.shape[1],1,inputs.shape[2]*wordpos_feature_num))
 
         #name,rng,inputs, hiden_size,window_size, feature_num_lst,feature_map_size=None,init_W=None,init_b=None):
-        # conv_word.out.shape = (batch_size,1,1,max_sentence_length * word_feature_num)
-        # conv_POS.out.shape = (batch_size,1,1,max_sentence_length * word_feature_num)
-        # conv_verbpos.out.shape = (batch_size,1,1,max_sentence_length * word_feature_num)
-        # conv_wordpos.out.shape = (batch_size,max_sentence_length,1,max_sentence_length * word_feature_num)
+        # conv_word.out.shape = (batch_size,1,conv_hidden_feature_num,max_sentence_length)
+        # conv_POS.out.shape = (batch_size,1,conv_hidden_feature_num,max_sentence_length)
+        # conv_verbpos.out.shape = (batch_size,1,conv_hidden_feature_num,max_sentence_length)
+        # conv_wordpos.out.shape = (batch_size,max_sentence_length,conv_hidden_feature_num,max_sentence_length)
+        # note. all output above have been seted 'dimshuffle'
         self.conv_word = SrlConvLayer('conv_word',rng,self.wordvect.output,\
                 self.conv_hidden_feature_num,1,self.conv_window,self.word_feature_num)
         self.conv_POS = SrlConvLayer('conv_POS',rng,self.POSvect.output,\
@@ -77,19 +79,14 @@ class SrlNeuralLanguageModelCore(object):
 
         # the first max_sentence_length means each element of it is one prediction for that word
         # the second max_sentence_length means each element of it is one output of conv
-
-        #self.conv_word.out.dimshuffle(0,'x',1,2)
-        #self.conv_POS.out.dimshuffle(0,'x',1,2)
-        #self.conv_verbpos.out.dimshuffle(0,'x',1,2)
-        # TODO
-        # conv_out shape: (batch_size,max_sentence_length,conv_hidden_feature_num,1,max_sentence_length)
+        # conv_out shape: (batch_size,max_sentence_length,conv_hidden_feature_num,max_sentence_length)
         self.conv_out = self.conv_word.out + self.conv_POS + self.conv_verbpos + self.conv_wordpos
 
         # max_out shape: (batch_size,max_sentence_length,conv_hidden_feature_num)
-        # maxpool_shape = (1,1)
-        # self.max_out = downsample.max_pool_2d(self.conv_out, maxpool_shape, ignore_border=True)
         self.max_out = T.max(self.conv_out,axis=3).reshape((self.conv_out.shape[0],))
 
+
+        # hidden layer
         self.hidden_layer = HiddenLayer(rng=rng, input=self.max_out,
                                        n_in = self.conv_hidden_feature_num,
                                        n_out = hidden_layer_size,
@@ -97,14 +94,6 @@ class SrlNeuralLanguageModelCore(object):
 
         # The logistic regression layer gets as input the hidden units
         # of the hidden layer
-        self.output_layer = LogisticRegression(
-                                        input=self.hidden_layer.output,
-                                        n_in=hidden_layer_size,
-                                        n_out=n_outs)
-
-
-        self.errors = self.output_layer.errors
-
 
 
 

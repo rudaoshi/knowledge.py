@@ -29,5 +29,12 @@ class SrlConvLayer(object):
             self.b = theano.shared(init_b,name='srl_cov_layer_b_%s' % (name))
 
 
-        self.linear = conv.conv2d(inputs,self.W,subsample=(1,self.feature_num)) + self.b.dimshuffle('x', 0, 'x', 'x')
-        self.out = self.linear
+        if input_size == 1:
+            self.linear = conv.conv2d(inputs,self.W,subsample=(1,self.feature_num)) + self.b.dimshuffle('x', 0, 'x', 'x')
+            self.out = self.linear.dimshuffle(0,2,1,3)
+        else:
+            reshuffle_inputs = inputs.dimshuffle(1,0,'x',2,3)
+            self.linear,_updates = theano.scan(lambda x_i: conv.conv2d(x_i,self.w,\
+                    subsample=(1,self.feature_num))
+                    + self.b.dimshuffle('x', 0, 'x', 'x'), sequences=[reshuffle_inputs])
+            self.out = self.linear.dimshuffle(1,0,2,3,4).reshape(inputs.shape[0],inputs.shape[1],1,-1)

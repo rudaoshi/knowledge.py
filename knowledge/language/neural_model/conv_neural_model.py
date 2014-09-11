@@ -81,13 +81,14 @@ class SrlNeuralLanguageModelCore(object):
         #self.conv_word.out.dimshuffle(0,'x',1,2)
         #self.conv_POS.out.dimshuffle(0,'x',1,2)
         #self.conv_verbpos.out.dimshuffle(0,'x',1,2)
-        # conv_out shape: (batch_size,conv_hidden_feature_num,1,max_sentence_length)
+        # TODO
+        # conv_out shape: (batch_size,max_sentence_length,conv_hidden_feature_num,1,max_sentence_length)
         self.conv_out = self.conv_word.out + self.conv_POS + self.conv_verbpos + self.conv_wordpos
 
         # max_out shape: (batch_size,max_sentence_length,conv_hidden_feature_num)
         # maxpool_shape = (1,1)
         # self.max_out = downsample.max_pool_2d(self.conv_out, maxpool_shape, ignore_border=True)
-        self.max_out = T.max(self.conv_out,axis=3)
+        self.max_out = T.max(self.conv_out,axis=3).reshape((self.conv_out.shape[0],))
 
         self.hidden_layer = HiddenLayer(rng=rng, input=self.max_out,
                                        n_in = self.conv_hidden_feature_num,

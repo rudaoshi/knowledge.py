@@ -50,13 +50,13 @@ class SrlNeuralLanguageModelCore(object):
         #   output shape: (batch size,max_sentence_length,max_sentence_length * wordpos_vector_length)
         self.wordvect = LookupTableLayer(inputs = inputs[:,0:1,:], table_size = word_num,
                                                    window_size = window_size, feature_num = word_feature_num,
-                                                   reshp = (inputs.shape[0],inputs.shape[1],1,inputs.shape[2]*word_feature_num))
+                                                   reshp = (inputs.shape[0],1,1,inputs.shape[2]*word_feature_num))
         self.POSvect = LookupTableLayer(inputs = inputs[:,1:2,:], table_size = word_num,
                                                    window_size = window_size, feature_num = POS_feature_num,
-                                                   reshp = (inputs.shape[0],inputs.shape[1],1,inputs.shape[2]*POS_feature_num))
+                                                   reshp = (inputs.shape[0],1,1,inputs.shape[2]*POS_feature_num))
         self.verbpos_vect = LookupTableLayer(inputs = inputs[:,2:3,:], table_size = word_num,
                                                    window_size = window_size, feature_num = verbpos_feature_num,
-                                                   reshp = (inputs.shape[0],inputs.shape[1],1,inputs.shape[2]*verbpos_feature_num))
+                                                   reshp = (inputs.shape[0],1,1,inputs.shape[2]*verbpos_feature_num))
         self.wordpos_vect = LookupTableLayer(inputs = inputs[:,3:,:], table_size = word_num,
                                                    window_size = window_size, feature_num = wordpos_feature_num,
                                                    reshp = (inputs.shape[0],inputs.shape[1],1,inputs.shape[2]*wordpos_feature_num))
@@ -81,6 +81,7 @@ class SrlNeuralLanguageModelCore(object):
         # the second max_sentence_length means each element of it is one output of conv
         # conv_out shape: (batch_size,max_sentence_length,conv_hidden_feature_num,max_sentence_length)
         self.conv_out = self.conv_word.out + self.conv_POS + self.conv_verbpos + self.conv_wordpos
+        self.conv_out = self.conv_out.dimshuffle(1,0,2,3,4).reshape(inputs.shape[0],inputs.shape[1]-3,conv_hidden_feature_num,-1)
 
         # max_out shape: (batch_size,max_sentence_length,conv_hidden_feature_num)
         self.max_out = T.max(self.conv_out,axis=3).reshape((self.conv_out.shape[0],))

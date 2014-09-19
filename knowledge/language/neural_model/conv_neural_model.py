@@ -1,6 +1,5 @@
 __author__ = 'huang'
 
-from theano.tensor.signal import downsample
 import theano.tensor as T
 import theano
 import numpy
@@ -8,6 +7,8 @@ import time
 import sys
 import os
 
+from knowledge.language.neural_model.sentence_level_log_likelihood_layer import SentenceLevelLogLikelihoodLayer
+from knowledge.language.neural_model.problem.srl_problem import SrlProblem
 from knowledge.machine.neuralnetwork.layer.mlp import HiddenLayer
 from knowledge.machine.neuralnetwork.layer.logistic_sgd import LogisticRegression
 from knowledge.machine.neuralnetwork.layer.conv_layer import SrlConvLayer
@@ -24,6 +25,7 @@ class SrlNeuralLanguageModelCore(object):
         self.L1_reg = L1_reg
         self.L2_reg = L2_reg
 
+        self.max_sentence_length = max_sentence_length
         self.word_num = word_num
         self.POS_num = POS_num
         self.verbpos_num = verbpos_num
@@ -59,13 +61,12 @@ class SrlNeuralLanguageModelCore(object):
                                                    reshp = (inputs.shape[0],1,1,inputs.shape[2]*verbpos_feature_num))
         self.wordpos_vect = LookupTableLayer(inputs = inputs[:,3:,:], table_size = word_num,
                                                    window_size = window_size, feature_num = wordpos_feature_num,
-                                                   reshp = (inputs.shape[0],inputs.shape[1],1,inputs.shape[2]*wordpos_feature_num))
+                                                   reshp = (inputs.shape[0],inputs.shape[2],1,inputs.shape[2]*wordpos_feature_num))
 
-        #name,rng,inputs, hiden_size,window_size, feature_num_lst,feature_map_size=None,init_W=None,init_b=None):
-        # conv_word.out.shape = (batch_size,1,conv_hidden_feature_num,max_sentence_length)
-        # conv_POS.out.shape = (batch_size,1,conv_hidden_feature_num,max_sentence_length)
-        # conv_verbpos.out.shape = (batch_size,1,conv_hidden_feature_num,max_sentence_length)
-        # conv_wordpos.out.shape = (batch_size,max_sentence_length,conv_hidden_feature_num,max_sentence_length)
+        # conv_word.out.shape = (batch_size,1,conv_hidden_feature_num,max_sentence_length-conv_window+1)
+        # conv_POS.out.shape = (batch_size,1,conv_hidden_feature_num,max_sentence_length-conv_window+1)
+        # conv_verbpos.out.shape = (batch_size,1,conv_hidden_feature_num,max_sentence_length-conv_window+1)
+        # conv_wordpos.out.shape = (batch_size,max_sentence_length,conv_hidden_feature_num,max_sentence_length-conv_window+1)
         # note. all output above have been seted 'dimshuffle'
         self.conv_word = SrlConvLayer('conv_word',rng,self.wordvect.output,\
                 self.conv_hidden_feature_num,1,self.conv_window,self.word_feature_num)
@@ -79,9 +80,9 @@ class SrlNeuralLanguageModelCore(object):
 
         # the first max_sentence_length means each element of it is one prediction for that word
         # the second max_sentence_length means each element of it is one output of conv
-        # conv_out shape: (batch_size,max_sentence_length,conv_hidden_feature_num,max_sentence_length)
-        self.conv_out = self.conv_word.out + self.conv_POS + self.conv_verbpos + self.conv_wordpos
-        self.conv_out = self.conv_out.dimshuffle(1,0,2,3,4).reshape(inputs.shape[0],inputs.shape[1]-3,conv_hidden_feature_num,-1)
+        # conv_out shape: (batch_size,max_sentence_length,conv_hidden_feature_num,max_sentence_length-conv_window+1)
+        self.conv_out = self.conv_word.output + self.conv_POS.output + self.conv_verbpos.output + self.conv_wordpos.output
+        self.conv_out = self.conv_out.dimshuffle(1,0,2,3,4).reshape(inputs.shape[0],inputs.shape[2],conv_hidden_feature_num,-1)
 
         # max_out shape: (batch_size,max_sentence_length,conv_hidden_feature_num)
         self.max_out = T.max(self.conv_out,axis=3).reshape((self.conv_out.shape[0],))
@@ -92,6 +93,12 @@ class SrlNeuralLanguageModelCore(object):
                                        n_in = self.conv_hidden_feature_num,
                                        n_out = hidden_layer_size,
                                        activation=T.tanh)
+
+        # TODO make a scan here
+        likelihood = theano.shared(0)
+        results, updates = theano.scan(lambda din : SentenceLevelLogLikelihoodLayer(din,hidden_layer_size,SrlProblem.get_class_num()), sequences=[self.hidden_layer.output])
+        self.likelihood = results[-1]
+
 
         # The logistic regression layer gets as input the hidden units
         # of the hidden layer

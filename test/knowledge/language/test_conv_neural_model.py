@@ -51,11 +51,11 @@ def test_foo():
     print 'test conv1, outputs2a shape',outputs2a.shape
     conv_wordpos = SrlConvLayer('conv_wordpos',rng,wordpos_vect.output,\
             conv_hidden_feature_num,sent_size,conv_window,wordpos_feature_num)
-    foo2b = theano.function(inputs=[inputs],outputs = conv_wordpos.out)
+    foo2b = theano.function(inputs=[inputs],outputs = conv_wordpos.output)
     outputs2b = foo2b(dinputs)
     print 'test conv1, outputs2b shape',outputs2b.shape
 
-    conv_out = conv_word.out  + conv_wordpos.out
+    conv_out = conv_word.out  + conv_wordpos.output
     foo3a = theano.function(inputs=[inputs],outputs = conv_out)
     outputs3a = foo3a(dinputs)
     print 'test conv, outputs3a shape',outputs3a.shape

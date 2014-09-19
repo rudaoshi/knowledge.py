@@ -2,7 +2,7 @@ __author__ = 'Sun','Huang'
 
 
 
-from collections import defaultdict, Counter
+from collections import defaultdict, Counter, deque
 from knowledge.language.core.word import Word
 from knowledge.language.core.sentence import Sentence
 from knowledge.language.core.document import Document
@@ -67,7 +67,7 @@ class Corpora(object):
         document = Document(0)
         for idx , rawsent in enumerate(Conll05.loadraw(filename)):
             sentence_obj = Sentence(idx)
-            for verb,vidx,sent_algined in Conll05.raw2align(rawsent):
+            for verb,vidx,sent_algined in Conll05.sentence2iobsentece(rawsent):
                 for word, tag in sent_algined:
                     id = self.alloc_global_word_id(word)
 
@@ -150,34 +150,31 @@ class Conll05(object):
 
     @staticmethod
     def loadraw(filename):
-        '''
-        load conll05 dataset
-        for each sentence,the output is:
-        [[w1,pos,l1,l2,...],
-        [w2,pos,l1,l2,...],
-        ...
-        [wn,pos,l1,l2,...]]
-        '''
-
+        # return corpus sentence by sentence
+        raw_corpora = list()
         with open(filename) as fr:
-            reader = csv.reader(fr,delimiter=' ')
             sentence = list()
-            for idx,line in enumerate(reader):
-                if line[0] == '':
-                    # this is a empty line
-                    yield sentence
-                    sentence = list()
+            while True:
+                line = fr.readline()
+                if not line:
+                    break
+                cols = line.split()
+                if len(cols) == 0:
                     continue
-                cols = [i for i in line if not i == '']
+                if cols[1] == '.':
+                    # sentence end here
+                    raw_corpora.append(sentence)
+                    sentence = list()
                 sentence.append(cols[:1] + cols[6:])
+        return raw_corpora
 
     @staticmethod
-    def raw2align(sentence):
+    def sentence2iobsentece(sentence):
         def is_begin(ss):
             if ss[0] == '(':
-                return True,strip_label(ss[1:])
+                return True
             else:
-                return False,None
+                return False
 
         def is_end(ss):
             if ss[-1] == ')':
@@ -197,43 +194,37 @@ class Conll05(object):
             ss = ss.replace(')',' ')
             return ss.strip()
 
-        verb_sz = len(sentence[0][1:])
-        if verb_sz > 0:
-            tmp = zip(*sentence)
-            tokens = tmp[0]
-            sent_labels = tmp[1:]
-            for idx in xrange(verb_sz):
-                vidx_begin = -1
-                vidx_end = -1
-                pre_verb = False
-                labels = sent_labels[idx]
-                word_labels = list()
-                pre_lable = None
-                for widx,lb in enumerate(labels):
-                    if is_verb(lb):
-                        vidx_begin = widx
-                        pre_verb = True
-                    if pre_lable == None:
-                        b,_lb = is_begin(lb)
-                        if b:
-                            pre_lable = _lb
-                            word_labels.append((tokens[widx],_lb))
-                            if is_end(lb):
-                                pre_lable = None
-                                if pre_verb:
-                                    vidx_end = widx + 1
-                                    pre_verb = False
-                        else:
-                            word_labels.append((tokens[widx],None))
-                    else:
-                        word_labels.append((tokens[widx],pre_lable))
-                        if is_end(lb):
-                            pre_lable = None
-                            if pre_verb:
-                                vidx_end = widx + 1
-                                pre_verb = False
+        iobsentences = list()
+        vbnum = len(sentence[0][3:])
+        for i in xrange(vbnum):
+            iobsent = list()
+            vbidx = -1
+            pre_tag = None
+            for idx,items in enumerate(sentence):
+                word = items[0]
+                pos = items[1]
+                raw_srltag = items[i+2]
+                if raw_srltag == '*' and pre_tag == None:
+                    tag = '*'
+                elif raw_srltag == '*' and pre_tag != None:
+                    tag = pre_tag
+                elif is_verb(raw_srltag):
+                    vbidx = idx
+                    tag = strip_label(raw_srltag)
+                    pre_tag = tag
+                elif is_begin(raw_srltag):
+                    tag = strip_label(raw_srltag)
+                    pre_tag = tag
 
-                yield tokens[vidx_begin:vidx_end], xrange(vidx_begin,vidx_end), word_labels
+                if is_end(raw_srltag):
+                    tag = pre_tag
+                    pre_tag = None
+
+                iobsent.append([word,pos,tag])
+            iobsentences.append([vbidx,iobsent])
+        return iobsentences
+
+
 
 
 

@@ -67,7 +67,7 @@ class Corpora(object):
         document = Document(0)
         for idx , rawsent in enumerate(Conll05.loadraw(filename)):
             sentence_obj = Sentence(idx)
-            for verb,vidx,sent_algined in Conll05.sentence2iobsentece(rawsent):
+            for vidx,sent_algined in Conll05.sentence2iobsentece(rawsent):
                 for word, tag in sent_algined:
                     id = self.alloc_global_word_id(word)
 
@@ -159,13 +159,14 @@ class Conll05(object):
                 if not line:
                     break
                 cols = line.split()
-                if len(cols) == 0:
-                    continue
                 if cols[1] == '.':
+                    continue
+                if len(cols) == 0:
                     # sentence end here
                     raw_corpora.append(sentence)
                     sentence = list()
-                sentence.append(cols[:1] + cols[6:])
+                    continue
+                sentence.append(cols[:2] + cols[6:])
         return raw_corpora
 
     @staticmethod
@@ -195,12 +196,13 @@ class Conll05(object):
             return ss.strip()
 
         iobsentences = list()
-        vbnum = len(sentence[0][3:])
+        vbnum = len(sentence[0][2:])
         for i in xrange(vbnum):
             iobsent = list()
             vbidx = -1
             pre_tag = None
             for idx,items in enumerate(sentence):
+                #print i,items
                 word = items[0]
                 pos = items[1]
                 raw_srltag = items[i+2]

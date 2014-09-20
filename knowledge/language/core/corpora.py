@@ -159,8 +159,8 @@ class Conll05(object):
                 if not line:
                     break
                 cols = line.split()
-                if cols[1] == '.':
-                    continue
+                #if cols[1] == '.':
+                #    continue
                 if len(cols) == 0:
                     # sentence end here
                     raw_corpora.append(sentence)
@@ -195,17 +195,37 @@ class Conll05(object):
             ss = ss.replace(')',' ')
             return ss.strip()
 
-        iobsentences = list()
+        def mod_by_verb_phrase(wordlst,poslst,taglst):
+            # if there exist verb pharse, we merge them into one tag and word pharse
+            vbegin = -1
+            vend = -1
+            for idx,tag in enumerate(taglst):
+                if is_verb(tag):
+                    vbegin = idx
+                if vbegin != -1 and is_end(tag):
+                    vend = idx + 1
+                    break
+            if (vend - vbegin) == 1:
+                return wordlst,poslst,taglst
+            else:
+                ret_wordlst = wordlst[:vbegin] + ['&'.join(wordlst[vbegin:vend])] + wordlst[vend:]
+                ret_poslst = poslst[:vbegin] + ["VERB_PHRASE"] + poslst[vend:]
+                ret_taglst = taglst[:vbegin] + ["(V*)"] + taglst[vend:]
+                return ret_wordlst,ret_poslst,ret_taglst
+
+
+        srl_sentences = list()
         vbnum = len(sentence[0][2:])
+        wordlst = [i[0] for i in sentence]
+        poslst = [i[1] for i in sentence]
         for i in xrange(vbnum):
-            iobsent = list()
+            taglst = [item[i+2] for item in sentence]
+            newwordlst,newposlst,newtaglst = mod_by_verb_phrase(wordlst,poslst,taglst)
+            srl_sent = list()
             vbidx = -1
             pre_tag = None
-            for idx,items in enumerate(sentence):
+            for idx,(word,pos,raw_srltag) in enumerate(zip(newwordlst,newposlst,newtaglst)):
                 #print i,items
-                word = items[0]
-                pos = items[1]
-                raw_srltag = items[i+2]
                 if raw_srltag == '*' and pre_tag == None:
                     tag = '*'
                 elif raw_srltag == '*' and pre_tag != None:
@@ -222,9 +242,9 @@ class Conll05(object):
                     tag = pre_tag
                     pre_tag = None
 
-                iobsent.append([word,pos,tag])
-            iobsentences.append([vbidx,iobsent])
-        return iobsentences
+                srl_sent.append([word,pos,tag])
+            srl_sentences.append([vbidx,srl_sent])
+        return srl_sentences
 
 
 

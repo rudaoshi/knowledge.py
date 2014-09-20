@@ -13,7 +13,7 @@ class SrlProblem(object):
     def __init__(self, corpora, srl_sents):
         '''
         srl_sents format:
-        [[vb_idx,[[w1,f1_1,f1_2,...,f1_k,label1],[w2,f2_1,f2_2,...,f2_k,label2],...,[wn,fn_1,fn_2,...,fn_k,labeln]]],
+        [[vb_idx,sentence_size,[[w1,f1_1,f1_2,...,f1_k,label1],[w2,f2_1,f2_2,...,f2_k,label2],...,[wn,fn_1,fn_2,...,fn_k,labeln]]],
         [...],
         ...
         [...]]
@@ -72,6 +72,7 @@ class SrlProblem(object):
     def get_data_set(self, **kwargs):
         x = []
         y = []
+        INFO = []
         window_size = kwargs['window_size']
         pos_cov_size = kwargs['pos_cov_size']
         max_size = kwargs['max_size']
@@ -102,12 +103,14 @@ class SrlProblem(object):
                 one_x.append(padding_sent)
                 one_y.append('#')
 
+            INFO.append(len(sentence[1]))
             y.append(y)
             x.append(x)
         Y = [SrlTypes.SRL_ID_MAP[t] for t in y]
         X = np.array(x)
+        INFO = np.array(INFO)
 
-        return X, Y
+        return X, Y, INFO
 
 
 

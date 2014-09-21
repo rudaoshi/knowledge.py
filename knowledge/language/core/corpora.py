@@ -13,7 +13,7 @@ class Corpora(object):
     PADDING_WORD = Word.padding_word()
     PADDING_WORD2 = Word.padding_word2()
 
-    def __init__(self):
+    def __init__(self,pading_lst=[Word.padding_word()]):
         self.documents = []
 
         self.word_id_map = dict()
@@ -21,8 +21,12 @@ class Corpora(object):
 
         self.sentence_id_map = dict()
 
-        self.word_id_map[self.PADDING_WORD.content] = 0
-        self.word_id_map[self.PADDING_WORD2] = 1
+        #self.word_id_map[self.PADDING_WORD.content] = 0
+        #self.word_id_map[self.PADDING_WORD2.content] = 1
+        for idx,word in enumerate(pading_lst):
+            self.word_id_map[word.content] = idx
+            self.id_word_map[word.id] = word
+
 
         self.tns = defaultdict(Counter)        #term number in each document
         self.dns = Counter()                   #doc number containing each term

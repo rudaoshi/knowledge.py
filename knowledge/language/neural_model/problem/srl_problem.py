@@ -3,6 +3,7 @@ __author__ = 'huang'
 
 from knowledge.language.core.definition import PosTags
 from knowledge.language.core.definition import SrlTypes
+from knowledge.language.core.word import Word
 import numpy as np
 
 import sys
@@ -10,7 +11,7 @@ import sys
 class SrlProblem(object):
 
 
-    def __init__(self, corpora, srl_sents):
+    def __init__(self, corpora, pos, srl_sents):
         '''
         srl_sents format:
         [[vb_idx,sentence_size,[[w1,f1_1,f1_2,...,f1_k,label1],[w2,f2_1,f2_2,...,f2_k,label2],...,[wn,fn_1,fn_2,...,fn_k,labeln]]],
@@ -20,61 +21,66 @@ class SrlProblem(object):
         '''
 
         self.__corpora = corpora
+        self.__pos = pos
         self.__srl_sents = srl_sents
-        self.feature_sz = len(self.srl_sents[0][1]) - 1
 
     def get_class_num(self):
 
         #return len(self.__srl_types)
         pass
 
-    def word_dist(self,sent_sz,idx,pos_cov_size,window_sz,max_sz):
+    def word_dist(self,sent_sz,idx,pos_conv_size,window_sz,max_term_per_sent_size):
         '''
         return the position feature
         '''
         assert window_sz % 2 == 1, 'windows_size should be an odd number'
-        assert (sent_sz + window_sz - 1) <= max_sz, 'maxium length of sentence should not be greater than %d' %(max_sz - window_sz + 1)
+        assert sent_sz <= max_term_per_sent_size, 'maxium length of sentence should not be greater than %d' %(max_sz - window_sz + 1)
         ret = [0] * (sent_sz+window_sz-1)
         half_win = (window_sz-1) / 2
         tpos = idx + half_win
         sz = len(ret)
         for i in xrange(sz):
             pos = i - tpos
-            if pos < -pos_cov_size:
-                pos = -pos_cov_size
-            elif pos > pos_cov_size:
-                pos = pos_cov_size
-            pos += pos_cov_size
+            if pos < -pos_conv_size:
+                pos = -pos_conv_size
+            elif pos > pos_conv_size:
+                pos = pos_conv_size
+            pos += pos_conv_size
             # all position is added 1, because 0 is a padding position id
             ret[i] = pos + 1
-        if sz < max_sz:
-            ret = ret + [0] * (max_sz - sz)
+        if sent_sz < max_term_per_sent_size:
+            ret = ret + [0] * (max_term_per_sent_size - sent_sz)
         return ret
 
 
-    def pad_sent_word(sentence,window_sz,max_sz):
+    def pad_sent_word(self,sentence,window_sz,max_term_per_sent_size):
         '''
         there exist two types of padding in this version
-        pad1 is expected to have some semantics meanings,
+        pad1_word is expected to have some semantics meanings,
         while pad2 is just padding to make all sentence have the same length
         '''
+        sz = len(sentence)
         assert window_sz % 2 == 1, 'windows_size should be an odd number'
-        sent = sentence
-        pad1 = [Word.padding_word() for _i in xrange((window_sz-1)/2)]
-        sent = pad1 + sent + pad1
-        sz = len(sent)
-        assert sz <= max_sz, 'maxium length of sentence should not be greater than %d' % (max_sz - window_sz + 1)
-        for idx in xrange(0,max_sz - sz):
-            sent.append([Word.padding_word2(),'-','-'])
-        return sent
+        assert sz <= max_term_per_sent_size, 'maxium length of sentence should not be greater than %d' % (max_term_per_sent_size)
+        pad1_word = [Word.padding_word() for _i in xrange((window_sz-1)/2)]
+        pad1_pos = [Word.padding_pos() for _i in xrange((window_sz-1)/2)]
+        sent_word = [self.__corpora.alloc_global_word_id(word) for word,pos,tag in sentence]
+        sent_word = pad1_word + sent_word + pad1_word
+        sent_pos = [self.__pos.alloc_global_word_id(pos) for word,pos,tag in sentence]
+        sent_pos = pad1_pos + sent_word + pad1_pos
+        if sz < max_term_per_sent_size:
+            sent_word += [Word.padding_word2().id] * (max_term_per_sent_size - sz)
+            sent_pos += [Word.padding_pos2().id] * (max_term_per_sent_size - sz)
+        return sent_word,sent_pos
 
 
     def get_data_set(self, **kwargs):
         x = []
         y = []
-        INFO = []
+        sent_len = []
+        masks = []
         window_size = kwargs['window_size']
-        pos_cov_size = kwargs['pos_cov_size']
+        pos_conv_size = kwargs['pos_conv_size']
         max_size = kwargs['max_size']
         # max_size is the maxium size of sum of terms and paddings
         max_term_per_sent_size = max_size - window_size + 1
@@ -84,18 +90,18 @@ class SrlProblem(object):
             # verb position
             vpos = sentence[0]
 
-            common_part = []
-            pading_sent = pad_sent_word(sentence[1],window_size,max_size)
+            sent_word,sent_pos = self.pad_sent_word(sentence[1],window_size,max_term_per_sent_size)
             one_x = []
             one_y = []
-            for word, tag ,_ in  pading_sent:
-                common_part.extend([self.__corpora.alloc_global_word_id(word),PosTags.POSTAG_ID_MAP[tag]])
+            #for word, tag ,_ in  pading_sent:
+            #    common_part.extend([self.__corpora.alloc_global_word_id(word),PosTags.POSTAG_ID_MAP[tag]])
 
-            one_x.append(common_part)
-            one_x.append(self.word_dist(len(sentence[1]),vpos,pos_cov_size,window_size,max_size))
+            one_x.append(sent_word)
+            one_x.append(sent_pos)
+            one_x.append(self.word_dist(len(sentence[1]),vpos,pos_conv_size,window_size,max_term_per_sent_size))
 
             for pos, (word, tag, srl_type) in enumerate(sentence[1]):
-                one_x.append(self.word_dist(len(sentence[1]),pos,pos_cov_size,window_size,max_size))
+                one_x.append(self.word_dist(len(sentence[1]),pos,pos_conv_size,window_size,max_term_per_sent_size))
                 one_y.append(srl_type)
 
             # padding sentence
@@ -103,14 +109,18 @@ class SrlProblem(object):
                 one_x.append(padding_sent)
                 one_y.append('#')
 
-            INFO.append(len(sentence[1]))
-            y.append(y)
-            x.append(x)
-        Y = [SrlTypes.SRL_ID_MAP[t] for t in y]
+            sent_len.append(len(sentence[1]))
+            masks.append([1] * len(sentence[1]) + [0] * (max_size - len(sentence[1])))
+            # TODO
+            one_y = [SrlTypes.SRL_ID_MAP.get(t,-1) for t in one_y]
+            y.append(one_y)
+            x.append(one_x)
+        Y = np.array(y)
         X = np.array(x)
-        INFO = np.array(INFO)
+        sent_len = np.array(sent_len)
+        masks = np.array(masks)
 
-        return X, Y, INFO
+        return X, Y, sent_len, masks
 
 
 

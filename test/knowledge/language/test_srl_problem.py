@@ -21,8 +21,15 @@ def test_SrlProblem():
     srl_problem = SrlProblem(words,pos,srl_sents)
     window_size = 11
     pos_conv_size = 15
-    max_size = 141 + window_size
-    data = srl_problem.get_data_set(pos_conv_size = pos_conv_size, window_size = window_size, max_size = max_size)
+    max_size = 141 + window_size - 1
+    for idx,data in enumerate(srl_problem.get_batch(batch_size = 1000000,pos_conv_size = pos_conv_size, window_size = window_size, max_size = max_size)):
+        print 'data %d' % (idx)
+        X,Y,sent_len,masks = data
+        print '\tX shape', X.shape
+        print '\tY shape', Y.shape
+        print '\tsent_len shape', sent_len.shape
+        print '\tmasks shape', masks.shape
+
 
     print 'corpora size=%d' % (len(srl_sents))
     print 'test_srl_problem done'

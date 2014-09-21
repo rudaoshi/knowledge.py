@@ -44,24 +44,28 @@ home                           NN             (NP*)))))))))))))))))))))))))     
 
 
 def test_Cornll05():
+    print '*' * 20
     print 'test cornll 05'
     raw_corpora = Conll05.loadraw('/home/kingsfield/data/conll05/training-set')
-    max_sent_size = -1
-    sum_sent_size = 0
+    print 'raw corpora size=%d' % (len(raw_corpora))
+    max_sent_len = -1
+    sum_sent_len = 0
     cnt = 0
+    srl_corpora_size = 0
     for sent in raw_corpora:
         cnt += 1
         sz = len(sent)
-        sum_sent_size += sz
-        if sz > max_sent_size:
-            max_sent_size = sz
+        sum_sent_len += sz
+        if sz > max_sent_len:
+            max_sent_len = sz
         #print sent
-        #iobsent = Conll05.sentence2iobsentece(sent)
-        #for i in iobsent:
-        #   pass
-    print '*' * 20
-    print "maxium sentece size=%d" % (max_sent_size)
-    print 'avg sentece size=%d' % (sum_sent_size/cnt)
+        srl_corpora_size += len(sent[0]) - 2
+        iobsent = Conll05.sentence2iobsentece(sent)
+        #srl_corpora_size += len(iobsent)
+    print "maxium sentece length=%d" % (max_sent_len)
+    print 'sum sentece length=%d' % (sum_sent_len)
+    print 'avg sentece length=%d' % (sum_sent_len/cnt)
+    print 'srl corpora size=%d' % (srl_corpora_size)
     '''
     ss = rawstr.split('\n')
     sentence = list()

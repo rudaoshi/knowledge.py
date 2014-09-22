@@ -1,4 +1,5 @@
 from knowledge.language.core.corpora import Conll05
+import os
 
 rawstr = '''
 Free                           JJ     (S1(S(NP(NP*                                *    -   -                    (A0*               *               *               *               *               *               *
@@ -46,7 +47,12 @@ home                           NN             (NP*)))))))))))))))))))))))))     
 def test_Cornll05():
     print '*' * 20
     print 'test cornll 05'
-    raw_corpora = Conll05.loadraw('/home/kingsfield/data/conll05/training-set')
+    home = os.path.expanduser('~')
+    #filename = os.path.join(home,'/data/conll05/training-set')
+    filename = '/Users/kingsfield/data/conll05/training-set'
+    print home
+    print filename
+    raw_corpora = Conll05.loadraw(filename)
     print 'raw corpora size=%d' % (len(raw_corpora))
     max_sent_len = -1
     sum_sent_len = 0

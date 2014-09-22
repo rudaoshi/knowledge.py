@@ -6,7 +6,7 @@ from knowledge.language.core.word import Word
 def test_SrlProblem():
     print '*' * 20
     print 'test_srl_problem'
-    raw_corpora = Conll05.loadraw('/home/kingsfield/data/conll05/training-set')
+    raw_corpora = Conll05.loadraw('/Users/kingsfield/data/conll05/training-set')
     srl_sents = []
     for sent in raw_corpora:
         iobsent = Conll05.sentence2iobsentece(sent)
@@ -19,10 +19,15 @@ def test_SrlProblem():
     words = Corpora(pading_lst=[Word.padding_word(),Word.padding_word2()])
     pos = Corpora(pading_lst=[Word.padding_pos(),Word.padding_pos2()])
     srl_problem = SrlProblem(words,pos,srl_sents)
+    max_term_per_sent = 141
     window_size = 11
     pos_conv_size = 15
-    max_size = 141 + window_size - 1
-    for idx,data in enumerate(srl_problem.get_batch(batch_size = 1000000,pos_conv_size = pos_conv_size, window_size = window_size, max_size = max_size)):
+    max_size = max_term_per_sent + window_size - 1
+    print 'window_size' , window_size
+    print 'pos_conv_size', pos_conv_size
+    print 'max_term_per_sent', max_term_per_sent
+    print 'max_size',max_size
+    for idx,data in enumerate(srl_problem.get_batch(batch_size = 100000,pos_conv_size = pos_conv_size, window_size = window_size, max_size = max_size)):
         print 'data %d' % (idx)
         X,Y,sent_len,masks = data
         print '\tX shape', X.shape

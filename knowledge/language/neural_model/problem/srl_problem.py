@@ -97,8 +97,6 @@ class SrlProblem(object):
             sent_vpos = self.word_dist(len(sentence[1]),vpos,pos_conv_size,window_size,max_term_per_sent)
             one_x = []
             one_y = []
-            #for word, tag ,_ in  pading_sent:
-            #    common_part.extend([self.__corpora.alloc_global_word_id(word),PosTags.POSTAG_ID_MAP[tag]])
 
             one_x.append(sent_word)
             one_x.append(sent_pos)

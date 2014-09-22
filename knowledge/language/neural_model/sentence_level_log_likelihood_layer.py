@@ -88,7 +88,7 @@ class SentenceLevelLogLikelihoodLayer(object):
         self.tag_trans_matrix = theano.shared(value = numpy.zeros((n_out + 1,n_out), dtype=theano.config.floatX),
                                               name='tag_trans', borrow = True)
 
-        pointwise_score = T.dot(input, self.W) + self.b
+        pointwise_score = T.nnet.softmax(T.dot(input, self.W) + self.b)
         self.y_pred = T.argmax(pointwise_score, axis=1)
         #TODO: compute total score of all path (eq, 12, NLP from Scratch)
 
@@ -123,6 +123,15 @@ class SentenceLevelLogLikelihoodLayer(object):
         # parameters of the model
         self.params = [self.W, self.b, self.tag_trans_matrix]
 
+    def negative_log_likelihood_pointwise(self,y,len_or_masks):
+        if len_or_masks.ndim == 0:
+            return -T.mean(T.log(self.y_pred)[T.arange(y.shape[0]), y][:len_or_masks])
+        elif len_or_masks == 1:
+            return -T.mean(T.log(self.y_pred)[T.arange(y.shape[0]), y] * masks)
+        else:
+            raise TypeError('len_or_masks should have 1 or 2 dimension')
+
+
     def negative_log_likelihood(self, y):
         """Return the mean of the negative log-likelihood of the prediction
         of this model under a given target distribution.
@@ -152,7 +161,7 @@ class SentenceLevelLogLikelihoodLayer(object):
         # i.e., the mean log-likelihood across the minibatch.
         return - self.log_likelihood
 
-    def errors(self, y):
+    def errors(self, y, len_or_masks):
         """Return a float representing the number of errors in the minibatch
         over the total number of examples of the minibatch ; zero one
         loss over the size of the minibatch
@@ -170,7 +179,13 @@ class SentenceLevelLogLikelihoodLayer(object):
         if y.dtype.startswith('int'):
             # the T.neq operator returns a vector of 0s and 1s, where 1
             # represents a mistake in prediction
-            return T.mean(T.neq(self.y_pred, y))
+            if len_or_masks.ndim == 0:
+                # len_or_masks is the number of terms in this sentence
+                return T.mean(T.neq(self.y_pred, y)[:len_or_masks])
+            elif len_or_masks.ndim == 1:
+                return T.mean(T.neq(self.y_pred, y) * len_or_masks)
+            else:
+                raise TypeError('len_or_masks should have 1 or 2 dimension')
         else:
             raise NotImplementedError()
 

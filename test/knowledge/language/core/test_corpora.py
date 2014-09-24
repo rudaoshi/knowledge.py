@@ -50,7 +50,14 @@ def test_print_all_srl_tag():
     filename = '/Users/kingsfield/data/conll05/training-set'
     print filename
     raw_corpora = Conll05.loadraw(filename)
-    print raw_corpora[0]
+    all_tags = set()
+    for sent in raw_corpora:
+        iobsents = Conll05.sentence2iobsentece(sent)
+        for iobsent in iobsents:
+            tags = set([i[2] for i in iobsent[1]])
+            all_tags = all_tags.union(tags)
+    for tag in all_tags:
+        print '\'%s\',' % (tag)
 
 def test_Cornll05():
     print '*' * 20

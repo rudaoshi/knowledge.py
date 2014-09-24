@@ -89,7 +89,7 @@ class SentenceLevelLogLikelihoodLayer(object):
                                               name='tag_trans', borrow = True)
 
         pointwise_score = T.dot(input, self.W) + self.b
-        self.y_pred = T.argmax(pointwise_score, axis=1)
+        self.y_pred_pointwise = T.argmax(pointwise_score, axis=1)
         #TODO: compute total score of all path (eq, 12, NLP from Scratch)
 
         input_num = input.shape[0]
@@ -104,11 +104,11 @@ class SentenceLevelLogLikelihoodLayer(object):
         )
         delta = result[-1]
 
-        result, update = theano.scan(lambda i, select_score, score_mat, delta, trans_mat, y_pred: \
-                                         select_score + score_mat[i,y_pred[i]] + trans_mat[y_pred[i],y_pred[i+1]],
+        result, update = theano.scan(lambda i, select_score, score_mat, delta, trans_mat, y_pred_pointwise: \
+                                         select_score + score_mat[i,y_pred_pointwise[i]] + trans_mat[y_pred_pointwise[i],y_pred_pointwise[i+1]],
                                      sequences=range(input_num),
-                                     outputs_info= [{'initial': self.tag_trans_matrix[0,self.y_pred[0]]}],
-                                     non_sequences=[pointwise_score, delta, self.tag_trans_matrix, self.y_pred])
+                                     outputs_info= [{'initial': self.tag_trans_matrix[0,self.y_pred_pointwise[0]]}],
+                                     non_sequences=[pointwise_score, delta, self.tag_trans_matrix, self.y_pred_pointwise])
 
         selected_path_score = result[-1]
 
@@ -116,7 +116,7 @@ class SentenceLevelLogLikelihoodLayer(object):
 
         # compute prediction as class whose probability is maximal in
         # symbolic form
-#        self.y_pred = T.argmax(self.p_y_given_x, axis=1)
+#        self.y_pred_pointwise = T.argmax(self.p_y_given_x, axis=1)
 
 
 
@@ -171,19 +171,19 @@ class SentenceLevelLogLikelihoodLayer(object):
                   correct label
         """
 
-        # check if y has same dimension of y_pred
-        if y.ndim != self.y_pred.ndim:
-            raise TypeError('y should have the same shape as self.y_pred',
-                ('y', target.type, 'y_pred', self.y_pred.type))
+        # check if y has same dimension of y_pred_pointwise
+        if y.ndim != self.y_pred_pointwise.ndim:
+            raise TypeError('y should have the same shape as self.y_pred_pointwise',
+                ('y', target.type, 'y_pred_pointwise', self.y_pred_pointwise.type))
         # check if y is of the correct datatype
         if y.dtype.startswith('int'):
             # the T.neq operator returns a vector of 0s and 1s, where 1
             # represents a mistake in prediction
             if len_or_masks.ndim == 0:
                 # len_or_masks is the number of terms in this sentence
-                return T.mean(T.neq(self.y_pred, y)[:len_or_masks])
+                return T.mean(T.neq(self.y_pred_pointwise, y)[:len_or_masks])
             elif len_or_masks.ndim == 1:
-                return T.mean(T.neq(self.y_pred, y) * len_or_masks)
+                return T.mean(T.neq(self.y_pred_pointwise, y) * len_or_masks)
             else:
                 raise TypeError('len_or_masks should have 1 or 2 dimension')
         else:

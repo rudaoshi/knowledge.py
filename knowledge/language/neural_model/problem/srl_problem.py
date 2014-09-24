@@ -115,7 +115,8 @@ class SrlProblem(object):
             sent_len.append(len(sentence[1]))
             masks.append([1] * len(sentence[1]) + [0] * (max_term_per_sent - len(sentence[1])))
             # TODO
-            one_y = [SrlTypes.SRL_ID_MAP.get(t,-1) for t in one_y]
+            #one_y = [SrlTypes.SRL_ID_MAP.get(t,-1) for t in one_y]
+            one_y = [SrlTypes.SRL_ID_MAP[t] for t in one_y]
             y.append(one_y)
             x.append(one_x)
             cnt += max_term_per_sent

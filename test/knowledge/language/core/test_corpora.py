@@ -44,6 +44,14 @@ home                           NN             (NP*)))))))))))))))))))))))))     
 '''
 
 
+def test_print_all_srl_tag():
+    print '*' * 20
+    print 'print all srl tags of cornll 05'
+    filename = '/Users/kingsfield/data/conll05/training-set'
+    print filename
+    raw_corpora = Conll05.loadraw(filename)
+    print raw_corpora[0]
+
 def test_Cornll05():
     print '*' * 20
     print 'test cornll 05'
@@ -58,6 +66,7 @@ def test_Cornll05():
     sum_sent_len = 0
     cnt = 0
     srl_corpora_size = 0
+    '''
     for sent in raw_corpora:
         cnt += 1
         sz = len(sent)
@@ -72,6 +81,7 @@ def test_Cornll05():
     print 'sum sentece length=%d' % (sum_sent_len)
     print 'avg sentece length=%d' % (sum_sent_len/cnt)
     print 'srl corpora size=%d' % (srl_corpora_size)
+    '''
     '''
     ss = rawstr.split('\n')
     sentence = list()

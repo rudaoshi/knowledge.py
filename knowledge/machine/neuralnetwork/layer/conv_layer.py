@@ -42,3 +42,7 @@ class SrlConvLayer(object):
                     + self.b.dimshuffle('x', 0, 'x', 'x'), sequences=[T.arange(input_size)])
             #self.out = self.linear.dimshuffle(1,0,2,3,4).reshape((inputs.shape[0],inputs.shape[1],hiden_size,-1))
             self.output = self.linear
+
+    def params(self):
+        return [self.W,self.b]
+

@@ -88,7 +88,7 @@ class SentenceLevelLogLikelihoodLayer(object):
         self.tag_trans_matrix = theano.shared(value = numpy.zeros((n_out + 1,n_out), dtype=theano.config.floatX),
                                               name='tag_trans', borrow = True)
 
-        pointwise_score = T.nnet.softmax(T.dot(input, self.W) + self.b)
+        pointwise_score = T.dot(input, self.W) + self.b
         self.y_pred = T.argmax(pointwise_score, axis=1)
         #TODO: compute total score of all path (eq, 12, NLP from Scratch)
 
@@ -125,9 +125,9 @@ class SentenceLevelLogLikelihoodLayer(object):
 
     def negative_log_likelihood_pointwise(self,y,len_or_masks):
         if len_or_masks.ndim == 0:
-            return -T.mean(T.log(self.y_pred)[T.arange(y.shape[0]), y][:len_or_masks])
+            return -T.mean(T.log(self.pointwise_score)[T.arange(y.shape[0]), y][:len_or_masks])
         elif len_or_masks == 1:
-            return -T.mean(T.log(self.y_pred)[T.arange(y.shape[0]), y] * masks)
+            return -T.mean(T.log(self.pointwise_score)[T.arange(y.shape[0]), y] * masks)
         else:
             raise TypeError('len_or_masks should have 1 or 2 dimension')
 

@@ -83,7 +83,7 @@ class SrlProblem(object):
         window_size = kwargs['window_size']
         pos_conv_size = kwargs['pos_conv_size']
         max_size = kwargs['max_size']
-        # max_size is the maxium size of sum of terms and paddings
+        # max_size is the maximum number of sum of terms and paddings
         max_term_per_sent = max_size - window_size + 1
         padding_sent = [0] * max_size
 

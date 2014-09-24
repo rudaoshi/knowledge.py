@@ -3,7 +3,7 @@ from knowledge.language.neural_model.problem.srl_problem import SrlProblem
 from knowledge.language.core.corpora import Corpora
 from knowledge.language.core.word import Word
 
-def test_SrlProblem():
+def xtest_SrlProblem():
     print '*' * 20
     print 'test_srl_problem'
     raw_corpora = Conll05.loadraw('/Users/kingsfield/data/conll05/training-set')

@@ -201,9 +201,6 @@ class SrlNeuralLanguageModel(object):
 
         print '... training'
 
-        improvement_threshold = 0.995  # a relative improvement of this much is
-                                       # considered significant
-
         start_time = time.clock()
         epoch = 0
         minibatch_avg_cost = 0

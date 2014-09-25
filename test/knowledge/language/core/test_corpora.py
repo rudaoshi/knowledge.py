@@ -44,11 +44,11 @@ home                           NN             (NP*)))))))))))))))))))))))))     
 '''
 
 
-def test_print_all_srl_tag():
+def xtest_print_all_srl_tag():
     print '*' * 20
     print 'print all srl tags of cornll 05'
-    filename = '/Users/kingsfield/data/conll05/training-set'
-    print filename
+    home = os.path.expanduser('~')
+    filename = os.path.join(home,"data/conll05/training-set")
     raw_corpora = Conll05.loadraw(filename)
     all_tags = set()
     for sent in raw_corpora:
@@ -63,10 +63,7 @@ def test_Cornll05():
     print '*' * 20
     print 'test cornll 05'
     home = os.path.expanduser('~')
-    #filename = os.path.join(home,'/data/conll05/training-set')
-    filename = '/Users/kingsfield/data/conll05/training-set'
-    print home
-    print filename
+    filename = os.path.join(home,"data/conll05/training-set")
     raw_corpora = Conll05.loadraw(filename)
     print 'raw corpora size=%d' % (len(raw_corpora))
     max_sent_len = -1

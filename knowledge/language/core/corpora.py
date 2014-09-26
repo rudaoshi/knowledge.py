@@ -149,6 +149,10 @@ class Corpora(object):
 
 
 class Conll05(object):
+    words = set()
+    pos = set()
+    tags = set()
+
     def __init__(self):
         pass
 
@@ -246,6 +250,9 @@ class Conll05(object):
                     tag = pre_tag
                     pre_tag = None
 
+                Conll05.words.add(word)
+                Conll05.pos.add(pos)
+                Conll05.tags.add(tag)
                 srl_sent.append([word,pos,tag])
             srl_sentences.append([vbidx,srl_sent])
         return srl_sentences

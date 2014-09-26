@@ -4,7 +4,7 @@ from knowledge.language.core.corpora import Corpora
 from knowledge.language.core.word import Word
 import os
 
-def test_SrlProblem():
+def xtest_SrlProblem():
     print '*' * 20
     print 'test_srl_problem'
     home = os.path.expanduser('~')

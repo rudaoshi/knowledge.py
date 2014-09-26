@@ -19,12 +19,11 @@ class SrlNeuralLanguageModelCore(object):
 
 
     def __init__(self,rng,x,y,sent_length,masks,
-            model_params, L1_reg = 0.00, L2_reg = 0.0001,
-            numpy_rng = None, theano_rng=None,):
+            model_params):
         # x shpae: (batch_size,max_term_per_sent+3,max_sentence_length)
         # ,where  max_sentence_length = max_term_per_sent + window_size - 1
-        self.L1_reg = L1_reg
-        self.L2_reg = L2_reg
+        self.L1_reg = model_params['L1_reg']
+        self.L2_reg = model_params['L2_reg']
 
         self.x = x
         self.sent_length = sent_length
@@ -132,13 +131,13 @@ class SrlNeuralLanguageModelCore(object):
 
 class SrlNeuralLanguageModel(object):
 
-    def __init__(self):
+    def __init__(self,rng,model_params):
         self.input = T.imatrix('input') # the data is a minibatch
         self.label = T.imatrix('label') # label's shape (mini_batch size, max_term_per_sent)
         self.sent_length= T.ivector('sent_length') # sent_length is the number of terms in each sentence
         self.masks = T.imatrix('masks') # masks which used in error and likelihood calculation
 
-        self.core = SrlNeuralLanguageModelCore(self.input,self.label,self.sentence,self.masks)
+        self.core = SrlNeuralLanguageModelCore(rng,self.input,self.label,self.sentence,self.masks,model_params)
 
         self.params = self.core.wordvec.params() \
                 + self.core.POSvec.params() \

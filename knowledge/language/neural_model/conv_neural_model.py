@@ -57,16 +57,16 @@ class SrlNeuralLanguageModelCore(object):
         # 4,word position vector
         #   output shape: (batch size,max_term_per_sent,1,max_sentence_length * wordpos_feature_num)
         self.wordvec = LookupTableLayer(inputs = x[:,0:1,:], table_size = self.word_num,
-                window_size = self.window_size, feature_num = self.word_feature_num,
+                window_size = self.max_sentence_length, feature_num = self.word_feature_num,
                 reshp = (x.shape[0],1,1,x.shape[2] * self.word_feature_num))
         self.POSvec = LookupTableLayer(inputs = x[:,1:2,:], table_size = self.POS_num,
-                window_size = self.window_size, feature_num = self.POS_feature_num,
+                window_size = self.max_sentence_length, feature_num = self.POS_feature_num,
                 reshp = (x.shape[0],1,1,x.shape[2] * self.POS_feature_num))
         self.verbpos_vec = LookupTableLayer(inputs = x[:,2:3,:], table_size = self.verbpos_num,
-                window_size = self.window_size, feature_num = self.verbpos_feature_num,
+                window_size = self.max_sentence_length, feature_num = self.verbpos_feature_num,
                 reshp = (x.shape[0],1,1,x.shape[2] * self.verbpos_feature_num))
         self.wordpos_vec = LookupTableLayer(inputs = x[:,3:,:], table_size = self.wordpos_num,
-                window_size = self.window_size, feature_num = self.wordpos_feature_num,
+                window_size = self.max_sentence_length, feature_num = self.wordpos_feature_num,
                 reshp = (x.shape[0],x.max_term_per_sent,1,x.shape[2] * self.wordpos_feature_num))
 
         # conv_word.out.shape = (batch_size,1,conv_hidden_feature_num,max_sentence_length-conv_window+1)

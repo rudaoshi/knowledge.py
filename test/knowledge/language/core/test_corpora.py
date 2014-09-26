@@ -59,7 +59,7 @@ def xtest_print_all_srl_tag():
     for tag in all_tags:
         print '\'%s\',' % (tag)
 
-def test_Cornll05():
+def xtest_Cornll05():
     print '*' * 20
     print 'test cornll 05'
     home = os.path.expanduser('~')

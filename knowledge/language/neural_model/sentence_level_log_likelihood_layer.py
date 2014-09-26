@@ -88,14 +88,15 @@ class SentenceLevelLogLikelihoodLayer(object):
         self.tag_trans_matrix = theano.shared(value = numpy.zeros((n_out + 1,n_out), dtype=theano.config.floatX),
                                               name='tag_trans', borrow = True)
 
-        pointwise_score = T.dot(input, self.W) + self.b
-        self.y_pred_pointwise = T.argmax(pointwise_score, axis=1)
+        self.pointwise_score = T.dot(input, self.W) + self.b
+        self.y_pred_pointwise = T.argmax(self.pointwise_score, axis=1)
         #TODO: compute total score of all path (eq, 12, NLP from Scratch)
 
         input_num = input.shape[0]
         tag_num = n_out
 
 
+        '''
         result, updates = theano.scan(lambda s, delta_tm1, trans_mat: s + T.log(T.sum(T.exp(T.tile(delta_tm1, tag_num) + trans_mat),axis=0 )),
                                 sequences = pointwise_score,
                                 outputs_info= [{'initial': self.tag_trans_matrix[0,:] + pointwise_score[0,:],
@@ -113,10 +114,11 @@ class SentenceLevelLogLikelihoodLayer(object):
         selected_path_score = result[-1]
 
         self.log_likelihood = selected_path_score - T.sum(T.exp((delta)),axis=0)
+        '''
 
         # compute prediction as class whose probability is maximal in
         # symbolic form
-#        self.y_pred_pointwise = T.argmax(self.p_y_given_x, axis=1)
+        # self.y_pred_pointwise = T.argmax(self.p_y_given_x, axis=1)
 
 
 
@@ -126,8 +128,8 @@ class SentenceLevelLogLikelihoodLayer(object):
     def negative_log_likelihood_pointwise(self,y,len_or_masks):
         if len_or_masks.ndim == 0:
             return -T.mean(T.log(self.pointwise_score)[T.arange(y.shape[0]), y][:len_or_masks])
-        elif len_or_masks == 1:
-            return -T.mean(T.log(self.pointwise_score)[T.arange(y.shape[0]), y] * masks)
+        elif len_or_masks.ndim == 1:
+            return -T.mean(T.log(self.pointwise_score)[T.arange(y.shape[0]), y] * len_or_masks)
         else:
             raise TypeError('len_or_masks should have 1 or 2 dimension')
 
@@ -172,9 +174,11 @@ class SentenceLevelLogLikelihoodLayer(object):
         """
 
         # check if y has same dimension of y_pred_pointwise
+        '''
         if y.ndim != self.y_pred_pointwise.ndim:
             raise TypeError('y should have the same shape as self.y_pred_pointwise',
                 ('y', target.type, 'y_pred_pointwise', self.y_pred_pointwise.type))
+        '''
         # check if y is of the correct datatype
         if y.dtype.startswith('int'):
             # the T.neq operator returns a vector of 0s and 1s, where 1

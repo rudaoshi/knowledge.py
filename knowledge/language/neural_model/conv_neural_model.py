@@ -19,12 +19,11 @@ class SrlNeuralLanguageModelCore(object):
 
 
     def __init__(self,rng,x,y,sent_length,masks,
-            model_params, L1_reg = 0.00, L2_reg = 0.0001,
-            numpy_rng = None, theano_rng=None,):
+            model_params):
         # x shpae: (batch_size,max_term_per_sent+3,max_sentence_length)
         # ,where  max_sentence_length = max_term_per_sent + window_size - 1
-        self.L1_reg = L1_reg
-        self.L2_reg = L2_reg
+        self.L1_reg = model_params['L1_reg']
+        self.L2_reg = model_params['L2_reg']
 
         self.x = x
         self.sent_length = sent_length
@@ -58,16 +57,16 @@ class SrlNeuralLanguageModelCore(object):
         # 4,word position vector
         #   output shape: (batch size,max_term_per_sent,1,max_sentence_length * wordpos_feature_num)
         self.wordvec = LookupTableLayer(inputs = x[:,0:1,:], table_size = self.word_num,
-                window_size = self.window_size, feature_num = self.word_feature_num,
+                window_size = self.max_sentence_length, feature_num = self.word_feature_num,
                 reshp = (x.shape[0],1,1,x.shape[2] * self.word_feature_num))
         self.POSvec = LookupTableLayer(inputs = x[:,1:2,:], table_size = self.POS_num,
-                window_size = self.window_size, feature_num = self.POS_feature_num,
+                window_size = self.max_sentence_length, feature_num = self.POS_feature_num,
                 reshp = (x.shape[0],1,1,x.shape[2] * self.POS_feature_num))
         self.verbpos_vec = LookupTableLayer(inputs = x[:,2:3,:], table_size = self.verbpos_num,
-                window_size = self.window_size, feature_num = self.verbpos_feature_num,
+                window_size = self.max_sentence_length, feature_num = self.verbpos_feature_num,
                 reshp = (x.shape[0],1,1,x.shape[2] * self.verbpos_feature_num))
         self.wordpos_vec = LookupTableLayer(inputs = x[:,3:,:], table_size = self.wordpos_num,
-                window_size = self.window_size, feature_num = self.wordpos_feature_num,
+                window_size = self.max_sentence_length, feature_num = self.wordpos_feature_num,
                 reshp = (x.shape[0],x.max_term_per_sent,1,x.shape[2] * self.wordpos_feature_num))
 
         # conv_word.out.shape = (batch_size,1,conv_hidden_feature_num,max_sentence_length-conv_window+1)
@@ -132,13 +131,13 @@ class SrlNeuralLanguageModelCore(object):
 
 class SrlNeuralLanguageModel(object):
 
-    def __init__(self):
+    def __init__(self,rng,model_params):
         self.input = T.imatrix('input') # the data is a minibatch
         self.label = T.imatrix('label') # label's shape (mini_batch size, max_term_per_sent)
         self.sent_length= T.ivector('sent_length') # sent_length is the number of terms in each sentence
         self.masks = T.imatrix('masks') # masks which used in error and likelihood calculation
 
-        self.core = SrlNeuralLanguageModelCore(self.input,self.label,self.sentence,self.masks)
+        self.core = SrlNeuralLanguageModelCore(rng,self.input,self.label,self.sentence,self.masks,model_params)
 
         self.params = self.core.wordvec.params() \
                 + self.core.POSvec.params() \

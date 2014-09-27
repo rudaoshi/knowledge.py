@@ -95,7 +95,8 @@ class SrlNeuralLanguageModelCore(object):
         # the first max_sentence_length means each element of it is one prediction for that word
         # the second max_sentence_length means each element of it is one output of conv
         # conv_out shape: (batch_size,max_term_per_sent,conv_hidden_feature_num,max_term_per_sent)
-        self.conv_out = self.conv_word.output + self.conv_POS.output + self.conv_verbpos.output + self.conv_wordpos.output
+        #self.conv_out = self.conv_word.output + self.conv_POS.output + self.conv_verbpos.output + self.conv_wordpos.output
+        self.conv_out = self.conv_word.output + self.conv_POS.output + self.conv_verbpos.output
         self.conv_out = self.conv_out.dimshuffle(1,0,2,3,4).reshape((x.shape[0],self.max_term_per_sent,self.conv_hidden_feature_num,-1))
 
         # max_out shape: (batch_size,max_term_per_sent,conv_hidden_feature_num)
@@ -177,7 +178,7 @@ class SrlNeuralLanguageModel(object):
         self.cost = self.negative_log_likelihood \
                 + self.core.L2_reg * self.L2_sqr
 
-    def test_foo(self,x,y,sent_length,masks,batch_iter_num=10,learning_rate=0.1):
+    def test_foo(self,x,y,sent_length,masks,batch_iter_num=30,learning_rate=0.1):
         borrow = True
         train_set_X = T.cast(theano.shared(numpy.asarray(x,
             dtype=theano.config.floatX),
@@ -207,7 +208,7 @@ class SrlNeuralLanguageModel(object):
         return minibatch_avg_cost,end_time - start_time
 
 
-    def fit_batch(self,x,y,sent_length,masks,batch_iter_num=10,learning_rate=0.1):
+    def fit_batch(self,x,y,sent_length,masks,batch_iter_num=1,learning_rate=0.1):
         self.gparams = []
         for param in self.params:
             gparam = T.grad(self.cost, param)

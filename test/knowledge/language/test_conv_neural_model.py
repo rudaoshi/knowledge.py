@@ -150,8 +150,8 @@ def test_srl_conv_network():
         for idx,data in enumerate(srl_problem.get_batch(batch_size = 100000,
             window_size = window_size,
             max_size = max_size)):
-            print 'data %d' % (idx)
             X,Y,sent_len,masks = data
+            print 'data %d, X shape %s,Y shape %s,sent_len shape %s,masks shape %s' % (idx,str(X.shape),str(Y.shape),str(sent_len.shape),str(masks.shape))
             X = X.astype(np.int32)
             Y = Y.astype(np.int32)
             sent_len = sent_len.astype(np.int32)
@@ -169,6 +169,7 @@ def test_srl_conv_network():
                         (epoch,iter,100,minibatch_avg_cost,time_cost)
             '''
             minibatch_avg_cost,time_cost = model.test_foo(X,Y,sent_len,masks)
+            print 'time cost',time_cost
             iter += 1
         epoch += 1
 

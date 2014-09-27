@@ -110,8 +110,8 @@ def test_srl_conv_network():
     model_params['word_num'] = len(Conll05.words)
     model_params['POS_num'] = len(Conll05.pos)
     # how many pos should we consider in model
-    model_params['verbpos_num'] = (window_size + 1) / 2
-    model_params['wordpos_num'] = (window_size + 1) / 2
+    model_params['verbpos_num'] = window_size + 1
+    model_params['wordpos_num'] = window_size + 1
     model_params['position_conv_half_window'] = (window_size - 1) / 2
 
     # the dimension of word vector
@@ -157,17 +157,18 @@ def test_srl_conv_network():
             sent_len = sent_len.astype(np.int32)
             masks = masks.astype(np.int32)
 
+            '''
             if iter % validation_frequency == 0:
-                '''
                 error,time_cost = model.valid(X,Y,sent_len,masks)
                 print >> sys.stderr, 'epoch %i, minibatch %i/%i, validation error %f %%,cost time %f' % \
                      (epoch, iter,100,this_validation_loss * 100.,time_cost)
-                '''
                 pass
             else:
                 minibatch_avg_cost,time_cost = model.fit_batch(X,Y,sent_len,masks)
                 print >> sys.stderr, 'epoch %i, minibatch %i/%i, minibatch cost,cost time %f', \
                         (epoch,iter,100,minibatch_avg_cost,time_cost)
+            '''
+            minibatch_avg_cost,time_cost = model.test_foo(X,Y,sent_len,masks)
             iter += 1
         epoch += 1
 

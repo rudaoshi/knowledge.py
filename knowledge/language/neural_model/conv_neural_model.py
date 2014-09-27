@@ -61,12 +61,15 @@ class SrlNeuralLanguageModelCore(object):
         self.wordvec = LookupTableLayer(inputs = x[:,0:1,:], table_size = self.word_num,
                 window_size = self.max_sentence_length, feature_num = self.word_feature_num,
                 reshp = (x.shape[0],1,1,x.shape[2] * self.word_feature_num))
+
         self.POSvec = LookupTableLayer(inputs = x[:,1:2,:], table_size = self.POS_num,
                 window_size = self.max_sentence_length, feature_num = self.POS_feature_num,
                 reshp = (x.shape[0],1,1,x.shape[2] * self.POS_feature_num))
+
         self.verbpos_vec = LookupTableLayer(inputs = x[:,2:3,:], table_size = self.verbpos_num,
                 window_size = self.max_sentence_length, feature_num = self.verbpos_feature_num,
                 reshp = (x.shape[0],1,1,x.shape[2] * self.verbpos_feature_num))
+
         self.wordpos_vec = LookupTableLayer(inputs = x[:,3:,:], table_size = self.wordpos_num,
                 window_size = self.max_sentence_length, feature_num = self.wordpos_feature_num,
                 reshp = (x.shape[0],self.max_term_per_sent,1,x.shape[2] * self.wordpos_feature_num))
@@ -78,10 +81,13 @@ class SrlNeuralLanguageModelCore(object):
         # note. all output above have been seted 'dimshuffle'
         self.conv_word = SrlConvLayer('conv_word',rng,self.wordvec.output,\
                 self.conv_hidden_feature_num,1,self.conv_window,self.word_feature_num)
+
         self.conv_POS = SrlConvLayer('conv_POS',rng,self.POSvec.output,\
                 self.conv_hidden_feature_num,1,self.conv_window,self.POS_feature_num)
+
         self.conv_verbpos = SrlConvLayer('conv_verbpos',rng,self.verbpos_vec.output,\
                 self.conv_hidden_feature_num,1,self.conv_window,self.verbpos_feature_num)
+
         self.conv_wordpos = SrlConvLayer('conv_wordpos',rng,self.wordpos_vec.output,\
                 self.conv_hidden_feature_num,self.max_term_per_sent,self.conv_window,self.wordpos_feature_num)
 
@@ -170,6 +176,35 @@ class SrlNeuralLanguageModel(object):
         # we only use L2 regularization
         self.cost = self.negative_log_likelihood \
                 + self.core.L2_reg * self.L2_sqr
+
+    def test_foo(self,x,y,sent_length,masks,batch_iter_num=10,learning_rate=0.1):
+        borrow = True
+        train_set_X = T.cast(theano.shared(numpy.asarray(x,
+            dtype=theano.config.floatX),
+            borrow=borrow), "int32")
+        train_set_y = T.cast(theano.shared(numpy.asarray(y,
+            dtype=theano.config.floatX),
+            borrow=borrow), "int32")
+        train_set_masks = T.cast(theano.shared(numpy.asarray(masks,
+            dtype=theano.config.floatX),
+            borrow=borrow), "int32")
+
+        #train_model = theano.function(inputs=[self.input,self.label,self.masks], outputs=self.core.conv_word.output,on_unused_input='ignore')
+        #train_model = theano.function(inputs=[self.input,self.label,self.masks], outputs=self.core.conv_POS.output,on_unused_input='ignore')
+        #train_model = theano.function(inputs=[self.input,self.label,self.masks], outputs=self.core.conv_verbpos.output,on_unused_input='ignore')
+        #train_model = theano.function(inputs=[self.input,self.label,self.masks], outputs=self.core.conv_wordpos.output,on_unused_input='ignore')
+        train_model = theano.function(inputs=[self.input,self.label,self.masks], outputs=self.core.max_out,on_unused_input='ignore')
+        print '... training'
+
+        start_time = time.clock()
+        epoch = 0
+        minibatch_avg_cost = 0
+        # begin to train this mini batch
+        while (epoch < batch_iter_num):
+            epoch = epoch + 1
+            minibatch_avg_cost = train_model(x,y,masks)
+        end_time = time.clock()
+        return minibatch_avg_cost,end_time - start_time
 
 
     def fit_batch(self,x,y,sent_length,masks,batch_iter_num=10,learning_rate=0.1):

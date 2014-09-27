@@ -169,8 +169,8 @@ def test_srl_conv_network():
                 print >> sys.stderr, 'epoch %i, minibatch %i/%i, minibatch cost,cost time %f', \
                         (epoch,iter,100,minibatch_avg_cost,time_cost)
             '''
-            #minibatch_avg_cost,time_cost = model.test_foo(X,Y,sent_len,masks)
-            minibatch_avg_cost,time_cost = model.fit_batch(X,Y,sent_len,masks)
+            minibatch_avg_cost,time_cost = model.test_foo(X,Y,sent_len,masks)
+            #minibatch_avg_cost,time_cost = model.fit_batch(X,Y,sent_len,masks)
             print 'time cost',time_cost,' minibatch_avg_cost',minibatch_avg_cost
             #foo(X,Y,sent_len,masks)
             iter += 1

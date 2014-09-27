@@ -95,8 +95,7 @@ class SrlNeuralLanguageModelCore(object):
         # the first max_sentence_length means each element of it is one prediction for that word
         # the second max_sentence_length means each element of it is one output of conv
         # conv_out shape: (batch_size,max_term_per_sent,conv_hidden_feature_num,max_term_per_sent)
-        #self.conv_out = self.conv_word.output + self.conv_POS.output + self.conv_verbpos.output + self.conv_wordpos.output
-        self.conv_out = self.conv_word.output + self.conv_POS.output + self.conv_verbpos.output
+        self.conv_out = self.conv_word.output + self.conv_POS.output + self.conv_verbpos.output + self.conv_wordpos.output
         self.conv_out = self.conv_out.dimshuffle(1,0,2,3,4).reshape((x.shape[0],self.max_term_per_sent,self.conv_hidden_feature_num,-1))
 
         # max_out shape: (batch_size,max_term_per_sent,conv_hidden_feature_num)
@@ -178,47 +177,59 @@ class SrlNeuralLanguageModel(object):
         self.cost = self.negative_log_likelihood \
                 + self.core.L2_reg * self.L2_sqr
 
-    def test_foo(self,x,y,sent_length,masks,batch_iter_num=30,learning_rate=0.1):
-        borrow = True
-        train_set_X = T.cast(theano.shared(numpy.asarray(x,
-            dtype=theano.config.floatX),
-            borrow=borrow), "int32")
-        train_set_y = T.cast(theano.shared(numpy.asarray(y,
-            dtype=theano.config.floatX),
-            borrow=borrow), "int32")
-        train_set_masks = T.cast(theano.shared(numpy.asarray(masks,
-            dtype=theano.config.floatX),
-            borrow=borrow), "int32")
+        #self.train_model = theano.function(inputs=[self.input,self.label,self.masks], outputs=self.core.conv_word.output,on_unused_input='ignore')
+        #self.train_model = theano.function(inputs=[self.input,self.label,self.masks], outputs=self.core.conv_POS.output,on_unused_input='ignore')
+        #self.train_model = theano.function(inputs=[self.input,self.label,self.masks], outputs=self.core.conv_verbpos.output,on_unused_input='ignore')
+        #self.train_model = theano.function(inputs=[self.input,self.label,self.masks], outputs=self.core.conv_wordpos.output,on_unused_input='ignore')
+        #self.train_model = theano.function(inputs=[self.input,self.label,self.masks], outputs=self.core.hidden_layer.output,on_unused_input='ignore')
+        self.train_model = theano.function(inputs=[self.input,self.label,self.masks], outputs=self.core._likelihood,on_unused_input='ignore')
 
-        #train_model = theano.function(inputs=[self.input,self.label,self.masks], outputs=self.core.conv_word.output,on_unused_input='ignore')
-        #train_model = theano.function(inputs=[self.input,self.label,self.masks], outputs=self.core.conv_POS.output,on_unused_input='ignore')
-        #train_model = theano.function(inputs=[self.input,self.label,self.masks], outputs=self.core.conv_verbpos.output,on_unused_input='ignore')
-        #train_model = theano.function(inputs=[self.input,self.label,self.masks], outputs=self.core.conv_wordpos.output,on_unused_input='ignore')
-        train_model = theano.function(inputs=[self.input,self.label,self.masks], outputs=self.core.max_out,on_unused_input='ignore')
-        print '... training'
-
-        start_time = time.clock()
-        epoch = 0
-        minibatch_avg_cost = 0
-        # begin to train this mini batch
-        while (epoch < batch_iter_num):
-            epoch = epoch + 1
-            minibatch_avg_cost = train_model(x,y,masks)
-        end_time = time.clock()
-        return minibatch_avg_cost,end_time - start_time
-
-
-    def fit_batch(self,x,y,sent_length,masks,batch_iter_num=1,learning_rate=0.1):
         self.gparams = []
         for param in self.params:
             gparam = T.grad(self.cost, param)
             self.gparams.append(gparam)
 
-        updates = []
+        self.updates = []
 
+        learning_rate = 0.1
         for param, gparam in zip(self.params, self.gparams):
-            updates.append((param, param - learning_rate * gparam))
+            self.updates.append((param, param - learning_rate * gparam))
 
+
+        #self.train_model = theano.function(inputs=[self.input,self.label,self.masks], outputs=self.cost,updates=self.updates)
+
+    def test_foo(self,x,y,sent_length,masks,batch_iter_num=1,learning_rate=0.1):
+        borrow = True
+        '''
+        train_set_X = T.cast(theano.shared(numpy.asarray(x,
+            dtype=theano.config.floatX),
+            borrow=borrow), "int32")
+        train_set_y = T.cast(theano.shared(numpy.asarray(y,
+            dtype=theano.config.floatX),
+            borrow=borrow), "int32")
+        train_set_masks = T.cast(theano.shared(numpy.asarray(masks,
+            dtype=theano.config.floatX),
+            borrow=borrow), "int32")
+        '''
+
+        print '... training'
+
+        start_time = time.clock()
+        epoch = 0
+        minibatch_avg_cost = 0
+        # begin to train this mini batch
+        while (epoch < batch_iter_num):
+            epoch = epoch + 1
+            minibatch_avg_cost = self.train_model(x,y,masks)
+        end_time = time.clock()
+        return minibatch_avg_cost,end_time - start_time
+        '''
+        return train_model
+        '''
+
+
+    def fit_batch(self,x,y,sent_length,masks,batch_iter_num=1,learning_rate=0.1):
+        '''
         borrow = True
         train_set_X = T.cast(theano.shared(numpy.asarray(x,
             dtype=theano.config.floatX),
@@ -229,9 +240,8 @@ class SrlNeuralLanguageModel(object):
         train_set_masks = T.cast(theano.shared(numpy.asarray(masks,
             dtype=theano.config.floatX),
             borrow=borrow), "int32")
+        '''
 
-        train_model = theano.function(inputs=[self.input,self.label,self.masks], outputs=self.cost,
-                updates=updates)
 
         print '... training'
 
@@ -241,7 +251,7 @@ class SrlNeuralLanguageModel(object):
         # begin to train this mini batch
         while (epoch < batch_iter_num):
             epoch = epoch + 1
-            minibatch_avg_cost = train_model(x,y,masks)
+            minibatch_avg_cost = self.train_model(x,y,masks)
         end_time = time.clock()
         return minibatch_avg_cost,end_time - start_time
 

@@ -112,13 +112,22 @@ class SrlNeuralLanguageModelCore(object):
                 n_out = self.hidden_layer_size,
                 activation=T.tanh)
 
-        self.sentce_loglikelihood = SentenceLevelLogLikelihoodLayer(self.hidden_layer.output,
-                self.hidden_layer_size,self.tags_num)
+        self.sentce_loglikelihood = SentenceLevelLogLikelihoodLayer(self.hidden_layer_size,self.tags_num)
 
         # TODO we use poitwise likelihood here
-        results, updates = theano.scan(lambda din,mask:
-                self.sentce_loglikelihood.negative_log_likelihood_pointwise(self.y,mask),
+        '''
+        results, _updates = theano.scan(lambda din,mask:
+                self.sentce_loglikelihood.negative_log_likelihood_pointwise(din,self.y,mask),
                 sequences=[self.hidden_layer.output,self.masks])
+                #outputs_info=like)
+        #self._likelihood = results[-1]
+        self._likelihood = results.sum()
+        '''
+        #self._likelihood = self.sentce_loglikelihood.negative_log_likelihood_pointwise(self.hidden_layer.output[0,:,:],self.y[0,:],self.masks[0,:])
+
+        results, _updates = theano.scan(lambda x_i:
+                self.sentce_loglikelihood.negative_log_likelihood_pointwise(self.hidden_layer.output[0,:,:],self.y[0,:],self.masks[0,:]),
+                sequences=[T.arange(self.x.shape[0])])
                 #outputs_info=like)
         #self._likelihood = results[-1]
         self._likelihood = results.sum()
@@ -170,7 +179,7 @@ class SrlNeuralLanguageModel(object):
 
         self.negative_log_likelihood = self.core.likelihood()
         # same holds for the function computing the number of errors
-        self.errors = self.core.errors()
+        #self.errors = self.core.errors()
 
         # we only use L2 regularization
         self.cost = self.negative_log_likelihood \
@@ -196,7 +205,8 @@ class SrlNeuralLanguageModel(object):
         #self.train_model = theano.function(inputs=[self.input,self.label,self.masks], outputs=self.core.conv_out,on_unused_input='ignore')
         #self.train_model = theano.function(inputs=[self.input,self.label,self.masks], outputs=self.core.max_out,on_unused_input='ignore')
         #self.train_model = theano.function(inputs=[self.input,self.label,self.masks], outputs=self.core.hidden_layer.output,on_unused_input='ignore')
-        self.train_model = theano.function(inputs=[self.input,self.label,self.masks], outputs=self.core.negative_log_likelihood,on_unused_input='ignore')
+        #self.train_model = theano.function(inputs=[self.input,self.label,self.masks], outputs=self.core.negative_log_likelihood,on_unused_input='ignore')
+        self.train_model = theano.function(inputs=[self.input,self.label,self.masks], outputs=self.cost,on_unused_input='ignore')
         #self.train_model = theano.function(inputs=[self.input,self.label,self.masks], outputs=self.cost,updates=self.updates)
 
     def test_foo(self,x,y,sent_length,masks,batch_iter_num=1,learning_rate=0.1):

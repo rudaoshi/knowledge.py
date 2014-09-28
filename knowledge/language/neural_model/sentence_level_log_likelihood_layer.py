@@ -59,7 +59,7 @@ class SentenceLevelLogLikelihoodLayer(object):
     determine a class membership probability.
     """
 
-    def __init__(self, input, n_in, n_out):
+    def __init__(self, n_in, n_out):
         """ Initialize the parameters of the logistic regression
 
         :type input: theano.tensor.TensorType
@@ -76,6 +76,9 @@ class SentenceLevelLogLikelihoodLayer(object):
 
         """
 
+        self.n_in = n_in
+        self.n_out = n_out
+
         # initialize with 0 the weights W as a matrix of shape (n_in, n_out)
         self.W = theano.shared(value=numpy.zeros((n_in, n_out),
                                                  dtype=theano.config.floatX),
@@ -85,15 +88,14 @@ class SentenceLevelLogLikelihoodLayer(object):
                                                  dtype=theano.config.floatX),
                                name='b', borrow=True)
 
-        self.tag_trans_matrix = theano.shared(value = numpy.zeros((n_out + 1,n_out), dtype=theano.config.floatX),
-                                              name='tag_trans', borrow = True)
+        #self.tag_trans_matrix = theano.shared(value = numpy.zeros((n_out + 1,n_out), dtype=theano.config.floatX),
+        #                                      name='tag_trans', borrow = True)
 
-        self.pointwise_score = T.dot(input, self.W) + self.b
-        self.y_pred_pointwise = T.argmax(self.pointwise_score, axis=1)
+        self.pointwise_score = T.dot(input, self.W) + self.b.dimshuffle('x',0)
+        self.y_pred_pointwise = T.argmax(self.pointwise_score, axis=2)
+
         #TODO: compute total score of all path (eq, 12, NLP from Scratch)
 
-        input_num = input.shape[0]
-        tag_num = n_out
 
 
         '''
@@ -126,7 +128,9 @@ class SentenceLevelLogLikelihoodLayer(object):
         #self.params = [self.W, self.b, self.tag_trans_matrix]
         self.params = [self.W, self.b]
 
-    def negative_log_likelihood_pointwise(self,y,len_or_masks):
+    def negative_log_likelihood_pointwise(self,input,y,len_or_masks):
+        #input_num = input.shape[0]
+        #tag_num = self.n_out
         '''
         if len_or_masks.ndim == 0:
             return -T.mean(T.log(self.pointwise_score)[T.arange(y.shape[0]), y][:len_or_masks])
@@ -136,7 +140,7 @@ class SentenceLevelLogLikelihoodLayer(object):
             raise TypeError('len_or_masks should have 1 or 2 dimension')
         '''
 
-        return -T.mean(T.log(self.pointwise_score)[T.arange(y.shape[0]), y] * len_or_masks)
+        return -T.mean(T.log(pointwise_score)[T.arange(y.shape[0]), y] * len_or_masks)
 
     def negative_log_likelihood(self, y):
         """Return the mean of the negative log-likelihood of the prediction

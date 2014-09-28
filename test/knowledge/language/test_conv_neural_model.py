@@ -155,6 +155,7 @@ def test_srl_conv_network():
             print 'data %d, X shape %s,Y shape %s,sent_len shape %s,masks shape %s' % (idx,str(X.shape),str(Y.shape),str(sent_len.shape),str(masks.shape))
             X = X.astype(np.int32)
             Y = Y.astype(np.int32)
+            Y[Y > 54] = 0
             sent_len = sent_len.astype(np.int32)
             masks = masks.astype(np.int32)
 
@@ -171,7 +172,8 @@ def test_srl_conv_network():
             '''
             minibatch_avg_cost,time_cost = model.test_foo(X,Y,sent_len,masks)
             #minibatch_avg_cost,time_cost = model.fit_batch(X,Y,sent_len,masks)
-            print 'time cost',time_cost,' minibatch_avg_cost shape',minibatch_avg_cost.shape
+            print '\ttime cost',time_cost,' minibatch_avg_cost shape',minibatch_avg_cost.shape
+            print '\t',minibatch_avg_cost
             #foo(X,Y,sent_len,masks)
             iter += 1
         epoch += 1

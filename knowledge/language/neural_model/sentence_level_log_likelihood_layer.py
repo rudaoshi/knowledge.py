@@ -123,16 +123,20 @@ class SentenceLevelLogLikelihoodLayer(object):
 
 
         # parameters of the model
-        self.params = [self.W, self.b, self.tag_trans_matrix]
+        #self.params = [self.W, self.b, self.tag_trans_matrix]
+        self.params = [self.W, self.b]
 
     def negative_log_likelihood_pointwise(self,y,len_or_masks):
+        '''
         if len_or_masks.ndim == 0:
             return -T.mean(T.log(self.pointwise_score)[T.arange(y.shape[0]), y][:len_or_masks])
         elif len_or_masks.ndim == 1:
             return -T.mean(T.log(self.pointwise_score)[T.arange(y.shape[0]), y] * len_or_masks)
         else:
             raise TypeError('len_or_masks should have 1 or 2 dimension')
+        '''
 
+        return -T.mean(T.log(self.pointwise_score)[T.arange(y.shape[0]), y] * len_or_masks)
 
     def negative_log_likelihood(self, y):
         """Return the mean of the negative log-likelihood of the prediction
@@ -178,7 +182,6 @@ class SentenceLevelLogLikelihoodLayer(object):
         if y.ndim != self.y_pred_pointwise.ndim:
             raise TypeError('y should have the same shape as self.y_pred_pointwise',
                 ('y', target.type, 'y_pred_pointwise', self.y_pred_pointwise.type))
-        '''
         # check if y is of the correct datatype
         if y.dtype.startswith('int'):
             # the T.neq operator returns a vector of 0s and 1s, where 1
@@ -192,7 +195,9 @@ class SentenceLevelLogLikelihoodLayer(object):
                 raise TypeError('len_or_masks should have 1 or 2 dimension')
         else:
             raise NotImplementedError()
+        '''
 
+        return T.mean(T.neq(self.y_pred_pointwise, y) * len_or_masks)
 
 def load_data(dataset):
     ''' Loads the dataset

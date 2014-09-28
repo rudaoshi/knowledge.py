@@ -112,25 +112,24 @@ class SrlNeuralLanguageModelCore(object):
                 n_out = self.hidden_layer_size,
                 activation=T.tanh)
 
-    def likelihood(self):
-        #like = theano.shared(0.0)
+        self.sentce_loglikelihood = SentenceLevelLogLikelihoodLayer(self.hidden_layer.output,
+                self.hidden_layer_size,self.tags_num)
+
         # TODO we use poitwise likelihood here
         results, updates = theano.scan(lambda din,mask:
-                SentenceLevelLogLikelihoodLayer(din,
-                    self.hidden_layer_size,
-                    self.tags_num).negative_log_likelihood_pointwise(self.y,mask),
+                self.sentce_loglikelihood.negative_log_likelihood_pointwise(self.y,mask),
                 sequences=[self.hidden_layer.output,self.masks])
                 #outputs_info=like)
         #self._likelihood = results[-1]
         self._likelihood = results.sum()
+
+    def likelihood(self):
         return self._likelihood
 
     def errors(self):
         #errors = theano.shared(0.0)
         results, updates = theano.scan(lambda din,mask:
-                SentenceLevelLogLikelihoodLayer(din,
-                    self.hidden_layer_size,
-                    self.tags_num).errors(self.y,mask),
+                self.sentce_loglikelihood.errors(self.y,mask),
                 sequences=[self.hidden_layer.output,self.masks])
                 #outputs_info=errors)
         #self._errors = results[-1]
@@ -194,9 +193,11 @@ class SrlNeuralLanguageModel(object):
         #self.train_model = theano.function(inputs=[self.input,self.label,self.masks], outputs=self.core.conv_POS.output,on_unused_input='ignore')
         #self.train_model = theano.function(inputs=[self.input,self.label,self.masks], outputs=self.core.conv_verbpos.output,on_unused_input='ignore')
         #self.train_model = theano.function(inputs=[self.input,self.label,self.masks], outputs=self.core.conv_wordpos.output,on_unused_input='ignore')
+        #self.train_model = theano.function(inputs=[self.input,self.label,self.masks], outputs=self.core.conv_out,on_unused_input='ignore')
+        #self.train_model = theano.function(inputs=[self.input,self.label,self.masks], outputs=self.core.max_out,on_unused_input='ignore')
         #self.train_model = theano.function(inputs=[self.input,self.label,self.masks], outputs=self.core.hidden_layer.output,on_unused_input='ignore')
-        #self.train_model = theano.function(inputs=[self.input,self.label,self.masks], outputs=self.core._likelihood,on_unused_input='ignore')
-        self.train_model = theano.function(inputs=[self.input,self.label,self.masks], outputs=self.cost,updates=self.updates)
+        self.train_model = theano.function(inputs=[self.input,self.label,self.masks], outputs=self.core.negative_log_likelihood,on_unused_input='ignore')
+        #self.train_model = theano.function(inputs=[self.input,self.label,self.masks], outputs=self.cost,updates=self.updates)
 
     def test_foo(self,x,y,sent_length,masks,batch_iter_num=1,learning_rate=0.1):
         borrow = True

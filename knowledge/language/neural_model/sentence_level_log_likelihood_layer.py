@@ -59,7 +59,7 @@ class SentenceLevelLogLikelihoodLayer(object):
     determine a class membership probability.
     """
 
-    def __init__(self,rng, input , Y ,n_in, n_out):
+    def __init__(self,rng, input , Y , masks ,n_in, n_out):
         """ Initialize the parameters of the logistic regression
 
         :type input: theano.tensor.TensorType
@@ -97,8 +97,8 @@ class SentenceLevelLogLikelihoodLayer(object):
         self.y_pred_pointwise = T.argmax(self.pointwise_score, axis=2)
         '''
 
-        self.results,_update = theano.scan(lambda score,y: score[T.arange(141),y],
-                       sequences=[self.pointwise_score,Y])
+        self.results,_update = theano.scan(lambda score,y,mask: score[T.arange(141),y] * mask,
+                       sequences=[self.pointwise_score,Y,masks])
 
 
         #TODO: compute total score of all path (eq, 12, NLP from Scratch)

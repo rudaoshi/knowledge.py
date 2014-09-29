@@ -112,7 +112,7 @@ class SrlNeuralLanguageModelCore(object):
                 n_out = self.hidden_layer_size,
                 activation=T.tanh)
 
-        self.sentce_loglikelihood = SentenceLevelLogLikelihoodLayer(rng,self.hidden_layer.output,self.y,self.hidden_layer_size,self.tags_num)
+        self.sentce_loglikelihood = SentenceLevelLogLikelihoodLayer(rng,self.hidden_layer.output,self.y,self.masks,self.hidden_layer_size,self.tags_num)
 
         # TODO we use poitwise likelihood here
         '''

@@ -59,7 +59,7 @@ class SentenceLevelLogLikelihoodLayer(object):
     determine a class membership probability.
     """
 
-    def __init__(self,rng, input , Y , masks ,n_in, n_out):
+    def __init__(self,rng, input , Y , masks , max_term_per_sent, n_in, n_out):
         """ Initialize the parameters of the logistic regression
 
         :type input: theano.tensor.TensorType
@@ -79,6 +79,9 @@ class SentenceLevelLogLikelihoodLayer(object):
         self.n_in = n_in
         self.n_out = n_out
 
+        self.Y = Y
+        self.masks = masks
+
         # initialize with 0 the weights W as a matrix of shape (n_in, n_out)
         self.W = theano.shared(value=np.asarray(rng.uniform(low=-2.0, high=2.0, size=(n_in, n_out)),
                                                  dtype=theano.config.floatX),
@@ -93,18 +96,13 @@ class SentenceLevelLogLikelihoodLayer(object):
 
         # pointwise_score shape (batch_size,max_term_per_sent,n_out)
         self.pointwise_score = T.dot(input, self.W) + self.b.dimshuffle('x',0)
-        '''
         self.y_pred_pointwise = T.argmax(self.pointwise_score, axis=2)
-        '''
 
-        self.results,_update = theano.scan(lambda score,y,mask: score[T.arange(141),y] * mask,
+        self.results,_update = theano.scan(lambda score,y,mask: score[T.arange(max_term_per_sent),y] * mask,
                        sequences=[self.pointwise_score,Y,masks])
 
 
         #TODO: compute total score of all path (eq, 12, NLP from Scratch)
-
-
-
         '''
         result, updates = theano.scan(lambda s, delta_tm1, trans_mat: s + T.log(T.sum(T.exp(T.tile(delta_tm1, tag_num) + trans_mat),axis=0 )),
                                 sequences = pointwise_score,
@@ -125,30 +123,13 @@ class SentenceLevelLogLikelihoodLayer(object):
         self.log_likelihood = selected_path_score - T.sum(T.exp((delta)),axis=0)
         '''
 
-        # compute prediction as class whose probability is maximal in
-        # symbolic form
-        # self.y_pred_pointwise = T.argmax(self.p_y_given_x, axis=1)
-
-
 
         # parameters of the model
         #self.params = [self.W, self.b, self.tag_trans_matrix]
         self.params = [self.W, self.b]
 
     def negative_log_likelihood_pointwise(self):
-        #input_num = input.shape[0]
-        #tag_num = self.n_out
-        '''
-        if len_or_masks.ndim == 0:
-            return -T.mean(T.log(self.pointwise_score)[T.arange(y.shape[0]), y][:len_or_masks])
-        elif len_or_masks.ndim == 1:
-            return -T.mean(T.log(self.pointwise_score)[T.arange(y.shape[0]), y] * len_or_masks)
-        else:
-            raise TypeError('len_or_masks should have 1 or 2 dimension')
-        '''
-
         #return -T.mean(T.log(pointwise_score)[T.arange(y.shape[0]), y] * len_or_masks)
-        #return -T.mean(T.log(self.results))
         return -T.mean(self.pointwise_score)
 
     def negative_log_likelihood(self, y):
@@ -180,7 +161,7 @@ class SentenceLevelLogLikelihoodLayer(object):
         # i.e., the mean log-likelihood across the minibatch.
         return - self.log_likelihood
 
-    def errors(self, y, len_or_masks):
+    def errors(self):
         """Return a float representing the number of errors in the minibatch
         over the total number of examples of the minibatch ; zero one
         loss over the size of the minibatch
@@ -210,7 +191,7 @@ class SentenceLevelLogLikelihoodLayer(object):
             raise NotImplementedError()
         '''
 
-        return T.mean(T.neq(self.y_pred_pointwise, y) * len_or_masks)
+        return T.mean(T.neq(self.y_pred_pointwise, self.Y) * self.masks)
 
 def load_data(dataset):
     ''' Loads the dataset

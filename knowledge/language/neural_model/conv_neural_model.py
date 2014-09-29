@@ -112,39 +112,20 @@ class SrlNeuralLanguageModelCore(object):
                 n_out = self.hidden_layer_size,
                 activation=T.tanh)
 
-        self.sentce_loglikelihood = SentenceLevelLogLikelihoodLayer(rng,self.hidden_layer.output,self.y,self.masks,self.hidden_layer_size,self.tags_num)
-
         # TODO we use poitwise likelihood here
-        '''
-        results, _updates = theano.scan(lambda din,mask:
-                self.sentce_loglikelihood.negative_log_likelihood_pointwise(din,self.y,mask),
-                sequences=[self.hidden_layer.output,self.masks])
-                #outputs_info=like)
-        #self._likelihood = results[-1]
-        self._likelihood = results.sum()
-        '''
-        #self._likelihood = self.sentce_loglikelihood.negative_log_likelihood_pointwise(self.hidden_layer.output[0,:,:],self.y[0,:],self.masks[0,:])
+        self.sentce_loglikelihood = SentenceLevelLogLikelihoodLayer(rng,self.hidden_layer.output,
+                self.y,self.masks,
+                self.max_term_per_sent,
+                self.hidden_layer_size,
+                self.tags_num)
 
-        '''
-        results, _updates = theano.scan(lambda x_i:
-                self.sentce_loglikelihood.negative_log_likelihood_pointwise(self.hidden_layer.output,self.y,self.masks),
-                sequences=[T.arange(self.x.shape[0])])
-                #outputs_info=like)
-        #self._likelihood = results[-1]
-        '''
         self._likelihood = self.sentce_loglikelihood.negative_log_likelihood_pointwise()
+        self._errors = self.sentce_loglikelihood.errors()
 
     def likelihood(self):
         return self._likelihood
 
     def errors(self):
-        #errors = theano.shared(0.0)
-        results, updates = theano.scan(lambda din,mask:
-                self.sentce_loglikelihood.errors(self.y,mask),
-                sequences=[self.hidden_layer.output,self.masks])
-                #outputs_info=errors)
-        #self._errors = results[-1]
-        self._errors = results.sum()
         return self._errors
 
 
@@ -180,8 +161,7 @@ class SrlNeuralLanguageModel(object):
                 + (self.core.hidden_layer.W ** 2).sum()
 
         self.negative_log_likelihood = self.core.likelihood()
-        # same holds for the function computing the number of errors
-        #self.errors = self.core.errors()
+        self.errors = self.core.errors()
 
         # we only use L2 regularization
         self.cost = self.negative_log_likelihood \
@@ -210,54 +190,9 @@ class SrlNeuralLanguageModel(object):
         #self.train_model = theano.function(inputs=[self.input,self.label,self.masks], outputs=self.core.negative_log_likelihood,on_unused_input='ignore')
         #self.train_model = theano.function(inputs=[self.input,self.label,self.masks], outputs=self.cost,on_unused_input='ignore')
         self.train_model = theano.function(inputs=[self.input,self.label,self.masks], outputs=self.cost,updates=self.updates,on_unused_input='ignore')
-
-    def test_foo(self,x,y,sent_length,masks,batch_iter_num=1,learning_rate=0.1):
-        borrow = True
-        '''
-        train_set_X = T.cast(theano.shared(numpy.asarray(x,
-            dtype=theano.config.floatX),
-            borrow=borrow), "int32")
-        train_set_y = T.cast(theano.shared(numpy.asarray(y,
-            dtype=theano.config.floatX),
-            borrow=borrow), "int32")
-        train_set_masks = T.cast(theano.shared(numpy.asarray(masks,
-            dtype=theano.config.floatX),
-            borrow=borrow), "int32")
-        '''
-
-        print '... training'
-
-        start_time = time.clock()
-        epoch = 0
-        minibatch_avg_cost = 0
-        # begin to train this mini batch
-        while (epoch < batch_iter_num):
-            epoch = epoch + 1
-            minibatch_avg_cost = self.train_model(x,y,masks)
-        end_time = time.clock()
-        return minibatch_avg_cost,end_time - start_time
-        '''
-        return train_model
-        '''
-
+        self.valid_model = theano.function(inputs=[self.input,self.label,self.masks], outputs=self.errors,on_unused_input='ignore')
 
     def fit_batch(self,x,y,sent_length,masks,batch_iter_num=1,learning_rate=0.1):
-        '''
-        borrow = True
-        train_set_X = T.cast(theano.shared(numpy.asarray(x,
-            dtype=theano.config.floatX),
-            borrow=borrow), "int32")
-        train_set_y = T.cast(theano.shared(numpy.asarray(y,
-            dtype=theano.config.floatX),
-            borrow=borrow), "int32")
-        train_set_masks = T.cast(theano.shared(numpy.asarray(masks,
-            dtype=theano.config.floatX),
-            borrow=borrow), "int32")
-        '''
-
-
-        print '... training'
-
         start_time = time.clock()
         epoch = 0
         minibatch_avg_cost = 0
@@ -270,26 +205,10 @@ class SrlNeuralLanguageModel(object):
 
 
     def valid(self,x,y,sent_length,masks):
-        borrow = True
-        valid_set_X = T.cast(theano.shared(numpy.asarray(x,
-            dtype=theano.config.floatX),
-            borrow=borrow), "int32")
-        valid_set_y = T.cast(theano.shared(numpy.asarray(y,
-            dtype=theano.config.floatX),
-            borrow=borrow), "int32")
-        valid_set_masks = T.cast(theano.shared(numpy.asarray(masks,
-            dtype=theano.config.floatX),
-            borrow=borrow), "int32")
-
         start_time = time.clock()
-        valid_model = theano.function(inputs=[self.input,self.label,self.masks], outputs=self.errors,
-                givens={
-                    self.input: valid_set_X,
-                    self.label: valid_set_y,
-                    self.masks: valid_set_masks
-                    })
+        minibatch_errors = self.valid_model(x,y,masks)
         end_time = time.clock()
-        return valid_model(x,y,masks),end_time - start_time
+        return minibatch_errors,end_time - start_time
 
 
 

@@ -1,7 +1,7 @@
 __author__ = 'Sun'
 
 
-from knowledge.language.core.corpora import Corpora
+from knowledge.language.core.corpora_bak import Corpora
 from knowledge.language.neural_model.neural_model import NeuralLanguageModel
 from knowledge.language.neural_model.problem.pos_tag_problem import PosTagProblem
 

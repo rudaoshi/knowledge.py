@@ -1,6 +1,6 @@
-from knowledge.language.core.corpora import Conll05
+from knowledge.language.core.corpora_bak import Conll05
 from knowledge.language.neural_model.problem.srl_problem import SrlProblem
-from knowledge.language.core.corpora import Corpora
+from knowledge.language.core.corpora_bak import Corpora
 from knowledge.language.core.word import Word
 import os
 

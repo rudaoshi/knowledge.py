@@ -96,10 +96,11 @@ class SentenceLevelLogLikelihoodLayer(object):
 
         # pointwise_score shape (batch_size,max_term_per_sent,n_out)
         self.pointwise_score = T.dot(input, self.W) + self.b.dimshuffle('x',0)
+        # y_pred_pointwise shape (batch_size,max_term_per_sent)
         self.y_pred_pointwise = T.argmax(self.pointwise_score, axis=2)
 
         self.results,_update = theano.scan(lambda score,y,mask: score[T.arange(max_term_per_sent),y] * mask,
-                       sequences=[self.pointwise_score,Y,masks])
+                       sequences=[self.pointwise_score,self.Y,self.masks])
 
 
         #TODO: compute total score of all path (eq, 12, NLP from Scratch)
@@ -130,7 +131,8 @@ class SentenceLevelLogLikelihoodLayer(object):
 
     def negative_log_likelihood_pointwise(self):
         #return -T.mean(T.log(pointwise_score)[T.arange(y.shape[0]), y] * len_or_masks)
-        return -T.mean(self.pointwise_score)
+        #return -T.mean(self.pointwise_score)
+        return -T.mean(self.results)
 
     def negative_log_likelihood(self, y):
         """Return the mean of the negative log-likelihood of the prediction
@@ -191,7 +193,7 @@ class SentenceLevelLogLikelihoodLayer(object):
             raise NotImplementedError()
         '''
 
-        return T.mean(T.neq(self.y_pred_pointwise, self.Y) * self.masks)
+        return T.cast(T.sum(T.neq(self.y_pred_pointwise, self.Y) * self.masks),'float32') / T.sum(self.masks)
 
 def load_data(dataset):
     ''' Loads the dataset

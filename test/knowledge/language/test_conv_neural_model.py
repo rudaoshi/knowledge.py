@@ -77,8 +77,9 @@ def test_srl_conv_network():
     model_params['conv_hidden_feature_num'] = 20
 
     model_params['hidden_layer_size'] = 100
-    model_params['tags_num'] = len(SrlTypes.SRL_ID_MAP)
+    model_params['tags_num'] = len(SrlTypes.SRL_ID_MAP) + 1
 
+    model_params['learning_rate'] = 0.3
 
     print 'model params'
     pp = pprint.PrettyPrinter(indent=4)
@@ -90,13 +91,15 @@ def test_srl_conv_network():
     # exp params
     n_epochs = 1000
     batch_iter_num = 10
-    learning_rate = 0.001
-    validation_frequency = 100
+    validation_frequency = 2
 
     epoch = 0
     done_looping = False
-    while (epoch < n_epochs) and (not done_looping):
-        iter = 0
+
+    from collections import Counter
+    cnt = Counter()
+    while (epoch <= n_epochs) and (not done_looping):
+        iter = 1
         for idx,data in enumerate(srl_problem.get_batch(batch_size = 10000,
             window_size = window_size,
             max_size = max_size)):
@@ -104,19 +107,38 @@ def test_srl_conv_network():
             print 'data %d, X shape %s,Y shape %s,sent_len shape %s,masks shape %s' % (idx,str(X.shape),str(Y.shape),str(sent_len.shape),str(masks.shape))
             X = X.astype(np.int32)
             Y = Y.astype(np.int32)
+            #np.savetxt('/home/kingsfield/data/Y',Y,delimiter=',')
+            #np.save('/home/kingsfield/data/Y',Y)
+            #np.save('/home/kingsfield/data/masks',masks)
             sent_len = sent_len.astype(np.int32)
             masks = masks.astype(np.int32)
 
+
+            for row,l in zip(Y,sent_len):
+                for idx in xrange(l):
+                    cnt[row[idx]]+= 1
+
             if iter % validation_frequency == 0:
-                error,time_cost = model.valid(X,Y,sent_len,masks)
+                error,pred,time_cost = model.valid(X,Y,sent_len,masks)
+                #np.savetxt('/home/kingsfield/data/pred',pred,delimiter=',')
+                #np.save('/home/kingsfield/data/pred',pred)
                 print >> sys.stderr, 'epoch %i, minibatch %i/%i, validation error %f %%,cost time %f' % \
                      (epoch, iter,100,error * 100.,time_cost)
                 pass
             else:
                 minibatch_avg_cost,time_cost = model.fit_batch(X,Y,sent_len,masks)
-                print >> sys.stderr, 'epoch %i, minibatch %i/%i, minibatch cost,cost time %f', \
+                print >> sys.stderr, 'epoch %i, minibatch %i/%i, minibatch cost %f,cost time %f' % \
                         (epoch,iter,100,minibatch_avg_cost,time_cost)
             iter += 1
         epoch += 1
+    s = sum(cnt.values())
+    idmap = dict([v,k] for k,v in SrlTypes.SRL_ID_MAP.items())
+    for k,v in cnt.most_common():
+        print '\t',k,idmap[k],v,v * 100. / s
+    print len(cnt),len(SrlTypes.SRL_ID_MAP)
+    s1 = set([idmap[i] for i in cnt.keys()])
+    s2 = set(SrlTypes.SRL_ID_MAP.keys())
+    print 's1-s2',s1-s2
+    print 's2-s1',s2-s1
 
 

@@ -175,7 +175,7 @@ class SrlNeuralLanguageModel(object):
 
         self.updates = []
 
-        learning_rate = 0.1
+        learning_rate = model_params['learning_rate']
         for param, gparam in zip(self.params, self.gparams):
             self.updates.append((param, param - learning_rate * gparam))
 
@@ -190,7 +190,7 @@ class SrlNeuralLanguageModel(object):
         #self.train_model = theano.function(inputs=[self.input,self.label,self.masks], outputs=self.core.negative_log_likelihood,on_unused_input='ignore')
         #self.train_model = theano.function(inputs=[self.input,self.label,self.masks], outputs=self.cost,on_unused_input='ignore')
         self.train_model = theano.function(inputs=[self.input,self.label,self.masks], outputs=self.cost,updates=self.updates,on_unused_input='ignore')
-        self.valid_model = theano.function(inputs=[self.input,self.label,self.masks], outputs=self.errors,on_unused_input='ignore')
+        self.valid_model = theano.function(inputs=[self.input,self.label,self.masks], outputs=[self.errors,self.core.sentce_loglikelihood.y_pred_pointwise],on_unused_input='ignore')
 
     def fit_batch(self,x,y,sent_length,masks,batch_iter_num=1,learning_rate=0.1):
         start_time = time.clock()
@@ -206,9 +206,9 @@ class SrlNeuralLanguageModel(object):
 
     def valid(self,x,y,sent_length,masks):
         start_time = time.clock()
-        minibatch_errors = self.valid_model(x,y,masks)
+        minibatch_errors,pred = self.valid_model(x,y,masks)
         end_time = time.clock()
-        return minibatch_errors,end_time - start_time
+        return minibatch_errors,pred,end_time - start_time
 
 
 

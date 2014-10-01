@@ -1,4 +1,4 @@
-from knowledge.language.core.corpora import Conll05
+from knowledge.language.core.corpora_bak import Conll05
 import os
 
 rawstr = '''

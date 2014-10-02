@@ -29,23 +29,23 @@ class SrlProblem(object):
         #return len(self.__srl_types)
         pass
 
-    def word_dist(self,sent_sz,idx,pos_conv_size,window_sz,max_term_per_sent):
+    def word_dist(self,sent_sz,idx,window_size,max_term_per_sent):
         '''
         return the position feature
         '''
-        assert window_sz % 2 == 1, 'windows_size should be an odd number'
-        assert sent_sz <= max_term_per_sent, 'maxium length of sentence should not be greater than %d' %(max_sz - window_sz + 1)
-        ret = [0] * (sent_sz+window_sz-1)
-        half_win = (window_sz-1) / 2
-        tpos = idx + half_win
+        assert window_size % 2 == 1, 'windows_size should be an odd number'
+        assert sent_sz <= max_term_per_sent, 'maxium length of sentence should not be greater than %d' %(max_term_per_sent)
+        ret = [0] * (sent_sz+window_size-1)
+        position_conv_half_window = (window_size-1) / 2
+        tpos = idx + position_conv_half_window
         sz = len(ret)
         for i in xrange(sz):
             pos = i - tpos
-            if pos < -pos_conv_size:
-                pos = -pos_conv_size
-            elif pos > pos_conv_size:
-                pos = pos_conv_size
-            pos += pos_conv_size
+            if pos < -position_conv_half_window:
+                pos = -position_conv_half_window
+            elif pos > position_conv_half_window:
+                pos = position_conv_half_window
+            pos += position_conv_half_window
             # all position is added 1, because 0 is a padding position id
             ret[i] = pos + 1
         if sent_sz < max_term_per_sent:
@@ -53,19 +53,23 @@ class SrlProblem(object):
         return ret
 
 
-    def pad_sent_word(self,sentence,window_sz,max_term_per_sent):
+    def pad_sent_word(self,sentence,window_size,max_term_per_sent):
         '''
         there exist two types of padding in this version
         pad1_word is expected to have some semantics meanings,
         while pad2 is just padding to make all sentence have the same length
         '''
         sz = len(sentence)
-        assert window_sz % 2 == 1, 'windows_size should be an odd number'
+        assert window_size % 2 == 1, 'windows_size should be an odd number'
         assert sz <= max_term_per_sent, 'maxium length of sentence should not be greater than %d' % (max_term_per_sent)
-        pad1_word = [Word.padding_word().id for _i in xrange((window_sz-1)/2)]
-        pad1_pos = [Word.padding_pos().id for _i in xrange((window_sz-1)/2)]
+        # padding for word vector
+        pad1_word = [Word.padding_word().id for _i in xrange((window_size-1)/2)]
+        # padding for position vector
+        pad1_pos = [Word.padding_pos().id for _i in xrange((window_size-1)/2)]
+
         sent_word = [self.__corpora.alloc_global_word_id(word) for word,pos,tag in sentence]
         sent_word = pad1_word + sent_word + pad1_word
+
         sent_pos = [self.__pos.alloc_global_word_id(pos) for word,pos,tag in sentence]
         sent_pos = pad1_pos + sent_pos + pad1_pos
         if sz < max_term_per_sent:
@@ -81,7 +85,7 @@ class SrlProblem(object):
         masks = []
         batch_size = kwargs['batch_size']
         window_size = kwargs['window_size']
-        pos_conv_size = kwargs['pos_conv_size']
+        #position_conv_half_window = kwargs['position_conv_half_window']
         max_size = kwargs['max_size']
         # max_size is the maximum number of sum of terms and paddings
         max_term_per_sent = max_size - window_size + 1
@@ -94,7 +98,8 @@ class SrlProblem(object):
             vpos = sentence[0]
 
             sent_word,sent_pos = self.pad_sent_word(sentence[1],window_size,max_term_per_sent)
-            sent_vpos = self.word_dist(len(sentence[1]),vpos,pos_conv_size,window_size,max_term_per_sent)
+            #sent_vpos = self.word_dist(len(sentence[1]),vpos,position_conv_half_window,window_size,max_term_per_sent)
+            sent_vpos = self.word_dist(len(sentence[1]),vpos,window_size,max_term_per_sent)
             one_x = []
             one_y = []
 
@@ -103,7 +108,7 @@ class SrlProblem(object):
             one_x.append(sent_vpos)
 
             for pos, (word, tag, srl_type) in enumerate(sentence[1]):
-                one_x.append(self.word_dist(len(sentence[1]),pos,pos_conv_size,window_size,max_term_per_sent))
+                one_x.append(self.word_dist(len(sentence[1]),pos,window_size,max_term_per_sent))
                 one_y.append(srl_type)
 
             # padding sentence
@@ -114,8 +119,6 @@ class SrlProblem(object):
 
             sent_len.append(len(sentence[1]))
             masks.append([1] * len(sentence[1]) + [0] * (max_term_per_sent - len(sentence[1])))
-            # TODO
-            #one_y = [SrlTypes.SRL_ID_MAP.get(t,-1) for t in one_y]
             one_y = [SrlTypes.SRL_ID_MAP[t] for t in one_y]
             y.append(one_y)
             x.append(one_x)

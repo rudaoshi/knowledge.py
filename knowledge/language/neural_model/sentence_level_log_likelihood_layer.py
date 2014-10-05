@@ -59,7 +59,7 @@ class SentenceLevelLogLikelihoodLayer(object):
     determine a class membership probability.
     """
 
-    def __init__(self,rng, input , Y , masks , max_term_per_sent, n_in, n_out):
+    def __init__(self,rng, input , Y , max_term_per_sent, n_in, n_out):
         """ Initialize the parameters of the logistic regression
 
         :type input: theano.tensor.TensorType
@@ -80,7 +80,7 @@ class SentenceLevelLogLikelihoodLayer(object):
         self.n_out = n_out
 
         self.Y = Y
-        self.masks = masks
+
 
         # initialize with 0 the weights W as a matrix of shape (n_in, n_out)
         self.W = theano.shared(value=np.asarray(rng.uniform(low=-2.0, high=2.0, size=(n_in, n_out)),

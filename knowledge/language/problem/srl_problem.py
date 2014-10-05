@@ -3,7 +3,7 @@ __author__ = 'huang'
 
 from knowledge.language.core.definition import PosTags
 from knowledge.language.core.definition import SrlTypes
-from knowledge.language.core.word import Word
+from knowledge.language.core.word.word import Word
 import numpy as np
 
 import sys
@@ -34,9 +34,9 @@ class SRLProblem(Problem):
         X = []
         y = []
         for srl in sentence.srl_structs():
-            verb_pos = srl.verb_pos
+            verb_loc = srl.verb_loc
 
-            pos_diff = [word_pos - verb_pos for word_pos in range(sentence.word_num())]
+            loc_diff = [word_loc - verb_loc for word_loc in range(sentence.word_num())]
 
             label = [ SrlTypes.SRLTYPE_ID_MAP[SrlTypes.PADDING_SRL_TYPE] ] * sentence.word_num()
 
@@ -45,10 +45,12 @@ class SRLProblem(Problem):
                     label[pos] = role.type
 
             for word_idx, word in enumerate(sentence.words()):
-                X.append(word_id_vec + pos_id_vec + pos_diff +  [word_idx, PosTags.POSTAG_ID_MAP[word.pos], pos_diff[word_idx]])
+                X.append([sentence.word_num()] + word_id_vec + pos_id_vec +
+                         [word_idx, PosTags.POSTAG_ID_MAP[word.pos], loc_diff[word_idx]]
+                )
                 y.append(label[word_idx])
 
-        return X, y
+        return np.array(X), np.array(y)
 
     def get_data_batch(self, corpora, window_size):
 

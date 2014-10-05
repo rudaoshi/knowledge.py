@@ -41,7 +41,7 @@ class SRLStructure(object):
     def __init__(self, verb, verb_pos):
 
         self.__verb = verb
-        self.__verb_pos = verb_pos
+        self.__verb_loc = verb_pos
 
         self.__verb_sense = None
         self.__verb_infinitive = None
@@ -60,7 +60,7 @@ class SRLStructure(object):
 
     def pos_shift(self, shift):
 
-        self.__verb_pos += shift
+        self.__verb_loc += shift
 
         for name in self.__roles:
             self.__roles[name].pos_shift(shift)
@@ -71,8 +71,8 @@ class SRLStructure(object):
         return self.__verb
 
     @property
-    def verb_pos(self):
-        return self.__verb_pos
+    def verb_loc(self):
+        return self.__verb_loc
 
     @property
     def verb_sense(self):

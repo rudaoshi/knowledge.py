@@ -158,7 +158,7 @@ class Conll05Corpora(Corpora):
                     verb_idx = 0
                     for pos, srl in enumerate(sentence.srl_structs()):
                         cur_prop = props[:,verb_idx]
-                        assert "(V" in cur_prop[srl.verb_pos], "Bad parser"
+                        assert "(V" in cur_prop[srl.verb_loc], "Bad parser"
 
                         for role_type, (start_pos, end_pos) in parse_start_end_components(cur_prop):
                             role = Role(role_type, start_pos, end_pos)

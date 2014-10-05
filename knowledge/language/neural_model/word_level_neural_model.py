@@ -13,7 +13,7 @@ from knowledge.machine.neuralnetwork.layer.lookup_table_layer import LookupTable
 from knowledge.util.theano_util import shared_dataset
 
 
-class NeuralLanguageModelCore(object):
+class WordLevelNeuralModelCore(object):
 
 
     def __init__(self, word_ids, word_num, window_size, feature_num,
@@ -44,7 +44,7 @@ class NeuralLanguageModelCore(object):
 
 
 
-class NeuralLanguageModel(object):
+class WordLevelNeuralModel(object):
 
 
 
@@ -60,7 +60,7 @@ class NeuralLanguageModel(object):
         self.input = T.imatrix('input')  # the data is presented as rasterized images
         self.label = T.ivector('label')
 
-        self.core = NeuralLanguageModelCore(self.input, word_num, window_size, feature_num,
+        self.core = WordLevelNeuralModelCore(self.input, word_num, window_size, feature_num,
                  hidden_layer_size, n_outs, L1_reg, L2_reg,
                  numpy_rng, theano_rng)
 

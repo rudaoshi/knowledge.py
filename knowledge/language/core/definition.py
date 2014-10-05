@@ -3,6 +3,7 @@ __author__ = 'Sun'
 
 class PosTags(object):
 
+    PADDING_POS_TAG = "#PAD#"
     POSTAG_ID_MAP = dict((tag, id) for id, tag in enumerate("""
             #
             $
@@ -50,11 +51,13 @@ class PosTags(object):
             WP$
             WRB
             ``
-        """.split()))
+        """.split() + [PADDING_POS_TAG]))
 
 
 
 class ChunkTypes(object):
+
+    PADDING_CHUNK_TYPE = "#PAD#"
 
     CHUNKTYPE_ID_MAP = dict((tag, id) for id, tag in enumerate([
                          'B-ADJP',
@@ -79,10 +82,21 @@ class ChunkTypes(object):
                          'I-SBAR',
                          'I-UCP',
                          'I-VP',
-                         'O']))
+                         'O',
+                         PADDING_CHUNK_TYPE]))
+
+
+class NERTypes(object):
+
+    PADDING_NER_TYPE = "#PAD#"
+    NERTYPE_ID_MAP = dict((tag,id) for id,tag in enumerate([
+        '#',
+        PADDING_NER_TYPE]))
 
 class SrlTypes(object):
-    SRL_ID_MAP = dict((tag,id) for id,tag in enumerate([
+
+    PADDING_SRL_TYPE = "#PAD#"
+    SRLTYPE_ID_MAP = dict((tag,id) for id,tag in enumerate([
         '#',
         '*',
         'R-A4',
@@ -135,7 +149,8 @@ class SrlTypes(object):
         'C-A0',
         'R-AA',
         'C-A5',
-    'R-AM-PNC',
-    'AM-ADV',
-    'C-AM-ADV',
-    'AM-NEG']))
+        'R-AM-PNC',
+        'AM-ADV',
+        'C-AM-ADV',
+        'AM-NEG',
+        PADDING_SRL_TYPE]))

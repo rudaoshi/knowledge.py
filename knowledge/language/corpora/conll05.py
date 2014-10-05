@@ -5,7 +5,8 @@ from knowledge.language.core.corpora import Corpora
 from knowledge.language.core.word import word, word_repo
 from knowledge.language.core.sentence.property import WordProperty
 from knowledge.language.core.sentence.sentence import Sentence
-from knowledge.language.core.sentence.verb import Verb
+from knowledge.language.core.sentence.srl_structure import SRLStructure, Role
+from knowledge.language.core.sentence.chunk_structure import Chunk
 
 def parse_start_end_components(tags):
 
@@ -130,31 +131,38 @@ class Conll05Corpora(Corpora):
                         cur_word = word_repo.get_word(word_name)
 
                         word_property = WordProperty()
-                        word_property.ne = ne
-                        word_property.pos =pos
+                        word_property.pos = pos
 
                         sentence.add_word(cur_word, word_property)
                         if  word_info[6] != "-":
 
-                            verb = Verb(word)
-                            verb.verb_sense = word_info[6]
-                            verb.verb_infinitive = word_repo.get_word(word_info[7])
-                            sentence.add_verb(pos, verb)
+                            srl = SRLStructure(word, pos)
+                            srl.verb_sense = word_info[6]
+                            srl.verb_infinitive = word_repo.get_word(word_info[7])
+                            sentence.add_srl_struct(srl)
 
-                    sentence.trunk = sentence_info[:,3]
-                    sentence.phrase = sentence_info[:, 4]
-                    sentence.syntree = sentence_info[:, 5]
+                    for ne_type, (start_pos, end_pos) in parse_start_end_components(sentence_info[:,1]):
+                        chunk = Chunk(ne_type, start_pos, end_pos)
+                        sentence.add_ne(chunk)
+                    for chunk_type, (start_pos, end_pos) in parse_start_end_components(sentence_info[:,3]):
+                        chunk = Chunk(chunk_type, start_pos, end_pos)
+                        sentence.add_chunk(chunk)
+                    for phrase_type, (start_pos, end_pos) in parse_start_end_components(sentence_info[:,4]):
+                        chunk = Chunk(phrase_type, start_pos, end_pos)
+                        sentence.add_phrase(chunk)
+
+#                    sentence.syntree = sentence_info[:, 5]
 
                     props = sentence_info[:,8:]
 
                     verb_idx = 0
-                    for pos, verb in enumerate(sentence.verbs):
+                    for pos, srl in enumerate(sentence.srl_structs()):
                         cur_prop = props[:,verb_idx]
-                        assert "(V" in cur_prop[pos], "Bad parser"
+                        assert "(V" in cur_prop[srl.verb_pos], "Bad parser"
 
-                        for name, pos in parse_start_end_components(cur_prop):
-
-                            verb.add_role(name, pos)
+                        for role_type, (start_pos, end_pos) in parse_start_end_components(cur_prop):
+                            role = Role(role_type, start_pos, end_pos)
+                            srl.add_role(role)
 
                     self.__sentences.append(sentence)
 

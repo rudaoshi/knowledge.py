@@ -1,23 +1,15 @@
-import theano
-import theano.tensor as T
 import numpy as np
 import pprint
-import time
 import sys
 import os
 
-from knowledge.machine.neuralnetwork.layer.mlp import HiddenLayer
-from knowledge.machine.neuralnetwork.layer.logistic_sgd import LogisticRegression
-from knowledge.machine.neuralnetwork.layer.conv_layer import SrlConvLayer
-from knowledge.machine.neuralnetwork.layer.lookup_table_layer import LookupTableLayer
-from knowledge.util.theano_util import shared_dataset
-
 from knowledge.language.core.corpora_bak import Conll05
-from knowledge.language.neural_model.problem.srl_problem import SrlProblem
-from knowledge.language.neural_model.conv_neural_model import SrlNeuralLanguageModel
+from knowledge.language.problem.srl_problem import SrlProblem
+from knowledge.language.neural_model.sentence_level_neural_model import SentenceLevelNeuralModel
 from knowledge.language.core.definition import SrlTypes
 from knowledge.language.core.corpora_bak import Corpora
 from knowledge.language.core.word import Word
+
 
 def test_srl_conv_network():
     print '*' * 20
@@ -77,7 +69,7 @@ def test_srl_conv_network():
     model_params['conv_hidden_feature_num'] = 20
 
     model_params['hidden_layer_size'] = 100
-    model_params['tags_num'] = len(SrlTypes.SRL_ID_MAP) + 1
+    model_params['tags_num'] = len(SrlTypes.SRLTYPE_ID_MAP) + 1
 
     model_params['learning_rate'] = 0.3
 
@@ -86,7 +78,7 @@ def test_srl_conv_network():
     pp.pprint(model_params)
 
     rng = np.random.RandomState(1234)
-    model = SrlNeuralLanguageModel(rng,model_params)
+    model = SentenceLevelNeuralModel(rng,model_params)
 
     # exp params
     n_epochs = 1000
@@ -132,12 +124,12 @@ def test_srl_conv_network():
             iter += 1
         epoch += 1
     s = sum(cnt.values())
-    idmap = dict([v,k] for k,v in SrlTypes.SRL_ID_MAP.items())
+    idmap = dict([v,k] for k,v in SrlTypes.SRLTYPE_ID_MAP.items())
     for k,v in cnt.most_common():
         print '\t',k,idmap[k],v,v * 100. / s
-    print len(cnt),len(SrlTypes.SRL_ID_MAP)
+    print len(cnt),len(SrlTypes.SRLTYPE_ID_MAP)
     s1 = set([idmap[i] for i in cnt.keys()])
-    s2 = set(SrlTypes.SRL_ID_MAP.keys())
+    s2 = set(SrlTypes.SRLTYPE_ID_MAP.keys())
     print 's1-s2',s1-s2
     print 's2-s1',s2-s1
 

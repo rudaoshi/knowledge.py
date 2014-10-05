@@ -1,21 +1,16 @@
 __author__ = 'huang'
 
+import time
+
 import theano.tensor as T
 import theano
-import numpy
-import time
-import sys
-import os
-
 from knowledge.language.neural_model.sentence_level_log_likelihood_layer import SentenceLevelLogLikelihoodLayer
-from knowledge.language.neural_model.problem.srl_problem import SrlProblem
 from knowledge.machine.neuralnetwork.layer.mlp import HiddenLayer
-from knowledge.machine.neuralnetwork.layer.logistic_sgd import LogisticRegression
-from knowledge.machine.neuralnetwork.layer.conv_layer import SrlConvLayer
+from knowledge.machine.neuralnetwork.layer.conv_layer import Conv1DLayer
 from knowledge.machine.neuralnetwork.layer.lookup_table_layer import LookupTableLayer
-from knowledge.util.theano_util import shared_dataset
 
-class SrlNeuralLanguageModelCore(object):
+
+class SentenceLevelNeuralModelCore(object):
 
 
     def __init__(self,rng,x,y,sent_length,masks,
@@ -79,16 +74,16 @@ class SrlNeuralLanguageModelCore(object):
         # conv_verbpos.out.shape = (batch_size,1,conv_hidden_feature_num,max_sentence_length-conv_window+1)
         # conv_wordpos.out.shape = (batch_size,max_sentence_length,conv_hidden_feature_num,max_sentence_length-conv_window+1)
         # note. all output above have been seted 'dimshuffle'
-        self.conv_word = SrlConvLayer('conv_word',rng,self.wordvec.output,\
+        self.conv_word = Conv1DLayer('conv_word',rng,self.wordvec.output,\
                 self.conv_hidden_feature_num,1,self.conv_window,self.word_feature_num)
 
-        self.conv_POS = SrlConvLayer('conv_POS',rng,self.POSvec.output,\
+        self.conv_POS = Conv1DLayer('conv_POS',rng,self.POSvec.output,\
                 self.conv_hidden_feature_num,1,self.conv_window,self.POS_feature_num)
 
-        self.conv_verbpos = SrlConvLayer('conv_verbpos',rng,self.verbpos_vec.output,\
+        self.conv_verbpos = Conv1DLayer('conv_verbpos',rng,self.verbpos_vec.output,\
                 self.conv_hidden_feature_num,1,self.conv_window,self.verbpos_feature_num)
 
-        self.conv_wordpos = SrlConvLayer('conv_wordpos',rng,self.wordpos_vec.output,\
+        self.conv_wordpos = Conv1DLayer('conv_wordpos',rng,self.wordpos_vec.output,\
                 self.conv_hidden_feature_num,self.max_term_per_sent,self.conv_window,self.wordpos_feature_num)
 
 
@@ -130,7 +125,7 @@ class SrlNeuralLanguageModelCore(object):
 
 
 
-class SrlNeuralLanguageModel(object):
+class SentenceLevelNeuralModel(object):
 
     def __init__(self,rng,model_params):
         self.input = T.itensor3('input') # the data is a minibatch
@@ -138,7 +133,7 @@ class SrlNeuralLanguageModel(object):
         self.sent_length= T.ivector('sent_length') # sent_length is the number of terms in each sentence
         self.masks = T.imatrix('masks') # masks which used in error and likelihood calculation
 
-        self.core = SrlNeuralLanguageModelCore(rng,self.input,self.label,self.sent_length,self.masks,model_params)
+        self.core = SentenceLevelNeuralModelCore(rng,self.input,self.label,self.sent_length,self.masks,model_params)
 
         self.params = self.core.wordvec.params() \
                 + self.core.POSvec.params() \

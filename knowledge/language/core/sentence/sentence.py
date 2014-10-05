@@ -2,19 +2,24 @@ __author__ = 'sun'
 
 from collections import OrderedDict
 
+from knowledge.language.core.sentence.property import WordProperty
 from knowledge.language.core.word.word import Word
+from knowledge.language.core.word.word_repo import get_padding_word
 from knowledge.util.data_process import moving_window
+from knowledge.language.core.definition import PosTags, ChunkTypes, NERTypes, SrlTypes
 
 class Sentence(object):
 
     def __init__(self):
         self.__words = []
         self.__word_properties = []
-        self.__verbs = OrderedDict()
+        self.__srl_structs = []
 
-        self.__trunk = None
-        self.__phrase = None
-        self.__syntree = None
+        self.__chunks = []
+        self.__phrases = []
+        self.__nes = []
+#        self.__phrase = None
+#        self.__syntree = None
 
 
 
@@ -29,6 +34,9 @@ class Sentence(object):
         for word in self.__words:
             yield word
 
+    def word_num(self):
+        return len(self.__words)
+
     def get_word(self, pos):
         return self.__words[pos]
 
@@ -40,22 +48,81 @@ class Sentence(object):
     def get_word_property(self, pos):
         return self.__word_properties[pos]
 
-    def add_verb(self, pos, verb):
+    def add_srl_struct(self, srl):
 
-        self.__verbs[pos] = verb
-        verb.owner = self
+        srl.owner = self
+        self.__srl_structs.append(srl)
 
+    def srl_num(self):
+        return len(self.__srl_structs)
 
-    def verbs(self):
+    def srl_structs(self):
 
-        for verb in self.__verbs:
+        for verb in self.__srl_structs:
             yield verb
 
+    def add_chunk(self, chunk):
 
-    def get_verb(self, pos):
-        return self.__verbs[pos]
+        self.__chunks.append(chunk)
+
+    def chunk_num(self):
+        return len(self.__chunks)
+
+    def chunks(self):
+        for chunk in self.__chunks:
+            yield chunk
+
+    def add_phrase(self, chunk):
+
+        self.__phrases.append(chunk)
+
+    def phrase_num(self):
+        return len(self.__phrases)
+
+    def phrases(self):
+        for chunk in self.__phrases:
+            yield chunk
+
+    def add_ne(self, chunk):
+        self.__nes.append(chunk)
+
+    def ne_num(self):
+        return len(self.__nes)
+
+    def nes(self):
+        for chunk in self.__nes:
+            yield chunk
 
 
+    def pad_sentece(self, windows_size):
+        """
+        Padding the sentence with nonsence word so that the moving window method can be applied
+        :param windows_size:
+        :return:
+        """
+
+        assert (windows_size+1)%2 == 0, "window size should be an odd number"
+
+        padding_num = (windows_size - 1)/2
+
+        paddings = [get_padding_word()] * padding_num
+        properties = [WordProperty()] * padding_num
+        for property in properties:
+            property.pos = PosTags.PADDING_POS_TAG
+
+        self.__words = paddings + self.words + paddings
+        self.__word_properties = properties + self.__word_properties + properties
+        for srl in self.__srl_structs:
+            srl.pos_shift(padding_num)
+
+        for ne in self.__nes:
+            ne.pos_shift(padding_num)
+
+        for chunk in self.__chunks:
+            chunk.pos_shift(padding_num)
+
+        for phrase in self.__phrases:
+            phrase.pos_shift(padding_num)
 
 
 
@@ -66,7 +133,9 @@ class Sentence(object):
 
         padding_num = (windows_size - 1)/2
 
-        paddings = [Word.padding_word() for i in range(padding_num)]
+        paddings = [get_padding_word()] * padding_num
+
+
 
         extended_words = paddings + self.words + paddings
 

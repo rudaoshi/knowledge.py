@@ -8,7 +8,67 @@ import numpy as np
 
 import sys
 
-class SrlProblem(object):
+from knowledge.language.problem.problem import Problem
+
+
+
+class SRLProblem(Problem):
+
+    def __get_dataset_for_sentence(self, sentence, window_size):
+        """
+        Extract features for sentences. The extracted features are as follows:
+        * word id: used in a lookup layer to find word embeddings
+        * word pos: pos tags of the word. used as a int feature, or in a look up table for tag embeddings
+        * distance to verb: distance from a word to a given verb.
+                            used as int feature or in a look up table for tag embeddings
+        :param sentence:
+        :return:
+        """
+
+        sentence.pad_sentece(window_size)
+
+        word_id_vec = [word.id for word in sentence.words()]
+        pos_id_vec = [PosTags.POSTAG_ID_MAP[word.pos] for word in sentence.words()]
+
+
+        X = []
+        y = []
+        for srl in sentence.srl_structs():
+            verb_pos = srl.verb_pos
+
+            pos_diff = [word_pos - verb_pos for word_pos in range(sentence.word_num())]
+
+            label = [ SrlTypes.SRLTYPE_ID_MAP[SrlTypes.PADDING_SRL_TYPE] ] * sentence.word_num()
+
+            for role in srl.roles():
+                for pos in range(role.start_pos, role.end_pos + 1):
+                    label[pos] = role.type
+
+            for word_idx, word in enumerate(sentence.words()):
+                X.append(word_id_vec + pos_id_vec + pos_diff +  [word_idx, PosTags.POSTAG_ID_MAP[word.pos], pos_diff[word_idx]])
+                y.append(label[word_idx])
+
+        return X, y
+
+    def get_data_batch(self, corpora, window_size):
+
+        while True:
+            for sentence in corpora.sentences():
+                yield self.__get_dataset_for_sentence(sentence, window_size)
+
+
+
+
+
+
+
+
+
+
+
+
+
+class SrlProblem2(object):
 
 
     def __init__(self, corpora, pos, srl_sents):
@@ -119,7 +179,7 @@ class SrlProblem(object):
 
             sent_len.append(len(sentence[1]))
             masks.append([1] * len(sentence[1]) + [0] * (max_term_per_sent - len(sentence[1])))
-            one_y = [SrlTypes.SRL_ID_MAP[t] for t in one_y]
+            one_y = [SrlTypes.SRLTYPE_ID_MAP[t] for t in one_y]
             y.append(one_y)
             x.append(one_x)
             cnt += max_term_per_sent

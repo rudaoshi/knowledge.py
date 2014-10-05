@@ -1,14 +1,14 @@
 __author__ = 'Sun'
 
-
-from knowledge.language.core.corpora_bak import Corpora
-from knowledge.language.neural_model.neural_model import NeuralLanguageModel
-from knowledge.language.neural_model.problem.pos_tag_problem import PosTagProblem
-
-import sklearn
-import sklearn.cross_validation
 import numpy
 import sys
+
+from knowledge.language.core.corpora_bak import Corpora
+from knowledge.language.neural_model.word_level_neural_model import WordLevelNeuralModel
+from knowledge.language.problem.pos_tag_problem import PosTagProblem
+import sklearn
+import sklearn.cross_validation
+
 
 def xtest_neural_language_model():
 
@@ -42,7 +42,7 @@ def xtest_neural_language_model():
 
 
 
-    model = NeuralLanguageModel(word_num = corpora.get_word_num(), window_size = 11, feature_num = 100,
+    model = WordLevelNeuralModel(word_num = corpora.get_word_num(), window_size = 11, feature_num = 100,
                  hidden_layer_size = 1000, n_outs = problem.get_class_num(), L1_reg = 0.00, L2_reg = 0.0001,
                  numpy_rng= rng)
 

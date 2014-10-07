@@ -11,6 +11,19 @@ import sys
 from knowledge.language.problem.problem import Problem
 
 
+class SRLFeatureBatch(object):
+
+    def __init__(self):
+        self.word_id = []
+        self.pos_id = []
+        self.other_feature = []
+
+    def finsh_batch(self):
+
+        self.word_id = np.array(self.word_id)
+        self.pos_id = np.array(self.pos_id)
+        self.other_feature = np.array(self.other_feature)
+
 
 class SRLProblem(Problem):
 
@@ -40,7 +53,7 @@ class SRLProblem(Problem):
                      ]
 
 
-        X = []
+        X = [] #SRLFeatureBatch()
         y = []
         for srl in sentence.srl_structs():
             verb_loc = srl.verb_loc
@@ -54,10 +67,15 @@ class SRLProblem(Problem):
                     label[pos] = role.type
 
             for word_idx, word in enumerate(sentence.words()):
-                X.append([sentence.word_num()] + word_id_vec + pos_id_vec +
+ #               X.word_id.append(word_id_vec)
+ #               X.pos_id.append(pos_id_vec)
+ #               X.other_feature.append(
+                 X.append(word_id_vec + pos_id_vec + 
                          [word_idx, PosTags.POSTAG_ID_MAP[sentence.get_word_property(word_idx).pos], loc_diff[word_idx]]
                 )
                 y.append(label[word_idx])
+
+#        X.finsh_batch()
 
         return np.array(X), np.array(y)
 

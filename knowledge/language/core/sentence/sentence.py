@@ -110,7 +110,7 @@ class Sentence(object):
         for property in properties:
             property.pos = PosTags.PADDING_POS_TAG
 
-        self.__words = paddings + self.words + paddings
+        self.__words = paddings + self.__words + paddings
         self.__word_properties = properties + self.__word_properties + properties
         for srl in self.__srl_structs:
             srl.pos_shift(padding_num)

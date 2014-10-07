@@ -14,6 +14,8 @@ class PosTags(object):
             --
             .
             :
+            AUX
+            AUXG
             CC
             CD
             DT

@@ -15,3 +15,6 @@ def get_word(word_str):
 def get_padding_word():
 
     return word_repo[PADDING_WORD_STR]
+
+def get_word_num():
+    return len(word_repo)

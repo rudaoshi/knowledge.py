@@ -14,6 +14,12 @@ from knowledge.language.problem.problem import Problem
 
 class SRLProblem(Problem):
 
+
+    def __init__(self, corpora, window_size):
+
+        self.__corpora = corpora
+        self.__window_size = window_size
+
     def __get_dataset_for_sentence(self, sentence, window_size):
         """
         Extract features for sentences. The extracted features are as follows:
@@ -27,8 +33,11 @@ class SRLProblem(Problem):
 
         sentence.pad_sentece(window_size)
 
+
         word_id_vec = [word.id for word in sentence.words()]
-        pos_id_vec = [PosTags.POSTAG_ID_MAP[word.pos] for word in sentence.words()]
+        pos_id_vec = [PosTags.POSTAG_ID_MAP[word_prop.pos]
+                      for word_prop in sentence.word_properties()
+                     ]
 
 
         X = []
@@ -46,17 +55,21 @@ class SRLProblem(Problem):
 
             for word_idx, word in enumerate(sentence.words()):
                 X.append([sentence.word_num()] + word_id_vec + pos_id_vec +
-                         [word_idx, PosTags.POSTAG_ID_MAP[word.pos], loc_diff[word_idx]]
+                         [word_idx, PosTags.POSTAG_ID_MAP[sentence.get_word_property(word_idx).pos], loc_diff[word_idx]]
                 )
                 y.append(label[word_idx])
 
         return np.array(X), np.array(y)
 
-    def get_data_batch(self, corpora, window_size):
+    def get_data_batch(self):
 
-        while True:
-            for sentence in corpora.sentences():
-                yield self.__get_dataset_for_sentence(sentence, window_size)
+
+        for sentence in  self.__corpora.sentences():
+            X, y = self.__get_dataset_for_sentence(sentence, self.__window_size)
+            if len(y) == 0:
+                continue
+
+            yield X, y
 
 
 

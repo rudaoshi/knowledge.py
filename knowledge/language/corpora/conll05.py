@@ -1,12 +1,13 @@
 __author__ = 'sunmingming01'
 
-
+import numpy as np
 from knowledge.language.core.corpora import Corpora
 from knowledge.language.core.word import word, word_repo
 from knowledge.language.core.sentence.property import WordProperty
 from knowledge.language.core.sentence.sentence import Sentence
 from knowledge.language.core.sentence.srl_structure import SRLStructure, Role
 from knowledge.language.core.sentence.chunk_structure import Chunk
+from knowledge.language.core import definition
 
 def parse_start_end_components(tags):
 
@@ -25,7 +26,7 @@ def parse_start_end_components(tags):
             tag_end_pos =  idx
 
             if not tag_name:
-                raise Exception('Bad tags')
+                raise Exception('Bad tags :' + " ".join(map(str,tags)))
 
             yield (tag_name, (tag_start_pos, tag_end_pos))
 
@@ -99,11 +100,36 @@ class Conll05Corpora(Corpora):
     TARGETS. The target verbs of the sentence, in infinitive form.
     PROPS. For each target verb, a column reprenting the arguments of the target verb.
 
+    However, the data set we found is in following format
+
+    WORDS---->                     POS   FULL_SYNT->  NE--->   VS  TARGETS          PROPS---->
+    Ms.                            NNP   (S1(S(NP*         *    -   -                    (A0*
+    Haag                           NNP           *)    (LOC*)   -   -                       *)
+    plays                          VBZ        (VP*         *    02  play                  (V*)
+    Elianti                        NNP        (NP*))       *    -   -                    (A1*)
+    .                              .             *))       *    -   -                       *
+
+
     """
 
     def __init__(self):
 
         self.__sentences = []
+
+    def sentences(self):
+
+        for sentence in self.__sentences:
+            yield sentence
+
+
+    def get_corpora_character(self):
+
+        character = dict()
+        character['word_num'] = word_repo.get_word_num()
+        character['POS_type_num'] = len(definition.PosTags.POSTAG_ID_MAP)
+        character['SRL_type_num'] = len(definition.SrlTypes.SRLTYPE_ID_MAP)
+
+        return character
 
     def load(self, file_path):
         '''
@@ -125,8 +151,11 @@ class Conll05Corpora(Corpora):
 
                     sentence = Sentence()
 
-                    for pos, word_info in enumerate(sentence_info):
-                        word_name, ne, pos = word_info[:3]
+                    sentence_array = np.array(sentence_info)
+                    sentence_info = []
+
+                    for loc, word_info in enumerate(sentence_array):
+                        word_name, pos = word_info[:2]
 
                         cur_word = word_repo.get_word(word_name)
 
@@ -134,35 +163,37 @@ class Conll05Corpora(Corpora):
                         word_property.pos = pos
 
                         sentence.add_word(cur_word, word_property)
-                        if  word_info[6] != "-":
+                        if  word_info[4] != "-":
 
-                            srl = SRLStructure(word, pos)
-                            srl.verb_sense = word_info[6]
-                            srl.verb_infinitive = word_repo.get_word(word_info[7])
+                            srl = SRLStructure(word, loc)
+                            srl.verb_sense = word_info[4]
+                            srl.verb_infinitive = word_repo.get_word(word_info[5])
                             sentence.add_srl_struct(srl)
 
-                    for ne_type, (start_pos, end_pos) in parse_start_end_components(sentence_info[:,1]):
+                    for ne_type, (start_pos, end_pos) in parse_start_end_components(sentence_array[:,3]):
                         chunk = Chunk(ne_type, start_pos, end_pos)
                         sentence.add_ne(chunk)
-                    for chunk_type, (start_pos, end_pos) in parse_start_end_components(sentence_info[:,3]):
-                        chunk = Chunk(chunk_type, start_pos, end_pos)
-                        sentence.add_chunk(chunk)
-                    for phrase_type, (start_pos, end_pos) in parse_start_end_components(sentence_info[:,4]):
-                        chunk = Chunk(phrase_type, start_pos, end_pos)
-                        sentence.add_phrase(chunk)
+                    # for chunk_type, (start_pos, end_pos) in parse_start_end_components(sentence_info[:,3]):
+                    #     chunk = Chunk(chunk_type, start_pos, end_pos)
+                    #     sentence.add_chunk(chunk)
+                    # for phrase_type, (start_pos, end_pos) in parse_start_end_components(sentence_info[:,4]):
+                    #     chunk = Chunk(phrase_type, start_pos, end_pos)
+                    #     sentence.add_phrase(chunk)
 
 #                    sentence.syntree = sentence_info[:, 5]
 
-                    props = sentence_info[:,8:]
+                    props = sentence_array[:,6:]
 
-                    verb_idx = 0
-                    for pos, srl in enumerate(sentence.srl_structs()):
+
+                    for verb_idx, srl in enumerate(sentence.srl_structs()):
                         cur_prop = props[:,verb_idx]
-                        assert "(V" in cur_prop[srl.verb_loc], "Bad parser"
 
                         for role_type, (start_pos, end_pos) in parse_start_end_components(cur_prop):
                             role = Role(role_type, start_pos, end_pos)
                             srl.add_role(role)
+
+
+
 
                     self.__sentences.append(sentence)
 

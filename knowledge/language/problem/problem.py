@@ -1,9 +1,9 @@
 __author__ = 'sun'
 
 
-def Problem(object):
+class Problem(object):
 
 
-    def get_data_set(self, corpora):
+    def get_data_set(self):
 
         pass

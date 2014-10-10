@@ -31,6 +31,8 @@ class SentenceLevelNeuralModelCore(object):
 
         self.word_feature_dim = kwargs['word_feature_dim']
         self.POS_feature_dim = kwargs['POS_feature_dim']
+        self.dist_to_verb_feature_dim = kwargs['dist_to_verb_feature_dim']
+        self.dist_to_word_feature_dim = kwargs['dist_to_word_feature_dim']
 
         self.conv_window_size = kwargs['conv_window_size']
         self.conv_output_dim = kwargs['conv_output_dim']
@@ -48,7 +50,7 @@ class SentenceLevelNeuralModelCore(object):
         all_word_id_input = x[:, 0 : sentence_length ]
         all_pos_id_input = x[:, sentence_length : 2*sentence_length ]
         all_dist_to_verb_id_input = x[:, 2*sentence_length :3*sentence_length ]
-        all_dist_to_this_word_id_input = x[:, 3*sentence_length :4*sentence_length ]
+        all_dist_to_word_id_input = x[:, 3*sentence_length :4*sentence_length ]
         verb_id_input = x[:, -6]
         word_id_input = x[:, -5]
         verb_pos_input = x[:, -4]
@@ -77,6 +79,24 @@ class SentenceLevelNeuralModelCore(object):
         )
         POSvec = self.pos_embedding_layer.output(
             inputs = all_pos_id_input,
+            tensor_output = True
+        )
+
+        self.dist_to_verb_embedding_layer = LookupTableLayer(
+            table_size = self.dist_to_verb_num,
+            feature_num = self.dist_to_verb_feature_dim,
+        )
+        dist_to_verb_vec = self.dist_to_verb_embedding_layer.output(
+            inputs = all_dist_to_verb_id_input,
+            tensor_output = True
+        )
+
+        self.dist_to_word_embedding_layer = LookupTableLayer(
+            table_size = self.dist_to_word_num,
+            feature_num = self.dist_to_word_feature_dim,
+        )
+        dist_to_word_vec = self.dist_to_word_embedding_layer.output(
+            inputs = all_dist_to_word_id_input,
             tensor_output = True
         )
 
@@ -115,15 +135,54 @@ class SentenceLevelNeuralModelCore(object):
             )
         )
 
-        # the first max_sentence_length means each element of it is one prediction for that word
-        # the second max_sentence_length means each element of it is one output of conv
-        # conv_out shape: (batch_size,max_term_per_sent,conv_hidden_feature_num,max_term_per_sent)
-        self.conv_out = self.word_conv_layer.output + self.pos_conv_layer.output
-        self.conv_out = self.conv_out.reshape((batch_size, self.conv_output_dim * self.conv_out.shape[-1]))
+        self.dist_to_verb_conv_layer = Conv1DLayer(
+            'conv_dist_to_verb',
+            rng,
+            1,
+            self.conv_output_dim,
+            self.conv_window_size)
 
+        #output dim = (batchsize, conv_out_dim, sentence_len, pos_embedding_dim)
+        dist_to_verb_conv_out = self.dist_to_verb_conv_layer.output(dist_to_verb_vec.dimshuffle(0,'x',1,2))
+        #reorganize data (batchsize, sentence_len, conv_out_dim * word_embedding_dim)
+        dist_to_verb_conv_out = dist_to_verb_conv_out.dimshuffle(0,2,1,3).reshape(
+            (
+                dist_to_verb_conv_out.shape[0],
+                dist_to_verb_conv_out.shape[1],
+                -1
+            )
+        )
+
+        self.dist_to_word_conv_layer = Conv1DLayer(
+            'conv_dist_to_verb',
+            rng,
+            1,
+            self.conv_output_dim,
+            self.conv_window_size)
+
+        #output dim = (batchsize, conv_out_dim, sentence_len, pos_embedding_dim)
+        dist_to_word_conv_out = self.dist_to_word_conv_layer.output(dist_to_word_vec.dimshuffle(0,'x',1,2))
+        #reorganize data (batchsize, sentence_len, conv_out_dim * word_embedding_dim)
+        dist_to_word_conv_out = dist_to_word_conv_out.dimshuffle(0,2,1,3).reshape(
+            (
+                dist_to_word_conv_out.shape[0],
+                dist_to_word_conv_out.shape[1],
+                -1
+            )
+        )
+
+        total_conv_output = T.concatenate(
+            (
+                word_conv_out,
+                pos_conv_out,
+                dist_to_verb_conv_out,
+                dist_to_word_conv_out
+            ),
+            axis = 2
+        )
 
         # max_out shape: (batch_size,max_term_per_sent,conv_hidden_feature_num)
-        self.conv_max_feature = T.max(self.conv_out, axis=0)
+        conv_max_feature = T.max(total_conv_output, axis=1)
 
 
         # hidden layer
@@ -131,7 +190,7 @@ class SentenceLevelNeuralModelCore(object):
         # ,then in likelihood, it performs another linear map. This is 
         # what senna do (P.7, figure 1).
         # hidden_layer OUTPUT SHAPE: (batch_size, max_term_per_sent, hidden_layer_size)
-        self.hidden_layer = HiddenLayer(rng=rng, input=self.conv_max_feature,
+        self.hidden_layer = HiddenLayer(rng=rng, input=conv_max_feature,
                 n_in = self.conv_output_dim,
                 n_out = self.hidden_output_dim,
                 activation=T.tanh)

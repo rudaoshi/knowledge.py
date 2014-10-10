@@ -1,3 +1,5 @@
+from knowledge.language.problem import postags
+
 __author__ = 'sunmingming01'
 
 import numpy as np
@@ -7,7 +9,7 @@ from knowledge.language.core.sentence.property import WordProperty
 from knowledge.language.core.sentence.sentence import Sentence
 from knowledge.language.core.sentence.srl_structure import SRLStructure, Role
 from knowledge.language.core.sentence.chunk_structure import Chunk
-from knowledge.language.core import definition
+
 
 def parse_start_end_components(tags):
 
@@ -126,8 +128,8 @@ class Conll05Corpora(Corpora):
 
         character = dict()
         character['word_num'] = word_repo.get_word_num()
-        character['POS_type_num'] = len(definition.PosTags.POSTAG_ID_MAP)
-        character['SRL_type_num'] = len(definition.SrlTypes.SRLTYPE_ID_MAP)
+        character['POS_type_num'] = len(postags.PosTags.POSTAG_ID_MAP)
+        character['SRL_type_num'] = len(postags.SrlTypes.SRLTYPE_ID_MAP)
 
         return character
 

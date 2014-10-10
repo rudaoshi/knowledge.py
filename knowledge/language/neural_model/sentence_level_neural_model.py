@@ -26,6 +26,8 @@ class SentenceLevelNeuralModelCore(object):
         self.word_num = kwargs['word_num']
         self.POS_type_num = kwargs['POS_type_num']
         self.SRL_type_num = kwargs['SRL_type_num']
+        self.dist_to_verb_num = kwargs['dist_to_verb_num']
+        self.dist_to_word_num = kwargs['dist_to_word_num']
 
         self.word_feature_dim = kwargs['word_feature_dim']
         self.POS_feature_dim = kwargs['POS_feature_dim']
@@ -37,15 +39,23 @@ class SentenceLevelNeuralModelCore(object):
 
 
         batch_size = x.shape[0]
-        sentence_length = int(x[0][0])
+        feature_num = x.shape[1]
+        assert (feature_num - 6) % 4 == 0, "Bad input parmeter X with wrong size"
+        sentence_length = (x - 6)/4
         # [sentence.word_num()] + word_id_vec + pos_id_vec +
         # [word_idx, PosTags.POSTAG_ID_MAP[word.pos], loc_diff[word_idx]]
 
-        all_word_id_input = x[:, 1: sentence_length + 1]
-        all_pos_id_input = x[:, sentence_length + 1: 2*sentence_length + 1]
-        word_id_input = x[:, -3]
-        pos_id_input = x[:, -2]
-        loc_diff_input = x[:, -1]
+        all_word_id_input = x[:, 0 : sentence_length ]
+        all_pos_id_input = x[:, sentence_length : 2*sentence_length ]
+        all_dist_to_verb_id_input = x[:, 2*sentence_length :3*sentence_length ]
+        all_dist_to_this_word_id_input = x[:, 3*sentence_length :4*sentence_length ]
+        verb_id_input = x[:, -6]
+        word_id_input = x[:, -5]
+        verb_pos_input = x[:, -4]
+        word_pos_input = x[:, -3]
+        dist_id_verb2word = x[:, -2]
+        dist_id_word2verb = x[:, -1]
+
 
         # we have 4 lookup tables here:
         # 1,word vector
@@ -54,11 +64,11 @@ class SentenceLevelNeuralModelCore(object):
         #   output shape: (batch size,sentence_len * POS_feature_num)
         self.word_embedding_layer = LookupTableLayer(table_size = self.word_num,
                 feature_num = self.word_feature_dim)
-        self.wordvec = self.word_embedding_layer.output(inputs = all_word_id_input) + x[:,-3:]
+        self.wordvec = self.word_embedding_layer.output(inputs = all_word_id_input)
 
         self.pos_embedding_layer = LookupTableLayer( table_size = self.POS_type_num,
                 feature_num = self.POS_feature_dim,)
-        self.POSvec = self.pos_embedding_layer.output(inputs = all_pos_id_input) + x[:,-3:]
+        self.POSvec = self.pos_embedding_layer.output(inputs = all_pos_id_input)
 
 
         # conv_word.out.shape = (batch_size,conv_feature_num, 1, feature_num - conv_window+1)

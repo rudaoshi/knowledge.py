@@ -1,12 +1,10 @@
 __author__ = 'sun'
 
-from collections import OrderedDict
-
 from knowledge.language.core.sentence.property import WordProperty
-from knowledge.language.core.word.word import Word
 from knowledge.language.core.word.word_repo import get_padding_word
 from knowledge.util.data_process import moving_window
-from knowledge.language.core.definition import PosTags, ChunkTypes, NERTypes, SrlTypes
+from knowledge.language.problem.postags import PosTags
+
 
 class Sentence(object):
 

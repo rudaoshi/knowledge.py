@@ -1,11 +1,10 @@
 __author__ = 'Sun'
 
 
-from knowledge.language.core.definition import PosTags
-from knowledge.language.core.definition import ChunkTypes
+from knowledge.language.problem.postags import PosTags
+from knowledge.language.problem.postags import ChunkTypes
 import numpy as np
 
-import sys
 
 class ChunkProblem(object):
 

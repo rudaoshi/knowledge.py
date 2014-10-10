@@ -1,12 +1,12 @@
-import numpy as np
 import pprint
 import sys
 import os
 
+import numpy as np
 from knowledge.language.core.corpora_bak import Conll05
 from knowledge.language.problem.srl_problem import SrlProblem
 from knowledge.language.neural_model.sentence_level_neural_model_bak import SentenceLevelNeuralModel
-from knowledge.language.core.definition import SrlTypes
+from knowledge.language.problem.postags import SrlTypes
 from knowledge.language.core.corpora_bak import Corpora
 from knowledge.language.core.word import Word
 

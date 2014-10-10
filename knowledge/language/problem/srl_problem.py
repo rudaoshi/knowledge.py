@@ -1,12 +1,11 @@
 __author__ = 'huang'
 
 
-from knowledge.language.core.definition import PosTags
-from knowledge.language.core.definition import SrlTypes
+from knowledge.language.problem.postags import PosTags
+from knowledge.language.problem.srltypes import SrlTypes
+from knowledge.language.problem.locdifftypes import LocDiffToVerbTypes, LocDiffToThisTypes
 from knowledge.language.core.word.word import Word
 import numpy as np
-
-import sys
 
 from knowledge.language.problem.problem import Problem
 
@@ -28,12 +27,11 @@ class SRLFeatureBatch(object):
 class SRLProblem(Problem):
 
 
-    def __init__(self, corpora, window_size):
+    def __init__(self, corpora):
 
         self.__corpora = corpora
-        self.__window_size = window_size
 
-    def __get_dataset_for_sentence(self, sentence, window_size):
+    def __get_dataset_for_sentence(self, sentence):
         """
         Extract features for sentences. The extracted features are as follows:
         * word id: used in a lookup layer to find word embeddings
@@ -44,7 +42,7 @@ class SRLProblem(Problem):
         :return:
         """
 
-        sentence.pad_sentece(window_size)
+#        sentence.pad_sentece(window_size)
 
 
         word_id_vec = [word.id for word in sentence.words()]
@@ -56,9 +54,10 @@ class SRLProblem(Problem):
         X = [] #SRLFeatureBatch()
         y = []
         for srl in sentence.srl_structs():
-            verb_loc = srl.verb_loc
+            verb_loc = srl.verb_loc  #given a verb 
 
-            loc_diff = [word_loc - verb_loc for word_loc in range(sentence.word_num())]
+            loc_to_verb = [LocDiffToVerbTypes.get_locdiff_id(word_loc - verb_loc)
+                           for word_loc in range(sentence.word_num())]
 
             label = [ SrlTypes.SRLTYPE_ID_MAP[SrlTypes.PADDING_SRL_TYPE] ] * sentence.word_num()
 
@@ -66,14 +65,23 @@ class SRLProblem(Problem):
                 for pos in range(role.start_pos, role.end_pos + 1):
                     label[pos] = role.type
 
-            for word_idx, word in enumerate(sentence.words()):
- #               X.word_id.append(word_id_vec)
- #               X.pos_id.append(pos_id_vec)
- #               X.other_feature.append(
-                 X.append(word_id_vec + pos_id_vec + 
-                         [word_idx, PosTags.POSTAG_ID_MAP[sentence.get_word_property(word_idx).pos], loc_diff[word_idx]]
-                )
-                y.append(label[word_idx])
+            for word_loc, word in enumerate(sentence.words()): # for each word
+
+                loc_to_this_word = [LocDiffToThisTypes.get_locdiff_id(word_loc - word_loc)
+                                    for word_loc in range(sentence.word_num())]
+
+ #              X.word_id.append(word_id_vec)
+ #              X.pos_id.append(pos_id_vec)
+ #              X.other_feature.append(
+                X.append(word_id_vec + pos_id_vec + loc_to_verb + loc_to_this_word +
+                         [verb_loc, word_loc,
+                          PosTags.POSTAG_ID_MAP[sentence.get_word_property(verb_loc).pos],
+                          PosTags.POSTAG_ID_MAP[sentence.get_word_property(word_loc).pos],
+                          LocDiffToVerbTypes.get_locdiff_id(word_loc - verb_loc),
+                          LocDiffToThisTypes.get_locdiff_id(verb_loc - word_loc)
+                         ]
+                         )
+                y.append(label[word_loc])
 
 #        X.finsh_batch()
 
@@ -83,7 +91,7 @@ class SRLProblem(Problem):
 
 
         for sentence in  self.__corpora.sentences():
-            X, y = self.__get_dataset_for_sentence(sentence, self.__window_size)
+            X, y = self.__get_dataset_for_sentence(sentence)
             if len(y) == 0:
                 continue
 

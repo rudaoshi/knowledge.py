@@ -12,7 +12,8 @@ class Conv1DLayer(object):
     Note : A faster version for GPU is avaliable at https://groups.google.com/forum/#!topic/theano-users/JJHZmuUDdPE
     '''
 
-    def __init__(self,name,rng, input, input_feature_map_num, output_feature_map_num, filter_width, init_W=None,init_b=None):
+    def __init__(self,name,rng, input_feature_map_num, output_feature_map_num, filter_width,
+                 init_W=None,init_b=None):
 
         # Input: a 4D tensor corresponding to a mini-batch of input images with shape:
         #        [mini-batch size, number of input feature maps, image height, image width].
@@ -43,10 +44,9 @@ class Conv1DLayer(object):
             self.b = theano.shared(init_b,name='cov_1d_layer_b_%s' % (name))
 
 
-        self.linear = conv.conv2d(input,self.W) + self.b.dimshuffle('x', 0, 'x', 'x')
-        #self.out = self.linear.dimshuffle(0,2,1,3)
-        self.output = self.linear #.dimshuffle('x',0,1,2,3)
 
+    def output(self, input):
+        return conv.conv2d(input,self.W) + self.b.dimshuffle('x', 0, 'x', 'x')
 
     def params(self):
         return [self.W,self.b]

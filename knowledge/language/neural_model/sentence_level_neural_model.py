@@ -59,29 +59,61 @@ class SentenceLevelNeuralModelCore(object):
 
         # we have 4 lookup tables here:
         # 1,word vector
-        #   output shape: (batch size,sentence_len * word_feature_num)
+        #   output shape: (batch size,sentence_len, word_feature_num)
         # 2,POS tag vector
-        #   output shape: (batch size,sentence_len * POS_feature_num)
-        self.word_embedding_layer = LookupTableLayer(table_size = self.word_num,
-                feature_num = self.word_feature_dim)
-        self.wordvec = self.word_embedding_layer.output(inputs = all_word_id_input)
+        #   output shape: (batch size,sentence_len, POS_feature_num)
+        self.word_embedding_layer = LookupTableLayer(
+            table_size = self.word_num,
+            feature_num = self.word_feature_dim
+        )
+        wordvec = self.word_embedding_layer.output(
+            inputs = all_word_id_input,
+            tensor_output = True
+        )
 
-        self.pos_embedding_layer = LookupTableLayer( table_size = self.POS_type_num,
-                feature_num = self.POS_feature_dim,)
-        self.POSvec = self.pos_embedding_layer.output(inputs = all_pos_id_input)
+        self.pos_embedding_layer = LookupTableLayer(
+            table_size = self.POS_type_num,
+            feature_num = self.POS_feature_dim,
+        )
+        POSvec = self.pos_embedding_layer.output(
+            inputs = all_pos_id_input,
+            tensor_output = True
+        )
 
+        self.word_conv_layer = Conv1DLayer(
+            'conv_word',
+            rng,
+            1,
+            self.conv_output_dim,
+            self.conv_window_size)
+        #output dim = (batchsize, conv_out_dim, sentence_len, word_embedding_dim)
+        word_conv_out = self.word_conv_layer.output(wordvec.dimshuffle(0,'x',1,2))
+        #reorganize data (batchsize, sentence_len, conv_out_dim * word_embedding_dim)
+        word_conv_out = word_conv_out.dimshuffle(0,2,1,3).reshape(
+            (
+                word_conv_out.shape[0],
+                word_conv_out.shape[1],
+                -1
+            )
+        )
 
-        # conv_word.out.shape = (batch_size,conv_feature_num, 1, feature_num - conv_window+1)
-        # conv_POS.out.shape = (batch_size,conv_feature_num, 1, feature_num - conv_window+1)
-        # conv_verbpos.out.shape = (batch_size,1,conv_hidden_feature_num,max_sentence_length-conv_window+1)
-        # conv_wordpos.out.shape = (batch_size,max_sentence_length,conv_hidden_feature_num,max_sentence_length-conv_window+1)
-        # note. all output above have been seted 'dimshuffle'
-        self.word_conv_layer = Conv1DLayer('conv_word',rng, self.wordvec.output.dimshuffle(0,'x','x',1),
-                1, self.conv_output_dim, self.conv_window_size)
+        self.pos_conv_layer = Conv1DLayer(
+            'conv_POS',
+            rng,
+            1,
+            self.conv_output_dim,
+            self.conv_window_size)
 
-        self.pos_conv_layer = Conv1DLayer('conv_POS',rng, self.POSvec.output.dimshuffle(0,'x','x',1),
-                1, self.conv_output_dim, self.conv_window_size)
-
+        #output dim = (batchsize, conv_out_dim, sentence_len, pos_embedding_dim)
+        pos_conv_out = self.pos_conv_layer.output(POSvec.dimshuffle(0,'x',1,2))
+        #reorganize data (batchsize, sentence_len, conv_out_dim * word_embedding_dim)
+        pos_conv_out = pos_conv_out.dimshuffle(0,2,1,3).reshape(
+            (
+                pos_conv_out.shape[0],
+                pos_conv_out.shape[1],
+                -1
+            )
+        )
 
         # the first max_sentence_length means each element of it is one prediction for that word
         # the second max_sentence_length means each element of it is one output of conv

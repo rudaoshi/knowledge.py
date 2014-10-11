@@ -42,8 +42,8 @@ class SentenceLevelNeuralModelCore(object):
 
         batch_size = x.shape[0]
         feature_num = x.shape[1]
-        assert (feature_num - 6) % 4 == 0, "Bad input parmeter X with wrong size"
-        sentence_length = (x - 6)/4
+#        assert (feature_num - 6) % 4 == 0, "Bad input parmeter X with wrong size {0}".format(x.shape)
+        sentence_length = (feature_num - 6)/4
         # [sentence.word_num()] + word_id_vec + pos_id_vec +
         # [word_idx, PosTags.POSTAG_ID_MAP[word.pos], loc_diff[word_idx]]
 

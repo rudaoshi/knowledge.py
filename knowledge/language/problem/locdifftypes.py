@@ -3,20 +3,20 @@ __author__ = 'sun'
 
 class LocDiffToVerbTypes(object):
 
-    diff_id_map = dict()
+    DIFF_ID_MAP = dict()
 
     @classmethod
     def get_locdiff_id(cls, loc_diff):
-        if loc_diff not in cls.diff_id_map:
-            cls.diff_id_map[loc_diff] = len(cls.diff_id_map)
-        return cls.diff_id_map[loc_diff]
+        if loc_diff not in cls.DIFF_ID_MAP:
+            cls.DIFF_ID_MAP[loc_diff] = len(cls.DIFF_ID_MAP)
+        return cls.DIFF_ID_MAP[loc_diff]
 
-class LocDiffToThisTypes(object):
+class LocDiffToWordTypes(object):
 
-    diff_id_map = dict()
+    DIFF_ID_MAP = dict()
 
     @classmethod
     def get_locdiff_id(cls, loc_diff):
-        if loc_diff not in cls.diff_id_map:
-            cls.diff_id_map[loc_diff] = len(cls.diff_id_map)
-        return cls.diff_id_map[loc_diff]
+        if loc_diff not in cls.DIFF_ID_MAP:
+            cls.DIFF_ID_MAP[loc_diff] = len(cls.DIFF_ID_MAP)
+        return cls.DIFF_ID_MAP[loc_diff]

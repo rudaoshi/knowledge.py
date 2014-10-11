@@ -3,7 +3,7 @@ __author__ = 'huang'
 
 from knowledge.language.problem.postags import PosTags
 from knowledge.language.problem.srltypes import SrlTypes
-from knowledge.language.problem.locdifftypes import LocDiffToVerbTypes, LocDiffToThisTypes
+from knowledge.language.problem.locdifftypes import LocDiffToVerbTypes, LocDiffToWordTypes
 from knowledge.language.core.word.word import Word
 import numpy as np
 
@@ -30,6 +30,10 @@ class SRLProblem(Problem):
     def __init__(self, corpora):
 
         self.__corpora = corpora
+
+        # parse the corpora and fill the dicts
+        for X,y in self.get_data_batch():
+            pass
 
     def __get_dataset_for_sentence(self, sentence):
         """
@@ -67,7 +71,7 @@ class SRLProblem(Problem):
 
             for word_loc, word in enumerate(sentence.words()): # for each word
 
-                loc_to_this_word = [LocDiffToThisTypes.get_locdiff_id(word_loc - word_loc)
+                loc_to_this_word = [LocDiffToWordTypes.get_locdiff_id(word_loc - word_loc)
                                     for word_loc in range(sentence.word_num())]
 
  #              X.word_id.append(word_id_vec)
@@ -78,7 +82,7 @@ class SRLProblem(Problem):
                           PosTags.POSTAG_ID_MAP[sentence.get_word_property(verb_loc).pos],
                           PosTags.POSTAG_ID_MAP[sentence.get_word_property(word_loc).pos],
                           LocDiffToVerbTypes.get_locdiff_id(word_loc - verb_loc),
-                          LocDiffToThisTypes.get_locdiff_id(verb_loc - word_loc)
+                          LocDiffToWordTypes.get_locdiff_id(verb_loc - word_loc)
                          ]
                          )
                 y.append(label[word_loc])

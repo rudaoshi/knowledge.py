@@ -28,14 +28,16 @@ def test_srl_neural_model():
 
     network_build_params['word_feature_dim'] = 50
     network_build_params['POS_feature_dim'] = 40
+    network_build_params['dist_to_verb_feature_dim'] = 60
+    network_build_params['dist_to_word_feature_dim'] = 60
 
     network_build_params['conv_window_size'] = 100
     network_build_params['conv_output_dim'] = 100
 
     network_build_params['hidden_output_dim'] = 100
 
-    train_problem = SRLProblem(train_corpora, network_build_params['pad_window_size'])
-    valid_problem = SRLProblem(valid_corpora, network_build_params['pad_window_size'])
+    train_problem = SRLProblem(train_corpora)
+    valid_problem = SRLProblem(valid_corpora)
 
     rng = np.random.RandomState(1234)
     network = SentenceLevelNeuralModel(rng,**network_build_params)

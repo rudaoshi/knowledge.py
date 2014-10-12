@@ -23,7 +23,6 @@ class SrlTypes(object):
         'R-A2',
         'C-AM-TMP',
         'AM-EXT',
-        '*',
         'R-AM-CAU',
         'A1',
         'A0',

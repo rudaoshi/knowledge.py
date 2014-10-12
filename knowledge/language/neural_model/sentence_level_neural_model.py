@@ -108,11 +108,12 @@ class SentenceLevelNeuralModelCore(object):
             self.conv_window_size)
         #output dim = (batchsize, conv_out_dim, sentence_len, word_embedding_dim)
         word_conv_out = self.word_conv_layer.output(wordvec.dimshuffle(0,'x',1,2))
+
         #reorganize data (batchsize, sentence_len, conv_out_dim * word_embedding_dim)
         word_conv_out = word_conv_out.dimshuffle(0,2,1,3).reshape(
             (
-                word_conv_out.shape[0],
-                word_conv_out.shape[1],
+                batch_size,
+                sentence_length,
                 -1
             )
         )
@@ -129,8 +130,8 @@ class SentenceLevelNeuralModelCore(object):
         #reorganize data (batchsize, sentence_len, conv_out_dim * word_embedding_dim)
         pos_conv_out = pos_conv_out.dimshuffle(0,2,1,3).reshape(
             (
-                pos_conv_out.shape[0],
-                pos_conv_out.shape[1],
+                batch_size,
+                sentence_length,
                 -1
             )
         )
@@ -142,13 +143,13 @@ class SentenceLevelNeuralModelCore(object):
             self.conv_output_dim,
             self.conv_window_size)
 
-        #output dim = (batchsize, conv_out_dim, sentence_len, pos_embedding_dim)
+        #output dim = (batchsize, conv_out_dim, sentence_len, dist_to_verb_feature_dim - conv_window + 1)
         dist_to_verb_conv_out = self.dist_to_verb_conv_layer.output(dist_to_verb_vec.dimshuffle(0,'x',1,2))
         #reorganize data (batchsize, sentence_len, conv_out_dim * word_embedding_dim)
         dist_to_verb_conv_out = dist_to_verb_conv_out.dimshuffle(0,2,1,3).reshape(
             (
-                dist_to_verb_conv_out.shape[0],
-                dist_to_verb_conv_out.shape[1],
+                batch_size,
+                sentence_length,
                 -1
             )
         )
@@ -165,8 +166,8 @@ class SentenceLevelNeuralModelCore(object):
         #reorganize data (batchsize, sentence_len, conv_out_dim * word_embedding_dim)
         dist_to_word_conv_out = dist_to_word_conv_out.dimshuffle(0,2,1,3).reshape(
             (
-                dist_to_word_conv_out.shape[0],
-                dist_to_word_conv_out.shape[1],
+                batch_size,
+                sentence_length,
                 -1
             )
         )
@@ -184,6 +185,11 @@ class SentenceLevelNeuralModelCore(object):
         # max_out shape: (batch_size,max_term_per_sent,conv_hidden_feature_num)
         conv_max_feature = T.max(total_conv_output, axis=1)
 
+        conv_output_dim = self.conv_output_dim * (self.word_feature_dim - self.conv_window_size + 1)+ \
+            self.conv_output_dim * (self.POS_feature_dim - self.conv_window_size + 1) + \
+            self.conv_output_dim * (self.dist_to_verb_feature_dim - self.conv_window_size + 1)+ \
+            self.conv_output_dim * (self.dist_to_word_feature_dim - self.conv_window_size + 1)
+
 
         # hidden layer
         # hidden layer perform one linear map and one nolinear transform
@@ -191,7 +197,7 @@ class SentenceLevelNeuralModelCore(object):
         # what senna do (P.7, figure 1).
         # hidden_layer OUTPUT SHAPE: (batch_size, max_term_per_sent, hidden_layer_size)
         self.hidden_layer = HiddenLayer(rng=rng, input=conv_max_feature,
-                n_in = self.conv_output_dim,
+                n_in = conv_output_dim,
                 n_out = self.hidden_output_dim,
                 activation=T.tanh)
 
@@ -231,8 +237,8 @@ import numpy as np
 class SentenceLevelNeuralModel(object):
 
     def __init__(self,rng, **kwargs):
-        self.input = T.itensor4('input') # the data is a minibatch (a sentence)
-        self.label = T.ivector('label') # label's shape (mini_batch size, max_term_per_sent)
+        self.input = T.lmatrix('input') # the data is a minibatch (a sentence)
+        self.label = T.lvector('label') # label's shape (mini_batch size)
 
 
         self.core = SentenceLevelNeuralModelCore(rng, self.input, self.label, **kwargs)
@@ -311,7 +317,9 @@ class SentenceLevelNeuralModel(object):
         epoch = 0
         done_looping = False
 
-        validation_frequency = 100
+        validation_frequency = 1000
+
+        total_minibatch = 0
 
         while (epoch < n_epochs) and (not done_looping):
             epoch = epoch + 1
@@ -321,34 +329,40 @@ class SentenceLevelNeuralModel(object):
 
                 minibatch_avg_cost = self.train_model(X,y)
                 minibatch += 1
-                if info:
+                total_minibatch += 1
+                if info and minibatch % 100 == 0:
                     print 'epoch {0}.{1}, cost = {2}'.format(epoch,minibatch,minibatch_avg_cost)
 
-            if epoch  % validation_frequency == 0:
-                # compute zero-one loss on validation set
-                validation_losses = []
-                for valid_X, valid_y in valid_problem.get_data_batch():
 
-                    validation_losses.append(self.valid_model(valid_X,valid_y))
+                if total_minibatch  % validation_frequency == 0:
+                    # compute zero-one loss on validation set
+                    validation_losses = []
+                    test_num = 0
+                    for valid_X, valid_y in valid_problem.get_data_batch():
+                        test_num += 1
+                        validation_losses.append(self.valid_model(valid_X,valid_y))
 
-                this_validation_loss = np.mean(validation_losses)
+                        if test_num >= 100:
+                            break
 
-                if info:
-                    print 'epoch {0}, validation error {1} %%'.format(epoch, this_validation_loss * 100.)
+                    this_validation_loss = np.mean(validation_losses)
 
-                # if we got the best validation score until now
-                if this_validation_loss < best_validation_loss:
-                    #improve patience if loss improvement is good enough
-                    if this_validation_loss < best_validation_loss *  \
-                           improvement_threshold:
-                        patience = max(patience, epoch * patience_increase)
+                    if info:
+                        print 'minibatch {0}, validation error {1} %%'.format(total_minibatch, this_validation_loss * 100.)
 
-                    best_validation_loss = this_validation_loss
-                    best_iter = epoch
+                    # if we got the best validation score until now
+                    if this_validation_loss < best_validation_loss:
+                        #improve patience if loss improvement is good enough
+                        if this_validation_loss < best_validation_loss *  \
+                               improvement_threshold:
+                            patience = max(patience, epoch * patience_increase)
 
-                if patience <= epoch:
-                    done_looping = True
-                    break
+                        best_validation_loss = this_validation_loss
+                        best_iter = epoch
+
+                    if patience <= epoch:
+                        done_looping = True
+                        break
 
 
         print(('Optimization complete. Best validation score of %f %% '

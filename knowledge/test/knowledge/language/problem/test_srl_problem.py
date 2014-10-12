@@ -22,4 +22,6 @@ def test_srl_problem():
             "Feature structure is not right: shape = {0}".format(X.shape)
 
 
+if __name__ == "__main__":
 
+    test_srl_problem()

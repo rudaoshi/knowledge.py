@@ -19,6 +19,3 @@ class Corpora(object):
         :return: itertor of sentences
         """
         pass
-
-    def get_corpora_character(self):
-        pass

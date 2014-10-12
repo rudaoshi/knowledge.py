@@ -1,14 +1,15 @@
 __author__ = 'huang'
 
+import numpy as np
 
 from knowledge.language.problem.postags import PosTags
 from knowledge.language.problem.srltypes import SrlTypes
 from knowledge.language.problem.locdifftypes import LocDiffToVerbTypes, LocDiffToWordTypes
 from knowledge.language.core.word.word import Word
-import numpy as np
 
 from knowledge.language.problem.problem import Problem
-
+from knowledge.language.core.word import word_repo
+from knowledge.language.problem import postags, srltypes, locdifftypes
 
 class SRLFeatureBatch(object):
 
@@ -34,6 +35,19 @@ class SRLProblem(Problem):
         # parse the corpora and fill the dicts
         for X,y in self.get_data_batch():
             pass
+
+
+    def get_problem_property(self):
+
+        character = dict()
+        character['word_num'] = word_repo.get_word_num()
+        character['POS_type_num'] = len(postags.PosTags.POSTAG_ID_MAP)
+        character['SRL_type_num'] = len(srltypes.SrlTypes.SRLTYPE_ID_MAP)
+        character['dist_to_verb_num'] = len(locdifftypes.LocDiffToVerbTypes.DIFF_ID_MAP)
+        character['dist_to_word_num'] = len(locdifftypes.LocDiffToWordTypes.DIFF_ID_MAP)
+
+
+        return character
 
     def __get_dataset_for_sentence(self, sentence):
         """
@@ -67,12 +81,12 @@ class SRLProblem(Problem):
 
             for role in srl.roles():
                 for pos in range(role.start_pos, role.end_pos + 1):
-                    label[pos] = role.type
+                    label[pos] = SrlTypes.SRLTYPE_ID_MAP[role.type]
 
             for word_loc, word in enumerate(sentence.words()): # for each word
 
-                loc_to_this_word = [LocDiffToWordTypes.get_locdiff_id(word_loc - word_loc)
-                                    for word_loc in range(sentence.word_num())]
+                loc_to_this_word = [LocDiffToWordTypes.get_locdiff_id(idx - word_loc)
+                                    for idx in range(sentence.word_num())]
 
  #              X.word_id.append(word_id_vec)
  #              X.pos_id.append(pos_id_vec)

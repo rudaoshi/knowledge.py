@@ -93,8 +93,10 @@ class HiddenLayer(object):
         lin_output = T.dot(input, self.W) + self.b
         self.output = (lin_output if activation is None
                        else activation(lin_output))
+
+    def params(self):
         # parameters of the model
-        self.params = [self.W, self.b]
+        return [self.W, self.b]
 
 
 class MLP(object):

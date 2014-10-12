@@ -22,7 +22,7 @@ def parse_start_end_components(tags):
     for idx, tag in enumerate(tags):
 
         if tag.startswith('('):
-            tag_name = tag[1:]
+            tag_name = tag[1:].replace("*","").replace(")","")
             tag_start_pos = idx
         if tag.endswith(')'):
             tag_end_pos =  idx
@@ -124,17 +124,7 @@ class Conll05Corpora(Corpora):
             yield sentence
 
 
-    def get_corpora_character(self):
 
-        character = dict()
-        character['word_num'] = word_repo.get_word_num()
-        character['POS_type_num'] = len(postags.PosTags.POSTAG_ID_MAP)
-        character['SRL_type_num'] = len(srltypes.SrlTypes.SRLTYPE_ID_MAP)
-        character['dist_to_verb_num'] = len(locdifftypes.LocDiffToVerbTypes.DIFF_ID_MAP)
-        character['dist_to_word_num'] = len(locdifftypes.LocDiffToWordTypes.DIFF_ID_MAP)
-
-
-        return character
 
     def load(self, file_path):
         '''

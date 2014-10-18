@@ -114,7 +114,7 @@ class SentenceLevelNeuralModelCore(object):
             (
                 batch_size,
                 sentence_length,
-                -1
+                self.conv_output_dim * (self.word_feature_dim - self.conv_window_size + 1)
             )
         )
 
@@ -132,7 +132,7 @@ class SentenceLevelNeuralModelCore(object):
             (
                 batch_size,
                 sentence_length,
-                -1
+                self.conv_output_dim * (self.POS_feature_dim - self.conv_window_size + 1)
             )
         )
 
@@ -150,7 +150,7 @@ class SentenceLevelNeuralModelCore(object):
             (
                 batch_size,
                 sentence_length,
-                -1
+                self.conv_output_dim * (self.dist_to_verb_feature_dim - self.conv_window_size + 1)
             )
         )
 
@@ -168,7 +168,7 @@ class SentenceLevelNeuralModelCore(object):
             (
                 batch_size,
                 sentence_length,
-                -1
+                self.conv_output_dim * (self.dist_to_word_feature_dim - self.conv_window_size + 1)
             )
         )
 
@@ -222,6 +222,8 @@ class SentenceLevelNeuralModelCore(object):
                 + self.pos_embedding_layer.params() \
                 + self.word_conv_layer.params() \
                 + self.pos_conv_layer.params() \
+                + self.dist_to_verb_conv_layer.params() \
+                + self.dist_to_word_conv_layer.params() \
                 + self.hidden_layer.params() \
                 + self.output_layer.params()
 
@@ -280,10 +282,10 @@ class SentenceLevelNeuralModel(object):
 
 
         self.train_model = theano.function(
-            inputs=[self.input,self.label],
+            inputs=[self.input, self.label],
             outputs=self.cost,
             updates=self.updates,
-            on_unused_input='ignore')
+        )
         self.valid_model = theano.function(
             inputs=[self.input,self.label],
             outputs=self.errors,
@@ -317,7 +319,7 @@ class SentenceLevelNeuralModel(object):
         epoch = 0
         done_looping = False
 
-        validation_frequency = 1000
+        validation_frequency = 100
 
         total_minibatch = 0
 

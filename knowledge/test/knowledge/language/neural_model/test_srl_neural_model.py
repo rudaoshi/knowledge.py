@@ -36,9 +36,9 @@ def test_srl_neural_model():
     network_build_params['dist_to_word_feature_dim'] = 60
 
     network_build_params['conv_window_size'] = 10
-    network_build_params['conv_output_dim'] = 100
+    network_build_params['conv_output_dim'] = 5
 
-    network_build_params['hidden_output_dim'] = 100
+    network_build_params['hidden_output_dim'] = 1000
 
 
 
@@ -53,7 +53,7 @@ def test_srl_neural_model():
     fit_params['L2_reg'] = 0
     fit_params["n_epochs"] = 1000
     fit_params["info"] = True
-    fit_params["learning_rate"] = 1
+    fit_params["learning_rate"] = 0.01
 
     network.fit(train_problem,valid_problem, ** fit_params)
 

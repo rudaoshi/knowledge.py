@@ -26,7 +26,7 @@ class Conv1DLayer(object):
         if init_W == None:
             self.W = theano.shared( np.asarray(
                                 rng.uniform(low=-1.0 / w_bound, high=1.0 / w_bound, size=w_shape),
-
+                                dtype=theano.config.floatX
                                 ),
                                name ='cov_1d_layer_W_%s' %(name))
         else:
@@ -37,6 +37,7 @@ class Conv1DLayer(object):
 
             self.b = theano.shared(np.asarray(
                         rng.uniform(low=-.5, high=.5, size=b_shape),
+                        dtype=theano.config.floatX
                         ),
                         name='cov_1d_layer_b_%s' % (name))
         else:
@@ -45,7 +46,7 @@ class Conv1DLayer(object):
 
 
     def output(self, input):
-        return conv.conv2d(input,self.W) + self.b.dimshuffle('x', 0, 'x', 'x')
+        return conv.conv2d(input,self.W, border_mode='valid') + self.b.dimshuffle('x', 0, 'x', 'x')
 
     def params(self):
         return [self.W,self.b]

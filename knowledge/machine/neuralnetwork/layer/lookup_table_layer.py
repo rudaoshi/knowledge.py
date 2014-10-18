@@ -12,12 +12,12 @@ class LookupTableLayer(object):
         self._table_size = table_size
         self._feature_num = feature_num
 
-        self._embeddings = theano.shared(np.random.random((self._table_size, feature_num)))
+        self._embeddings = theano.shared(np.random.random((self._table_size, feature_num)).astype(dtype=theano.config.floatX))
 
     def output(self, inputs, tensor_output = False):
 
         if not tensor_output:
-            return self._embeddings[inputs].reshape((inputs.shape[0], -1))
+            return self._embeddings[inputs].reshape((inputs.shape[0], inputs.shape[1] * self._feature_num))
         else:
             return self._embeddings[inputs]
         #self.output, self.update = theano.map(fn = lambda vec: self._embeddings[vec].flatten(), sequences = inputs, name='x_scan')
@@ -42,7 +42,9 @@ class MultiLookupTableLayer(object):
         self._table_size_lst = table_size_lst
         self._feature_num_lst = feature_num_lst
 
-        self._embeddings_lst = [theano.shared(np.random.random((self._table_size_lst[i], feature_num_lst[i]))) for i in xrange(self.lookup_size)]
+        self._embeddings_lst = [theano.shared(
+            np.random.random((self._table_size_lst[i], feature_num_lst[i])),dtype=theano.config.floatX)
+                                for i in xrange(self.lookup_size)]
 
         self.output = [self._embeddings_lst[i][inputs_lst[i]].reshape((inputs_lst[i].shape[0], -1)) for i in xrange(self.lookup_size)]
 

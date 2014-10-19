@@ -63,19 +63,22 @@ class SRLProblem(Problem):
 #        sentence.pad_sentece(window_size)
 
 
+        '''
         word_id_vec = [word.id for word in sentence.words()]
         pos_id_vec = [PosTags.POSTAG_ID_MAP[word_prop.pos]
                       for word_prop in sentence.word_properties()
                      ]
+        '''
 
 
         X = [] #SRLFeatureBatch()
         y = []
         for srl in sentence.srl_structs():
+            verb = srl.verb
             verb_loc = srl.verb_loc  #given a verb 
 
             loc_to_verb = [LocDiffToVerbTypes.get_locdiff_id(word_loc - verb_loc)
-                           for word_loc in range(sentence.word_num())]
+                    for word_loc in range(sentence.word_num())]
 
             label = [ SrlTypes.SRLTYPE_ID_MAP[SrlTypes.PADDING_SRL_TYPE] ] * sentence.word_num()
 
@@ -86,11 +89,12 @@ class SRLProblem(Problem):
             for word_loc, word in enumerate(sentence.words()): # for each word
 
                 loc_to_this_word = [LocDiffToWordTypes.get_locdiff_id(idx - word_loc)
-                                    for idx in range(sentence.word_num())]
+                        for idx in range(sentence.word_num())]
 
- #              X.word_id.append(word_id_vec)
+                #              X.word_id.append(word_id_vec)
  #              X.pos_id.append(pos_id_vec)
  #              X.other_feature.append(
+                '''
                 X.append(word_id_vec + pos_id_vec + loc_to_verb + loc_to_this_word +
                          [verb_loc, word_loc,
                           PosTags.POSTAG_ID_MAP[sentence.get_word_property(verb_loc).pos],
@@ -99,6 +103,13 @@ class SRLProblem(Problem):
                           LocDiffToWordTypes.get_locdiff_id(verb_loc - word_loc)
                          ]
                          )
+                '''
+                X.append([word.id,verb.id,
+                    PosTags.POSTAG_ID_MAP[sentence.get_word_property(word_loc).pos],
+                    PosTags.POSTAG_ID_MAP[sentence.get_word_property(verb_loc).pos],
+                    verb_loc, word_loc,
+                    LocDiffToWordTypes.get_locdiff_id(verb_loc - word_loc)
+                    ])
                 y.append(label[word_loc])
 
 #        X.finsh_batch()

@@ -13,6 +13,7 @@ def test_srl_neural_model():
 
     home = os.path.expanduser('~')
     train_file_path = os.path.join(home,'Data/conll05/training-set')
+    #train_file_path = os.path.join(home,'Data/conll05/dev-set')
     valid_file_path = os.path.join(home,'Data/conll05/dev-set')
 
     train_corpora = Conll05Corpora()
@@ -50,10 +51,10 @@ def test_srl_neural_model():
 
     fit_params = dict()
     fit_params['L1_reg'] = 0
-    fit_params['L2_reg'] = 0
+    fit_params['L2_reg'] = 0.00001
     fit_params["n_epochs"] = 1000
     fit_params["info"] = True
-    fit_params["learning_rate"] = 1
+    fit_params["learning_rate"] = 0.01
 
     network.fit(train_problem,valid_problem, ** fit_params)
 

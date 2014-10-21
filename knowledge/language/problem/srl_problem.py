@@ -74,7 +74,7 @@ class SRLProblem(Problem):
         X = [] #SRLFeatureBatch()
         y = []
         for srl in sentence.srl_structs():
-            verb = srl.verb
+            verb = srl.verb_infinitive
             verb_loc = srl.verb_loc  #given a verb 
 
             loc_to_verb = [LocDiffToVerbTypes.get_locdiff_id(word_loc - verb_loc)
@@ -86,7 +86,7 @@ class SRLProblem(Problem):
                 for pos in range(role.start_pos, role.end_pos + 1):
                     label[pos] = SrlTypes.SRLTYPE_ID_MAP[role.type]
 
-            for word_loc, word in enumerate(sentence.words()): # for each word
+            for word_loc, wd in enumerate(sentence.words()): # for each word
 
                 loc_to_this_word = [LocDiffToWordTypes.get_locdiff_id(idx - word_loc)
                         for idx in range(sentence.word_num())]
@@ -104,7 +104,7 @@ class SRLProblem(Problem):
                          ]
                          )
                 '''
-                X.append([word.id,verb.id,
+                X.append([wd.id,verb.id,
                     PosTags.POSTAG_ID_MAP[sentence.get_word_property(word_loc).pos],
                     PosTags.POSTAG_ID_MAP[sentence.get_word_property(verb_loc).pos],
                     verb_loc, word_loc,

@@ -81,10 +81,13 @@ class SentenceLevelNeuralModelCore(object):
         self.wordvec = wordvec
         # 2,verb vector
         #   output shape: (batch size,sentence_len, POS_feature_num)
+        '''
         self.verb_embedding_layer = LookupTableLayer(
             table_size = self.word_num,
             feature_num = self.word_feature_dim
         )
+        '''
+        self.verb_embedding_layer = self.word_embedding_layer
         verbvec = self.verb_embedding_layer.output(
             inputs = verb_id_input,
             tensor_output = True
@@ -101,10 +104,13 @@ class SentenceLevelNeuralModelCore(object):
         )
         # 4,verb POS tag vector
         #   output shape: (batch size,sentence_len, POS_feature_num)
+        '''
         self.verb_pos_embedding_layer = LookupTableLayer(
             table_size = self.POS_type_num,
             feature_num = self.POS_feature_dim,
         )
+        '''
+        self.verb_pos_embedding_layer = self.word_pos_embedding_layer
         verbPOSvec = self.verb_pos_embedding_layer.output(
             inputs = verb_pos_input,
             tensor_output = True
@@ -203,15 +209,15 @@ class SentenceLevelNeuralModelCore(object):
         # self._errors = self.sentce_loglikelihood.errors()
 
         self.params = self.word_embedding_layer.params() \
-                + self.verb_embedding_layer.params() \
                 + self.word_pos_embedding_layer.params() \
-                + self.verb_pos_embedding_layer.params() \
                 + self.dist_embedding_layer.params() \
                 + self.tree_word_conv_layer.params() \
                 + self.tree_POS_conv_layer.params() \
                 + self.hidden_layer.params() \
                 + self.output_layer.params()
 
+                #+ self.verb_embedding_layer.params() \
+                #+ self.verb_pos_embedding_layer.params() \
 
 
     #
@@ -241,15 +247,15 @@ class SentenceLevelNeuralModel(object):
 
 
         self.L2_sqr = (self.core.word_embedding_layer.embeddings ** 2).sum() \
-                + (self.core.verb_embedding_layer.embeddings ** 2).sum() \
                 + (self.core.word_pos_embedding_layer.embeddings ** 2).sum() \
-                + (self.core.verb_pos_embedding_layer.embeddings ** 2).sum() \
                 + (self.core.dist_embedding_layer.embeddings ** 2).sum() \
                 + (self.core.tree_word_conv_layer.W ** 2).sum() \
                 + (self.core.tree_POS_conv_layer.W ** 2).sum() \
                 + (self.core.hidden_layer.W ** 2).sum() \
                 + (self.core.output_layer.W ** 2).sum()
 
+                #+ (self.core.verb_embedding_layer.embeddings ** 2).sum() \
+                #+ (self.core.verb_pos_embedding_layer.embeddings ** 2).sum() \
 
         self.cost = self.core.negative_log_likelihood(self.label) \
                     + self.L2_reg * self.L2_sqr

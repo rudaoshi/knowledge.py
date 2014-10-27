@@ -42,7 +42,8 @@ class SentenceLevelNeuralModelCore(object):
         self.conv_window_size = kwargs['conv_window_size']
         self.conv_output_dim = kwargs['conv_output_dim']
 
-        self.hidden_output_dim = kwargs['hidden_output_dim']
+        self.hidden_output_dim_1 = kwargs['hidden_output_dim_1']
+        self.hidden_output_dim_2 = kwargs['hidden_output_dim_2']
 
 
         batch_size = x.shape[0]
@@ -168,8 +169,8 @@ class SentenceLevelNeuralModelCore(object):
                 wordPOSvec,
                 verbPOSvec,
                 distvec,
-                tree_word_vec,
-                tree_POS_vec
+                #tree_word_vec,
+                #tree_POS_vec
             ),
             axis = 1
         )
@@ -178,22 +179,28 @@ class SentenceLevelNeuralModelCore(object):
         input_cat_dim = self.word_feature_dim * 2 + \
                 self.POS_feature_dim * 2 + \
                 self.dist_to_verb_feature_dim + \
-                self.conv_output_dim * 2
+                0
+                #self.conv_output_dim * 2
 
         # hidden layer
         # hidden layer perform one linear map and one nolinear transform
         # ,then in likelihood, it performs another linear map. This is 
         # what senna do (P.7, figure 1).
         # hidden_layer OUTPUT SHAPE: (batch_size, max_term_per_sent, hidden_layer_size)
-        self.hidden_layer = HiddenLayer(rng=rng, input=self.input_cat,
+        self.hidden_layer_1 = HiddenLayer(rng=rng, input=self.input_cat,
                 n_in = input_cat_dim,
-                n_out = self.hidden_output_dim,
+                n_out = self.hidden_output_dim_1,
+                activation=T.tanh)
+
+        self.hidden_layer_2 = HiddenLayer(rng=rng, input=self.hidden_layer_1.output,
+                n_in = self.hidden_output_dim_1,
+                n_out = self.hidden_output_dim_2,
                 activation=T.tanh)
 
 
         self.output_layer = LogisticRegression(
-                                        input=self.hidden_layer.output,
-                                        n_in=self.hidden_output_dim,
+                                        input=self.hidden_layer_2.output,
+                                        n_in=self.hidden_output_dim_2,
                                         n_out=self.SRL_type_num)
 
 
@@ -211,11 +218,12 @@ class SentenceLevelNeuralModelCore(object):
         self.params = self.word_embedding_layer.params() \
                 + self.word_pos_embedding_layer.params() \
                 + self.dist_embedding_layer.params() \
-                + self.tree_word_conv_layer.params() \
-                + self.tree_POS_conv_layer.params() \
-                + self.hidden_layer.params() \
+                + self.hidden_layer_1.params() \
+                + self.hidden_layer_2.params() \
                 + self.output_layer.params()
 
+                #+ self.tree_word_conv_layer.params() \
+                #+ self.tree_POS_conv_layer.params() \
                 #+ self.verb_embedding_layer.params() \
                 #+ self.verb_pos_embedding_layer.params() \
 
@@ -233,6 +241,7 @@ class SentenceLevelNeuralModel(object):
         self.input = T.lmatrix('input') # the data is a minibatch (a sentence)
         self.label = T.lvector('label') # label's shape (mini_batch size)
         self.tree = T.lmatrix('tree')
+        self.lr = T.scalar('lr')
 
 
         self.core = SentenceLevelNeuralModelCore(rng, self.input, self.label,self.tree, **kwargs)
@@ -249,11 +258,12 @@ class SentenceLevelNeuralModel(object):
         self.L2_sqr = (self.core.word_embedding_layer.embeddings ** 2).sum() \
                 + (self.core.word_pos_embedding_layer.embeddings ** 2).sum() \
                 + (self.core.dist_embedding_layer.embeddings ** 2).sum() \
-                + (self.core.tree_word_conv_layer.W ** 2).sum() \
-                + (self.core.tree_POS_conv_layer.W ** 2).sum() \
-                + (self.core.hidden_layer.W ** 2).sum() \
+                + (self.core.hidden_layer_1.W ** 2).sum() \
+                + (self.core.hidden_layer_2.W ** 2).sum() \
                 + (self.core.output_layer.W ** 2).sum()
 
+                #+ (self.core.tree_word_conv_layer.W ** 2).sum() \
+                #+ (self.core.tree_POS_conv_layer.W ** 2).sum() \
                 #+ (self.core.verb_embedding_layer.embeddings ** 2).sum() \
                 #+ (self.core.verb_pos_embedding_layer.embeddings ** 2).sum() \
 
@@ -273,12 +283,15 @@ class SentenceLevelNeuralModel(object):
         self.updates = []
 
         learning_rate = kwargs['learning_rate']
+        min_learning_rate = kwargs['min_learning_rate']
+        learning_rate_decay_ratio = kwargs['learning_rate_decay_ratio']
         for param, gparam in zip(self.params, self.gparams):
-            self.updates.append((param, param - learning_rate * gparam))
+            #self.updates.append((param, param - learning_rate * gparam))
+            self.updates.append((param, param - self.lr * gparam))
 
 
         self.train_model = theano.function(
-            inputs=[self.input,self.label,self.tree],
+            inputs=[self.input,self.label,self.tree,self.lr],
             outputs=self.cost,
             updates=self.updates,
             on_unused_input='ignore')
@@ -336,7 +349,8 @@ class SentenceLevelNeuralModel(object):
                     #print 'z shape',z.shape
                     start_time = time.clock()
                     #minibatch_avg_cost,tree_word_vec = self.train_model(X,y,z)
-                    minibatch_avg_cost= self.train_model(X,y,z)
+                    minibatch_avg_cost= self.train_model(X,y,z,learning_rate)
+
                     #print 'tree_word_vec shape',tree_word_vec.shape
                     end_time = time.clock()
                     #vec = np.asarray(self.tmp(X,y))
@@ -363,7 +377,7 @@ class SentenceLevelNeuralModel(object):
                         this_validation_loss = np.mean(validation_losses)
 
                         if info:
-                            str = 'minibatch {0}, validation error {1} %%'.format(total_minibatch, this_validation_loss * 100.)
+                            str = 'minibatch {0}, validation error {1} %%, learning rate {2}'.format(total_minibatch, this_validation_loss * 100.,learning_rate)
                             print str
                             fw.write(str + '\n')
 
@@ -381,6 +395,9 @@ class SentenceLevelNeuralModel(object):
                             done_looping = True
                             break
 
+                learning_rate *= learning_rate_decay_ratio
+                if learning_rate <= min_learning_rate:
+                    learning_rate = min_learning_rate
 
         print(('Optimization complete. Best validation score of %f %% '
                'obtained at iteration %i.') %

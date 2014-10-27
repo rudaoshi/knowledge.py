@@ -11,6 +11,8 @@ from knowledge.machine.neuralnetwork.layer.lookup_table_layer import LookupTable
 from knowledge.machine.neuralnetwork.layer.logistic_sgd import LogisticRegression
 
 from knowledge.language.problem.locdifftypes import LocDiffToWordTypes
+from theano.tensor.signal import downsample
+
 import time
 
 class SentenceLevelNeuralModelCore(object):
@@ -135,8 +137,9 @@ class SentenceLevelNeuralModelCore(object):
         self.tree_conv_layer = Conv1DLayer('conv',rng,1,self.conv_output_dim,self.word_feature_dim)
         # treecnov shape (batch size,conv_output_dim,sentence_length,1)
         # in here we have (1,conv_output_dim,sentence_length,1)
-        treeconv = self.tree_conv_layer.output(tree_raw).reshape((tree_input.shape[0],self.conv_output_dim,-1))
-        treevec = T.max(treeconv,axis=2).reshape((tree_input.shape[0],-1))
+        treeconv = self.tree_conv_layer.output(tree_raw).reshape((tree_input.shape[0],self.conv_output_dim,tree_input.shape[1]))
+        treevec = T.max(treeconv,axis=2).reshape((tree_input.shape[0],self.conv_output_dim))
+        #treevec = downsample.max_pool_2d(treeconv,(1,tree_input.shape[1])).reshape((tree_input.shape[0],self.conv_output_dim))
         treevec = treevec.repeat(batch_size,axis=0)
         self.treevec = treevec
 
@@ -255,7 +258,7 @@ class SentenceLevelNeuralModel(object):
 
         self.train_model = theano.function(
             inputs=[self.input,self.label,self.tree],
-            outputs=[self.cost,self.core.treevec],
+            outputs=self.cost,
             updates=self.updates,
             on_unused_input='ignore')
         self.valid_model = theano.function(
@@ -311,7 +314,8 @@ class SentenceLevelNeuralModel(object):
                     #print 'y shape',y.shape
                     #print 'z shape',z.shape
                     start_time = time.clock()
-                    minibatch_avg_cost,treevec = self.train_model(X,y,z)
+                    #minibatch_avg_cost,treevec = self.train_model(X,y,z)
+                    minibatch_avg_cost= self.train_model(X,y,z)
                     #print 'treevec shape',treevec.shape
                     end_time = time.clock()
                     #vec = np.asarray(self.tmp(X,y))

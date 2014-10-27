@@ -24,10 +24,8 @@ class Conv1DLayer(object):
         w_bound = np.sqrt(input_feature_map_num * filter_width)
 
         if init_W == None:
-            self.W = theano.shared( np.asarray(
-                                rng.uniform(low=-1.0 / w_bound, high=1.0 / w_bound, size=w_shape),
+            self.W = theano.shared(rng.uniform(low=-1.0 / w_bound, high=1.0 / w_bound, size=w_shape).astype(theano.config.floatX),
 
-                                ),
                                name ='cov_1d_layer_W_%s' %(name))
         else:
             self.W = theano.shared(init_W,name='cov_1d_layer_W_%s' %(name))
@@ -35,9 +33,7 @@ class Conv1DLayer(object):
         b_shape = (output_feature_map_num,)
         if init_b == None:
 
-            self.b = theano.shared(np.asarray(
-                        rng.uniform(low=-.5, high=.5, size=b_shape),
-                        ),
+            self.b = theano.shared(rng.uniform(low=-.5, high=.5, size=b_shape).astype(theano.config.floatX),
                         name='cov_1d_layer_b_%s' % (name))
         else:
             self.b = theano.shared(init_b,name='cov_1d_layer_b_%s' % (name))

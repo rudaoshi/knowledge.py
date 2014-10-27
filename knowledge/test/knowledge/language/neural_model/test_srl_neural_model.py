@@ -37,7 +37,7 @@ def test_srl_neural_model():
     network_build_params['dist_to_word_feature_dim'] = 60
 
     network_build_params['conv_window_size'] = 10
-    network_build_params['conv_output_dim'] = 100
+    network_build_params['conv_output_dim'] = 30
 
     network_build_params['hidden_output_dim'] = 100
 

@@ -33,7 +33,7 @@ class SRLProblem(Problem):
         self.__corpora = corpora
 
         # parse the corpora and fill the dicts
-        for X,y in self.get_data_batch():
+        for X,y,z in self.get_data_batch():
             pass
 
 
@@ -63,8 +63,8 @@ class SRLProblem(Problem):
 #        sentence.pad_sentece(window_size)
 
 
-        '''
         word_id_vec = [word.id for word in sentence.words()]
+        '''
         pos_id_vec = [PosTags.POSTAG_ID_MAP[word_prop.pos]
                       for word_prop in sentence.word_properties()
                      ]
@@ -114,17 +114,17 @@ class SRLProblem(Problem):
 
 #        X.finsh_batch()
 
-        return np.array(X), np.array(y)
+        return np.array(X), np.array(y),np.array(word_id_vec).reshape(1,len(word_id_vec))
 
     def get_data_batch(self):
 
 
         for sentence in  self.__corpora.sentences():
-            X, y = self.__get_dataset_for_sentence(sentence)
+            X, y, z = self.__get_dataset_for_sentence(sentence)
             if len(y) == 0:
                 continue
 
-            yield X, y
+            yield X, y, z
 
 
 

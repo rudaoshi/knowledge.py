@@ -64,7 +64,8 @@ class SentenceLevelNeuralModelCore(object):
         word_loc_input = x[:, 5]
         dist_id_verb2word = x[:, 6]
 
-        tree_input = z
+        tree_word_input = z[0,:].reshape((1,z.shape[1]))
+        tree_POS_input = z[1,:].reshape((1,z.shape[1]))
 
         # we have 5 lookup tables here:
         # 1,word vector
@@ -77,7 +78,6 @@ class SentenceLevelNeuralModelCore(object):
             inputs = word_id_input,
             tensor_output = True
         )
-        #).reshape(batch_size,-1)
         self.wordvec = wordvec
         # 2,verb vector
         #   output shape: (batch size,sentence_len, POS_feature_num)
@@ -89,7 +89,6 @@ class SentenceLevelNeuralModelCore(object):
             inputs = verb_id_input,
             tensor_output = True
         )
-        #).reshape(batch_size,-1)
         # 3,word POS tag vector
         #   output shape: (batch size,sentence_len, POS_feature_num)
         self.word_pos_embedding_layer = LookupTableLayer(
@@ -100,7 +99,6 @@ class SentenceLevelNeuralModelCore(object):
             inputs = word_pos_input,
             tensor_output = True
         )
-        #).reshape(batch_size,-1)
         # 4,verb POS tag vector
         #   output shape: (batch size,sentence_len, POS_feature_num)
         self.verb_pos_embedding_layer = LookupTableLayer(
@@ -111,7 +109,6 @@ class SentenceLevelNeuralModelCore(object):
             inputs = verb_pos_input,
             tensor_output = True
         )
-        #).reshape(batch_size,-1)
         # 5,distance tag vector
         #   output shape: (batch size,sentence_len, POS_feature_num)
         self.dist_embedding_layer = LookupTableLayer(
@@ -122,27 +119,42 @@ class SentenceLevelNeuralModelCore(object):
             inputs = dist_id_verb2word,
             tensor_output = True
         )
-        #).reshape(batch_size,-1)
-        # 6,features from tree
+        # 6,word features from tree
         # output shape: (batch size,1,sentence_len, word_feature_num)
         # here we have output shape: (1,sentence_len, word_feature_num)
-        self.tree_embedding_layer = self.word_embedding_layer
-        tree_raw = self.tree_embedding_layer.output(
-            inputs = tree_input,
+        self.tree_word_embedding_layer = self.word_embedding_layer
+        tree_word_raw = self.tree_word_embedding_layer.output(
+            inputs = tree_word_input,
             tensor_output = True
         )
         # we use conv here instead of rnn, which makes it easy to train
         # extend (1,sentence_len,POS_feature_num) to (1,1,sentence_len,word_feature_num)
-        tree_raw = tree_raw.dimshuffle(0,'x',1,2)
-        self.tree_conv_layer = Conv1DLayer('conv',rng,1,self.conv_output_dim,self.word_feature_dim)
+        tree_word_raw = tree_word_raw.dimshuffle(0,'x',1,2)
+        self.tree_word_conv_layer = Conv1DLayer('conv',rng,1,self.conv_output_dim,self.word_feature_dim)
         # treecnov shape (batch size,conv_output_dim,sentence_length,1)
         # in here we have (1,conv_output_dim,sentence_length,1)
-        treeconv = self.tree_conv_layer.output(tree_raw).reshape((tree_input.shape[0],self.conv_output_dim,tree_input.shape[1]))
-        treevec = T.max(treeconv,axis=2).reshape((tree_input.shape[0],self.conv_output_dim))
-        #treevec = downsample.max_pool_2d(treeconv,(1,tree_input.shape[1])).reshape((tree_input.shape[0],self.conv_output_dim))
-        treevec = treevec.repeat(batch_size,axis=0)
-        self.treevec = treevec
-
+        treewordconv = self.tree_word_conv_layer.output(tree_word_raw).reshape((tree_word_input.shape[0],self.conv_output_dim,tree_word_input.shape[1]))
+        tree_word_vec = T.max(treewordconv,axis=2).reshape((tree_word_input.shape[0],self.conv_output_dim))
+        tree_word_vec = tree_word_vec.repeat(batch_size,axis=0)
+        self.tree_word_vec = tree_word_vec
+        # 7,word pos from tree
+        # output shape: (batch size,1,sentence_len, word_feature_num)
+        # here we have output shape: (1,sentence_len, word_feature_num)
+        self.tree_POS_embedding_layer = self.word_pos_embedding_layer
+        tree_POS_raw = self.tree_POS_embedding_layer.output(
+            inputs = tree_POS_input,
+            tensor_output = True
+        )
+        # we use conv here instead of rnn, which makes it easy to train
+        # extend (1,sentence_len,POS_feature_num) to (1,1,sentence_len,word_feature_num)
+        tree_POS_raw = tree_POS_raw.dimshuffle(0,'x',1,2)
+        self.tree_POS_conv_layer = Conv1DLayer('conv',rng,1,self.conv_output_dim,self.POS_feature_dim)
+        # treecnov shape (batch size,conv_output_dim,sentence_length,1)
+        # in here we have (1,conv_output_dim,sentence_length,1)
+        treeposconv = self.tree_POS_conv_layer.output(tree_POS_raw).reshape((tree_POS_input.shape[0],self.conv_output_dim,tree_POS_input.shape[1]))
+        tree_POS_vec = T.max(treeposconv,axis=2).reshape((tree_POS_input.shape[0],self.conv_output_dim))
+        tree_POS_vec = tree_POS_vec.repeat(batch_size,axis=0)
+        self.tree_POS_vec = tree_POS_vec
         input_cat = T.concatenate(
             (
                 wordvec,
@@ -150,7 +162,8 @@ class SentenceLevelNeuralModelCore(object):
                 wordPOSvec,
                 verbPOSvec,
                 distvec,
-                treevec
+                tree_word_vec,
+                tree_POS_vec
             ),
             axis = 1
         )
@@ -159,7 +172,7 @@ class SentenceLevelNeuralModelCore(object):
         input_cat_dim = self.word_feature_dim * 2 + \
                 self.POS_feature_dim * 2 + \
                 self.dist_to_verb_feature_dim + \
-                self.conv_output_dim
+                self.conv_output_dim * 2
 
         # hidden layer
         # hidden layer perform one linear map and one nolinear transform
@@ -194,7 +207,8 @@ class SentenceLevelNeuralModelCore(object):
                 + self.word_pos_embedding_layer.params() \
                 + self.verb_pos_embedding_layer.params() \
                 + self.dist_embedding_layer.params() \
-                + self.tree_conv_layer.params() \
+                + self.tree_word_conv_layer.params() \
+                + self.tree_POS_conv_layer.params() \
                 + self.hidden_layer.params() \
                 + self.output_layer.params()
 
@@ -231,7 +245,8 @@ class SentenceLevelNeuralModel(object):
                 + (self.core.word_pos_embedding_layer.embeddings ** 2).sum() \
                 + (self.core.verb_pos_embedding_layer.embeddings ** 2).sum() \
                 + (self.core.dist_embedding_layer.embeddings ** 2).sum() \
-                + (self.core.tree_conv_layer.W ** 2).sum() \
+                + (self.core.tree_word_conv_layer.W ** 2).sum() \
+                + (self.core.tree_POS_conv_layer.W ** 2).sum() \
                 + (self.core.hidden_layer.W ** 2).sum() \
                 + (self.core.output_layer.W ** 2).sum()
 
@@ -314,9 +329,9 @@ class SentenceLevelNeuralModel(object):
                     #print 'y shape',y.shape
                     #print 'z shape',z.shape
                     start_time = time.clock()
-                    #minibatch_avg_cost,treevec = self.train_model(X,y,z)
+                    #minibatch_avg_cost,tree_word_vec = self.train_model(X,y,z)
                     minibatch_avg_cost= self.train_model(X,y,z)
-                    #print 'treevec shape',treevec.shape
+                    #print 'tree_word_vec shape',tree_word_vec.shape
                     end_time = time.clock()
                     #vec = np.asarray(self.tmp(X,y))
                     #print X.shape,vec.shape

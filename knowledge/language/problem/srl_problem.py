@@ -64,11 +64,9 @@ class SRLProblem(Problem):
 
 
         word_id_vec = [word.id for word in sentence.words()]
-        '''
         pos_id_vec = [PosTags.POSTAG_ID_MAP[word_prop.pos]
                       for word_prop in sentence.word_properties()
                      ]
-        '''
 
 
         X = [] #SRLFeatureBatch()
@@ -114,7 +112,8 @@ class SRLProblem(Problem):
 
 #        X.finsh_batch()
 
-        return np.array(X), np.array(y),np.array(word_id_vec).reshape(1,len(word_id_vec))
+        return np.array(X), np.array(y),np.array([word_id_vec,pos_id_vec]).reshape(2,len(word_id_vec))
+        #return np.array(X), np.array(y),np.array([word_id_vec]).reshape(1,len(word_id_vec))
 
     def get_data_batch(self):
 

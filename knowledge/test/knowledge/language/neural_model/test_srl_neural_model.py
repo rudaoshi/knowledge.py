@@ -55,7 +55,7 @@ def test_srl_neural_model():
     fit_params["n_epochs"] = 1000
     fit_params["info"] = True
     fit_params["learning_rate"] = 0.01
-    fit_params["min_learning_rate"] = 0.001
+    fit_params["min_learning_rate"] = 0.0001
     fit_params["learning_rate_decay_ratio"] = 0.8
 
     network.fit(train_problem,valid_problem, ** fit_params)

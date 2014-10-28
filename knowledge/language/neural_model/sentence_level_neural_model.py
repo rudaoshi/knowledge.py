@@ -13,6 +13,8 @@ from knowledge.machine.neuralnetwork.layer.logistic_sgd import LogisticRegressio
 from knowledge.language.problem.locdifftypes import LocDiffToWordTypes
 from theano.tensor.signal import downsample
 
+from sklearn.metrics import f1_score
+
 import time
 
 class SentenceLevelNeuralModelCore(object):
@@ -298,7 +300,7 @@ class SentenceLevelNeuralModel(object):
         )
         self.valid_model = theano.function(
             inputs=[self.input,self.label,self.tree],
-            outputs=self.errors,
+            outputs=[self.errors,self.core.output_layer.y_pred],
             on_unused_input='ignore')
 
         '''
@@ -367,18 +369,24 @@ class SentenceLevelNeuralModel(object):
                     if total_minibatch  % validation_frequency == 0:
                         # compute zero-one loss on validation set
                         validation_losses = []
+                        validation_pred = []
+                        validation_label = []
                         test_num = 0
                         for valid_X, valid_y, valid_z in valid_problem.get_data_batch():
                             test_num += 1
-                            validation_losses.append(self.valid_model(valid_X,valid_y,valid_z))
+                            error,pred = self.valid_model(valid_X,valid_y,valid_z)
+                            validation_losses.append(error)
+                            validation_pred += pred.tolist()
+                            validation_label += valid_y.tolist()
 
                             #if test_num >= 100:
                             #    break
 
                         this_validation_loss = np.mean(validation_losses)
+                        f1 = f1_score(np.asarray(validation_label),np.asarray(validation_pred),average='weighted')
 
                         if info:
-                            str = 'minibatch {0}, validation error {1} %%, learning rate {2}'.format(total_minibatch, this_validation_loss * 100.,learning_rate)
+                            str = 'minibatch {0}, validation error {1} %%, f1 score {2} , learning rate {3}'.format(total_minibatch, this_validation_loss * 100.,f1,learning_rate)
                             print str
                             fw.write(str + '\n')
 

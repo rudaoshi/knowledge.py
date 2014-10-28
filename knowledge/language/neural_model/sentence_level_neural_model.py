@@ -169,7 +169,7 @@ class SentenceLevelNeuralModelCore(object):
                 wordPOSvec,
                 verbPOSvec,
                 distvec,
-                #tree_word_vec,
+                tree_word_vec,
                 #tree_POS_vec
             ),
             axis = 1
@@ -179,8 +179,7 @@ class SentenceLevelNeuralModelCore(object):
         input_cat_dim = self.word_feature_dim * 2 + \
                 self.POS_feature_dim * 2 + \
                 self.dist_to_verb_feature_dim + \
-                0
-                #self.conv_output_dim * 2
+                self.conv_output_dim
 
         # hidden layer
         # hidden layer perform one linear map and one nolinear transform
@@ -192,14 +191,16 @@ class SentenceLevelNeuralModelCore(object):
                 n_out = self.hidden_output_dim_1,
                 activation=T.tanh)
 
+        '''
         self.hidden_layer_2 = HiddenLayer(rng=rng, input=self.hidden_layer_1.output,
                 n_in = self.hidden_output_dim_1,
                 n_out = self.hidden_output_dim_2,
                 activation=T.tanh)
+        '''
 
 
         self.output_layer = LogisticRegression(
-                                        input=self.hidden_layer_2.output,
+                                        input=self.hidden_layer_1.output,
                                         n_in=self.hidden_output_dim_2,
                                         n_out=self.SRL_type_num)
 
@@ -218,11 +219,11 @@ class SentenceLevelNeuralModelCore(object):
         self.params = self.word_embedding_layer.params() \
                 + self.word_pos_embedding_layer.params() \
                 + self.dist_embedding_layer.params() \
+                + self.tree_word_conv_layer.params() \
                 + self.hidden_layer_1.params() \
-                + self.hidden_layer_2.params() \
                 + self.output_layer.params()
 
-                #+ self.tree_word_conv_layer.params() \
+                #+ self.hidden_layer_2.params() \
                 #+ self.tree_POS_conv_layer.params() \
                 #+ self.verb_embedding_layer.params() \
                 #+ self.verb_pos_embedding_layer.params() \
@@ -258,11 +259,11 @@ class SentenceLevelNeuralModel(object):
         self.L2_sqr = (self.core.word_embedding_layer.embeddings ** 2).sum() \
                 + (self.core.word_pos_embedding_layer.embeddings ** 2).sum() \
                 + (self.core.dist_embedding_layer.embeddings ** 2).sum() \
+                + (self.core.tree_word_conv_layer.W ** 2).sum() \
                 + (self.core.hidden_layer_1.W ** 2).sum() \
-                + (self.core.hidden_layer_2.W ** 2).sum() \
                 + (self.core.output_layer.W ** 2).sum()
 
-                #+ (self.core.tree_word_conv_layer.W ** 2).sum() \
+                #+ (self.core.hidden_layer_2.W ** 2).sum() \
                 #+ (self.core.tree_POS_conv_layer.W ** 2).sum() \
                 #+ (self.core.verb_embedding_layer.embeddings ** 2).sum() \
                 #+ (self.core.verb_pos_embedding_layer.embeddings ** 2).sum() \

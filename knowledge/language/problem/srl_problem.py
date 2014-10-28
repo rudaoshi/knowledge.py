@@ -33,7 +33,7 @@ class SRLProblem(Problem):
         self.__corpora = corpora
 
         # parse the corpora and fill the dicts
-        for X,y in self.get_data_batch():
+        for X,y,z in self.get_data_batch():
             pass
 
 
@@ -72,10 +72,11 @@ class SRLProblem(Problem):
         X = [] #SRLFeatureBatch()
         y = []
         for srl in sentence.srl_structs():
+            verb = srl.verb_infinitive
             verb_loc = srl.verb_loc  #given a verb 
 
             loc_to_verb = [LocDiffToVerbTypes.get_locdiff_id(word_loc - verb_loc)
-                           for word_loc in range(sentence.word_num())]
+                    for word_loc in range(sentence.word_num())]
 
             label = [ SrlTypes.SRLTYPE_ID_MAP[SrlTypes.PADDING_SRL_TYPE] ] * sentence.word_num()
 
@@ -83,14 +84,15 @@ class SRLProblem(Problem):
                 for pos in range(role.start_pos, role.end_pos + 1):
                     label[pos] = SrlTypes.SRLTYPE_ID_MAP[role.type]
 
-            for word_loc, word in enumerate(sentence.words()): # for each word
+            for word_loc, wd in enumerate(sentence.words()): # for each word
 
                 loc_to_this_word = [LocDiffToWordTypes.get_locdiff_id(idx - word_loc)
-                                    for idx in range(sentence.word_num())]
+                        for idx in range(sentence.word_num())]
 
- #              X.word_id.append(word_id_vec)
+                #              X.word_id.append(word_id_vec)
  #              X.pos_id.append(pos_id_vec)
  #              X.other_feature.append(
+                '''
                 X.append(word_id_vec + pos_id_vec + loc_to_verb + loc_to_this_word +
                          [verb_loc, word_loc,
                           PosTags.POSTAG_ID_MAP[sentence.get_word_property(verb_loc).pos],
@@ -99,21 +101,29 @@ class SRLProblem(Problem):
                           LocDiffToWordTypes.get_locdiff_id(verb_loc - word_loc)
                          ]
                          )
+                '''
+                X.append([wd.id,verb.id,
+                    PosTags.POSTAG_ID_MAP[sentence.get_word_property(word_loc).pos],
+                    PosTags.POSTAG_ID_MAP[sentence.get_word_property(verb_loc).pos],
+                    verb_loc, word_loc,
+                    LocDiffToWordTypes.get_locdiff_id(verb_loc - word_loc)
+                    ])
                 y.append(label[word_loc])
 
 #        X.finsh_batch()
 
-        return np.array(X), np.array(y)
+        return np.array(X), np.array(y),np.array([word_id_vec,pos_id_vec]).reshape(2,len(word_id_vec))
+        #return np.array(X), np.array(y),np.array([word_id_vec]).reshape(1,len(word_id_vec))
 
     def get_data_batch(self):
 
 
         for sentence in  self.__corpora.sentences():
-            X, y = self.__get_dataset_for_sentence(sentence)
+            X, y, z = self.__get_dataset_for_sentence(sentence)
             if len(y) == 0:
                 continue
 
-            yield X, y
+            yield X, y, z
 
 
 

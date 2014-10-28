@@ -12,7 +12,7 @@ class LookupTableLayer(object):
         self._table_size = table_size
         self._feature_num = feature_num
 
-        self._embeddings = theano.shared(np.random.random((self._table_size, feature_num)).astype(dtype=theano.config.floatX))
+        self._embeddings = theano.shared(np.random.random((self._table_size, feature_num)).astype(theano.config.floatX), borrow=True)
 
     def output(self, inputs, tensor_output = False):
 

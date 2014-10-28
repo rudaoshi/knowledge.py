@@ -10,10 +10,15 @@ from knowledge.machine.neuralnetwork.layer.conv1d_layer import Conv1DLayer
 from knowledge.machine.neuralnetwork.layer.lookup_table_layer import LookupTableLayer
 from knowledge.machine.neuralnetwork.layer.logistic_sgd import LogisticRegression
 
+from knowledge.language.problem.locdifftypes import LocDiffToWordTypes
+from theano.tensor.signal import downsample
+
+import time
+
 class SentenceLevelNeuralModelCore(object):
 
 
-    def __init__(self,rng,x,y,**kwargs):
+    def __init__(self,rng,x,y,z,**kwargs):
         # x shape: [mini-batch size, feature-dim].
         # In this problem [mini-batch feature-dim]
 
@@ -37,175 +42,168 @@ class SentenceLevelNeuralModelCore(object):
         self.conv_window_size = kwargs['conv_window_size']
         self.conv_output_dim = kwargs['conv_output_dim']
 
-        self.hidden_output_dim = kwargs['hidden_output_dim']
+        self.hidden_output_dim_1 = kwargs['hidden_output_dim_1']
+        self.hidden_output_dim_2 = kwargs['hidden_output_dim_2']
 
 
         batch_size = x.shape[0]
-        feature_num = x.shape[1]
+        #feature_num = x.shape[1]
 #        assert (feature_num - 6) % 4 == 0, "Bad input parmeter X with wrong size {0}".format(x.shape)
-        sentence_length = (feature_num - 6)/4
+        #sentence_length = (feature_num - 6)/4
         # [sentence.word_num()] + word_id_vec + pos_id_vec +
         # [word_idx, PosTags.POSTAG_ID_MAP[word.pos], loc_diff[word_idx]]
 
-        all_word_id_input = x[:, 0 : sentence_length ]
-        all_pos_id_input = x[:, sentence_length : 2*sentence_length ]
-        all_dist_to_verb_id_input = x[:, 2*sentence_length :3*sentence_length ]
-        all_dist_to_word_id_input = x[:, 3*sentence_length :4*sentence_length ]
-        verb_id_input = x[:, -6]
-        word_id_input = x[:, -5]
-        verb_pos_input = x[:, -4]
-        word_pos_input = x[:, -3]
-        dist_id_verb2word = x[:, -2]
-        dist_id_word2verb = x[:, -1]
+        #all_word_id_input = x[:, 0 : sentence_length ]
+        #all_pos_id_input = x[:, sentence_length : 2*sentence_length ]
+        #all_dist_to_verb_id_input = x[:, 2*sentence_length :3*sentence_length ]
+        #all_dist_to_word_id_input = x[:, 3*sentence_length :4*sentence_length ]
+        word_id_input = x[:, 0]
+        verb_id_input = x[:, 1]
+        word_pos_input = x[:, 2]
+        verb_pos_input = x[:, 3]
+        verb_loc_input = x[:, 4]
+        word_loc_input = x[:, 5]
+        dist_id_verb2word = x[:, 6]
 
+        tree_word_input = z[0,:].reshape((1,z.shape[1]))
+        tree_POS_input = z[1,:].reshape((1,z.shape[1]))
 
-        # we have 4 lookup tables here:
+        # we have 5 lookup tables here:
         # 1,word vector
         #   output shape: (batch size,sentence_len, word_feature_num)
-        # 2,POS tag vector
-        #   output shape: (batch size,sentence_len, POS_feature_num)
         self.word_embedding_layer = LookupTableLayer(
             table_size = self.word_num,
             feature_num = self.word_feature_dim
         )
         wordvec = self.word_embedding_layer.output(
-            inputs = all_word_id_input,
+            inputs = word_id_input,
             tensor_output = True
         )
-
-        self.pos_embedding_layer = LookupTableLayer(
+        self.wordvec = wordvec
+        # 2,verb vector
+        #   output shape: (batch size,sentence_len, POS_feature_num)
+        '''
+        self.verb_embedding_layer = LookupTableLayer(
+            table_size = self.word_num,
+            feature_num = self.word_feature_dim
+        )
+        '''
+        self.verb_embedding_layer = self.word_embedding_layer
+        verbvec = self.verb_embedding_layer.output(
+            inputs = verb_id_input,
+            tensor_output = True
+        )
+        # 3,word POS tag vector
+        #   output shape: (batch size,sentence_len, POS_feature_num)
+        self.word_pos_embedding_layer = LookupTableLayer(
             table_size = self.POS_type_num,
             feature_num = self.POS_feature_dim,
         )
-        POSvec = self.pos_embedding_layer.output(
-            inputs = all_pos_id_input,
+        wordPOSvec = self.word_pos_embedding_layer.output(
+            inputs = word_pos_input,
             tensor_output = True
         )
-
-        self.dist_to_verb_embedding_layer = LookupTableLayer(
-            table_size = self.dist_to_verb_num,
+        # 4,verb POS tag vector
+        #   output shape: (batch size,sentence_len, POS_feature_num)
+        '''
+        self.verb_pos_embedding_layer = LookupTableLayer(
+            table_size = self.POS_type_num,
+            feature_num = self.POS_feature_dim,
+        )
+        '''
+        self.verb_pos_embedding_layer = self.word_pos_embedding_layer
+        verbPOSvec = self.verb_pos_embedding_layer.output(
+            inputs = verb_pos_input,
+            tensor_output = True
+        )
+        # 5,distance tag vector
+        #   output shape: (batch size,sentence_len, POS_feature_num)
+        self.dist_embedding_layer = LookupTableLayer(
+            table_size = len(LocDiffToWordTypes.DIFF_ID_MAP),
             feature_num = self.dist_to_verb_feature_dim,
         )
-        dist_to_verb_vec = self.dist_to_verb_embedding_layer.output(
-            inputs = all_dist_to_verb_id_input,
+        distvec = self.dist_embedding_layer.output(
+            inputs = dist_id_verb2word,
             tensor_output = True
         )
-
-        self.dist_to_word_embedding_layer = LookupTableLayer(
-            table_size = self.dist_to_word_num,
-            feature_num = self.dist_to_word_feature_dim,
-        )
-        dist_to_word_vec = self.dist_to_word_embedding_layer.output(
-            inputs = all_dist_to_word_id_input,
+        # 6,word features from tree
+        # output shape: (batch size,1,sentence_len, word_feature_num)
+        # here we have output shape: (1,sentence_len, word_feature_num)
+        self.tree_word_embedding_layer = self.word_embedding_layer
+        tree_word_raw = self.tree_word_embedding_layer.output(
+            inputs = tree_word_input,
             tensor_output = True
         )
-
-        self.word_conv_layer = Conv1DLayer(
-            'conv_word',
-            rng,
-            1,
-            self.conv_output_dim,
-            self.conv_window_size)
-        #output dim = (batchsize, conv_out_dim, sentence_len, word_embedding_dim)
-        word_conv_out = self.word_conv_layer.output(wordvec.dimshuffle(0,'x',1,2))
-
-        #reorganize data (batchsize, sentence_len, conv_out_dim * word_embedding_dim)
-        word_conv_out = word_conv_out.dimshuffle(0,2,1,3).reshape(
-            (
-                batch_size,
-                sentence_length,
-                self.conv_output_dim * (self.word_feature_dim - self.conv_window_size + 1)
-            )
+        # we use conv here instead of rnn, which makes it easy to train
+        # extend (1,sentence_len,POS_feature_num) to (1,1,sentence_len,word_feature_num)
+        tree_word_raw = tree_word_raw.dimshuffle(0,'x',1,2)
+        self.tree_word_conv_layer = Conv1DLayer('conv',rng,1,self.conv_output_dim,self.word_feature_dim)
+        # treecnov shape (batch size,conv_output_dim,sentence_length,1)
+        # in here we have (1,conv_output_dim,sentence_length,1)
+        treewordconv = self.tree_word_conv_layer.output(tree_word_raw).reshape((tree_word_input.shape[0],self.conv_output_dim,tree_word_input.shape[1]))
+        tree_word_vec = T.max(treewordconv,axis=2).reshape((tree_word_input.shape[0],self.conv_output_dim))
+        tree_word_vec = tree_word_vec.repeat(batch_size,axis=0)
+        self.tree_word_vec = tree_word_vec
+        # 7,word pos from tree
+        # output shape: (batch size,1,sentence_len, word_feature_num)
+        # here we have output shape: (1,sentence_len, word_feature_num)
+        self.tree_POS_embedding_layer = self.word_pos_embedding_layer
+        tree_POS_raw = self.tree_POS_embedding_layer.output(
+            inputs = tree_POS_input,
+            tensor_output = True
         )
-
-        self.pos_conv_layer = Conv1DLayer(
-            'conv_POS',
-            rng,
-            1,
-            self.conv_output_dim,
-            self.conv_window_size)
-
-        #output dim = (batchsize, conv_out_dim, sentence_len, pos_embedding_dim)
-        pos_conv_out = self.pos_conv_layer.output(POSvec.dimshuffle(0,'x',1,2))
-        #reorganize data (batchsize, sentence_len, conv_out_dim * word_embedding_dim)
-        pos_conv_out = pos_conv_out.dimshuffle(0,2,1,3).reshape(
+        # we use conv here instead of rnn, which makes it easy to train
+        # extend (1,sentence_len,POS_feature_num) to (1,1,sentence_len,word_feature_num)
+        tree_POS_raw = tree_POS_raw.dimshuffle(0,'x',1,2)
+        self.tree_POS_conv_layer = Conv1DLayer('conv',rng,1,self.conv_output_dim,self.POS_feature_dim)
+        # treecnov shape (batch size,conv_output_dim,sentence_length,1)
+        # in here we have (1,conv_output_dim,sentence_length,1)
+        treeposconv = self.tree_POS_conv_layer.output(tree_POS_raw).reshape((tree_POS_input.shape[0],self.conv_output_dim,tree_POS_input.shape[1]))
+        tree_POS_vec = T.max(treeposconv,axis=2).reshape((tree_POS_input.shape[0],self.conv_output_dim))
+        tree_POS_vec = tree_POS_vec.repeat(batch_size,axis=0)
+        self.tree_POS_vec = tree_POS_vec
+        input_cat = T.concatenate(
             (
-                batch_size,
-                sentence_length,
-                self.conv_output_dim * (self.POS_feature_dim - self.conv_window_size + 1)
-            )
-        )
-
-        self.dist_to_verb_conv_layer = Conv1DLayer(
-            'conv_dist_to_verb',
-            rng,
-            1,
-            self.conv_output_dim,
-            self.conv_window_size)
-
-        #output dim = (batchsize, conv_out_dim, sentence_len, dist_to_verb_feature_dim - conv_window + 1)
-        dist_to_verb_conv_out = self.dist_to_verb_conv_layer.output(dist_to_verb_vec.dimshuffle(0,'x',1,2))
-        #reorganize data (batchsize, sentence_len, conv_out_dim * word_embedding_dim)
-        dist_to_verb_conv_out = dist_to_verb_conv_out.dimshuffle(0,2,1,3).reshape(
-            (
-                batch_size,
-                sentence_length,
-                self.conv_output_dim * (self.dist_to_verb_feature_dim - self.conv_window_size + 1)
-            )
-        )
-
-        self.dist_to_word_conv_layer = Conv1DLayer(
-            'conv_dist_to_verb',
-            rng,
-            1,
-            self.conv_output_dim,
-            self.conv_window_size)
-
-        #output dim = (batchsize, conv_out_dim, sentence_len, pos_embedding_dim)
-        dist_to_word_conv_out = self.dist_to_word_conv_layer.output(dist_to_word_vec.dimshuffle(0,'x',1,2))
-        #reorganize data (batchsize, sentence_len, conv_out_dim * word_embedding_dim)
-        dist_to_word_conv_out = dist_to_word_conv_out.dimshuffle(0,2,1,3).reshape(
-            (
-                batch_size,
-                sentence_length,
-                self.conv_output_dim * (self.dist_to_word_feature_dim - self.conv_window_size + 1)
-            )
-        )
-
-        total_conv_output = T.concatenate(
-            (
-                word_conv_out,
-                pos_conv_out,
-                dist_to_verb_conv_out,
-                dist_to_word_conv_out
+                wordvec,
+                verbvec,
+                wordPOSvec,
+                verbPOSvec,
+                distvec,
+                tree_word_vec,
+                #tree_POS_vec
             ),
-            axis = 2
+            axis = 1
         )
+        self.input_cat = input_cat
 
-        # max_out shape: (batch_size,max_term_per_sent,conv_hidden_feature_num)
-        conv_max_feature = T.max(total_conv_output, axis=1)
-
-        conv_output_dim = self.conv_output_dim * (self.word_feature_dim - self.conv_window_size + 1)+ \
-            self.conv_output_dim * (self.POS_feature_dim - self.conv_window_size + 1) + \
-            self.conv_output_dim * (self.dist_to_verb_feature_dim - self.conv_window_size + 1)+ \
-            self.conv_output_dim * (self.dist_to_word_feature_dim - self.conv_window_size + 1)
-
+        input_cat_dim = self.word_feature_dim * 2 + \
+                self.POS_feature_dim * 2 + \
+                self.dist_to_verb_feature_dim + \
+                self.conv_output_dim
 
         # hidden layer
         # hidden layer perform one linear map and one nolinear transform
         # ,then in likelihood, it performs another linear map. This is 
         # what senna do (P.7, figure 1).
         # hidden_layer OUTPUT SHAPE: (batch_size, max_term_per_sent, hidden_layer_size)
-        self.hidden_layer = HiddenLayer(rng=rng, input=conv_max_feature,
-                n_in = conv_output_dim,
-                n_out = self.hidden_output_dim,
+        self.hidden_layer_1 = HiddenLayer(rng=rng, input=self.input_cat,
+                n_in = input_cat_dim,
+                n_out = self.hidden_output_dim_1,
                 activation=T.tanh)
+
+        '''
+        self.hidden_layer_2 = HiddenLayer(rng=rng, input=self.hidden_layer_1.output,
+                n_in = self.hidden_output_dim_1,
+                n_out = self.hidden_output_dim_2,
+                activation=T.tanh)
+        '''
 
 
         self.output_layer = LogisticRegression(
-                                        input=self.hidden_layer.output,
-                                        n_in=self.hidden_output_dim,
+                                        input=self.hidden_layer_1.output,
+                                        n_in=self.hidden_output_dim_2,
                                         n_out=self.SRL_type_num)
+
 
         self.errors = self.output_layer.errors
         # TODO we use poitwise likelihood here
@@ -219,14 +217,16 @@ class SentenceLevelNeuralModelCore(object):
         # self._errors = self.sentce_loglikelihood.errors()
 
         self.params = self.word_embedding_layer.params() \
-                + self.pos_embedding_layer.params() \
-                + self.word_conv_layer.params() \
-                + self.pos_conv_layer.params() \
-                + self.dist_to_verb_conv_layer.params() \
-                + self.dist_to_word_conv_layer.params() \
-                + self.hidden_layer.params() \
+                + self.word_pos_embedding_layer.params() \
+                + self.dist_embedding_layer.params() \
+                + self.tree_word_conv_layer.params() \
+                + self.hidden_layer_1.params() \
                 + self.output_layer.params()
 
+                #+ self.hidden_layer_2.params() \
+                #+ self.tree_POS_conv_layer.params() \
+                #+ self.verb_embedding_layer.params() \
+                #+ self.verb_pos_embedding_layer.params() \
 
 
     #
@@ -241,9 +241,11 @@ class SentenceLevelNeuralModel(object):
     def __init__(self,rng, **kwargs):
         self.input = T.lmatrix('input') # the data is a minibatch (a sentence)
         self.label = T.lvector('label') # label's shape (mini_batch size)
+        self.tree = T.lmatrix('tree')
+        self.lr = T.scalar('lr')
 
 
-        self.core = SentenceLevelNeuralModelCore(rng, self.input, self.label, **kwargs)
+        self.core = SentenceLevelNeuralModelCore(rng, self.input, self.label,self.tree, **kwargs)
 
 
 
@@ -255,11 +257,16 @@ class SentenceLevelNeuralModel(object):
 
 
         self.L2_sqr = (self.core.word_embedding_layer.embeddings ** 2).sum() \
-                + (self.core.pos_embedding_layer.embeddings ** 2).sum() \
-                + (self.core.word_conv_layer.W ** 2).sum() \
-                + (self.core.pos_conv_layer.W ** 2).sum() \
-                + (self.core.hidden_layer.W ** 2).sum()
+                + (self.core.word_pos_embedding_layer.embeddings ** 2).sum() \
+                + (self.core.dist_embedding_layer.embeddings ** 2).sum() \
+                + (self.core.tree_word_conv_layer.W ** 2).sum() \
+                + (self.core.hidden_layer_1.W ** 2).sum() \
+                + (self.core.output_layer.W ** 2).sum()
 
+                #+ (self.core.hidden_layer_2.W ** 2).sum() \
+                #+ (self.core.tree_POS_conv_layer.W ** 2).sum() \
+                #+ (self.core.verb_embedding_layer.embeddings ** 2).sum() \
+                #+ (self.core.verb_pos_embedding_layer.embeddings ** 2).sum() \
 
         self.cost = self.core.negative_log_likelihood(self.label) \
                     + self.L2_reg * self.L2_sqr
@@ -277,20 +284,28 @@ class SentenceLevelNeuralModel(object):
         self.updates = []
 
         learning_rate = kwargs['learning_rate']
+        min_learning_rate = kwargs['min_learning_rate']
+        learning_rate_decay_ratio = kwargs['learning_rate_decay_ratio']
         for param, gparam in zip(self.params, self.gparams):
-            self.updates.append((param, param - learning_rate * gparam))
+            #self.updates.append((param, param - learning_rate * gparam))
+            self.updates.append((param, param - self.lr * gparam))
 
 
         self.train_model = theano.function(
-            inputs=[self.input, self.label],
+            inputs=[self.input,self.label,self.tree,self.lr],
             outputs=self.cost,
             updates=self.updates,
         )
         self.valid_model = theano.function(
-            inputs=[self.input,self.label],
+            inputs=[self.input,self.label,self.tree],
             outputs=self.errors,
             on_unused_input='ignore')
 
+        '''
+        self.tmp = theano.function(inputs=[self.input,self.label],
+                outputs=[self.core.input_cat],
+                on_unused_input='ignore')
+        '''
 
         n_epochs = kwargs["n_epochs"]
         info = kwargs["info"]
@@ -319,53 +334,71 @@ class SentenceLevelNeuralModel(object):
         epoch = 0
         done_looping = False
 
-        validation_frequency = 100
+        validation_frequency = 1000
 
         total_minibatch = 0
 
-        while (epoch < n_epochs) and (not done_looping):
-            epoch = epoch + 1
+        with open('res.log','w') as fw:
+            while (epoch < n_epochs) and (not done_looping):
+                epoch = epoch + 1
 
-            minibatch = 0
-            for X, y in train_problem.get_data_batch():
+                minibatch = 0
+                for X, y, z in train_problem.get_data_batch():
 
-                minibatch_avg_cost = self.train_model(X,y)
-                minibatch += 1
-                total_minibatch += 1
-                if info and minibatch % 100 == 0:
-                    print 'epoch {0}.{1}, cost = {2}'.format(epoch,minibatch,minibatch_avg_cost)
+                    #print 'X shape',X.shape
+                    #print 'y shape',y.shape
+                    #print 'z shape',z.shape
+                    start_time = time.clock()
+                    #minibatch_avg_cost,tree_word_vec = self.train_model(X,y,z)
+                    minibatch_avg_cost= self.train_model(X,y,z,learning_rate)
+
+                    #print 'tree_word_vec shape',tree_word_vec.shape
+                    end_time = time.clock()
+                    #vec = np.asarray(self.tmp(X,y))
+                    #print X.shape,vec.shape
+                    minibatch += 1
+                    total_minibatch += 1
+                    if info and minibatch % 100 == 0:
+                        str = 'epoch {0}.{1}, cost = {2}, time = {3}'.format(epoch,minibatch,minibatch_avg_cost,end_time - start_time)
+                        print str
+                        fw.write(str + '\n')
 
 
-                if total_minibatch  % validation_frequency == 0:
-                    # compute zero-one loss on validation set
-                    validation_losses = []
-                    test_num = 0
-                    for valid_X, valid_y in valid_problem.get_data_batch():
-                        test_num += 1
-                        validation_losses.append(self.valid_model(valid_X,valid_y))
+                    if total_minibatch  % validation_frequency == 0:
+                        # compute zero-one loss on validation set
+                        validation_losses = []
+                        test_num = 0
+                        for valid_X, valid_y, valid_z in valid_problem.get_data_batch():
+                            test_num += 1
+                            validation_losses.append(self.valid_model(valid_X,valid_y,valid_z))
 
-                        if test_num >= 100:
+                            #if test_num >= 100:
+                            #    break
+
+                        this_validation_loss = np.mean(validation_losses)
+
+                        if info:
+                            str = 'minibatch {0}, validation error {1} %%, learning rate {2}'.format(total_minibatch, this_validation_loss * 100.,learning_rate)
+                            print str
+                            fw.write(str + '\n')
+
+                        # if we got the best validation score until now
+                        if this_validation_loss < best_validation_loss:
+                            #improve patience if loss improvement is good enough
+                            if this_validation_loss < best_validation_loss *  \
+                                   improvement_threshold:
+                                patience = max(patience, epoch * patience_increase)
+
+                            best_validation_loss = this_validation_loss
+                            best_iter = epoch
+
+                        if patience <= epoch:
+                            done_looping = True
                             break
 
-                    this_validation_loss = np.mean(validation_losses)
-
-                    if info:
-                        print 'minibatch {0}, validation error {1} %%'.format(total_minibatch, this_validation_loss * 100.)
-
-                    # if we got the best validation score until now
-                    if this_validation_loss < best_validation_loss:
-                        #improve patience if loss improvement is good enough
-                        if this_validation_loss < best_validation_loss *  \
-                               improvement_threshold:
-                            patience = max(patience, epoch * patience_increase)
-
-                        best_validation_loss = this_validation_loss
-                        best_iter = epoch
-
-                    if patience <= epoch:
-                        done_looping = True
-                        break
-
+                learning_rate *= learning_rate_decay_ratio
+                if learning_rate <= min_learning_rate:
+                    learning_rate = min_learning_rate
 
         print(('Optimization complete. Best validation score of %f %% '
                'obtained at iteration %i.') %

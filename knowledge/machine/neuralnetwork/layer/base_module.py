@@ -5,15 +5,16 @@ import gzip
 import os
 import sys
 import time
+import cPickle
 
 import numpy as np
 
 import theano
 import theano.tensor as T
 
-def model_file_name(model_folder,model_name,param_name):
+def model_file_name(model_folder,model_name):
     prefix = os.path.join(model_folder,model_name)
-    filename = prefix + '_' + param_name + '.npy'
+    filename = prefix + '.model'
     return filename
 
 class BaseModule(object):
@@ -55,7 +56,8 @@ class BaseModule(object):
 class BaseModel(object):
 
     def __init__(self,name,model_folder=None):
-        self.name = randomword(16)
+        assert isinstance(name,str), 'Model\'s name should be string'
+        self.name = name
         if model_folder == None:
             self.model_folder = os.environ.get('KG_model_FOLD','')
         else:
@@ -66,12 +68,17 @@ class BaseModel(object):
         self.modules.append(module)
 
     def save(self):
-        for m in self.modules:
-            m.save(self.model_folder)
+        filename = model_file_name(model_folder,model_name)
+        with open(filename,'wb') as fw:
+            for m in self.modules:
+                cPickle.dump(m, f, protocol=cPickle.HIGHEST_PROTOCOL)
 
     def load(self):
         # load model from disk
         assert len(self.name) > 0, 'MODULE NAME is empty'
         assert self.model_folder != '', 'MODEL FOLDER is empty'
-        for m in self.modules:
-            m.load(model_folder)
+        self.model_lst  = []
+        filename = model_file_name(model_folder,model_name)
+        with open(filename,'rb') as fr:
+            for m in self.modules:
+                self.model_lst.append(cPickle.load(fr))

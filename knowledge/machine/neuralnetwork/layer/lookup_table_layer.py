@@ -4,15 +4,24 @@ import theano
 import numpy as np
 import theano.tensor as T
 
+import os
 
-class LookupTableLayer(object):
+from knowledge.machine.neuralnetwork.layer.base_module import BaseModule
 
-    def __init__(self, table_size, feature_num):
+class LookupTableLayer(BaseModule):
+
+    def __init__(self, table_size, feature_num, name, load = False, model_folder=None):
+        super(LookupTableLayer,self).__init__(name)
 
         self._table_size = table_size
         self._feature_num = feature_num
-
-        self._embeddings = theano.shared(np.random.random((self._table_size, feature_num)).astype(theano.config.floatX), borrow=True)
+        if not load:
+            self._embeddings = theano.shared(np.random.random((self._table_size, feature_num)).astype(theano.config.floatX),
+                    name = 'embeddings',
+                    borrow=True)
+        else:
+            assert isinstance(model_folder,str)
+            self.load(model_folder)
 
     def output(self, inputs, tensor_output = False):
 
@@ -29,10 +38,15 @@ class LookupTableLayer(object):
 
 
     def params(self):
-
         return [self._embeddings]
 
 
+    def load(self,model_folder):
+        super(LookupTableLayer,self).load(model_folder)
+        d = self.params_lst[0]
+        self._embeddings = theano.shared(d,
+                name = 'lookuptable',
+                borrow=True)
 
 class MultiLookupTableLayer(object):
 

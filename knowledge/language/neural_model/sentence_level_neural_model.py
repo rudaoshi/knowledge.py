@@ -9,6 +9,7 @@ from knowledge.machine.neuralnetwork.layer.mlp import HiddenLayer
 from knowledge.machine.neuralnetwork.layer.conv1d_layer import Conv1DLayer
 from knowledge.machine.neuralnetwork.layer.lookup_table_layer import LookupTableLayer
 from knowledge.machine.neuralnetwork.layer.logistic_sgd import LogisticRegression
+from knowledge.machine.neuralnetwork.layer.base import BaseModel
 
 from knowledge.language.problem.locdifftypes import LocDiffToWordTypes
 from theano.tensor.signal import downsample
@@ -16,18 +17,19 @@ from theano.tensor.signal import downsample
 from sklearn.metrics import f1_score
 
 import time
+import cPickle
 
 class SentenceLevelNeuralModelCore(object):
 
 
-    def __init__(self,rng,x,y,z,**kwargs):
+    def __init__(self,rng,**kwargs):
         # x shape: [mini-batch size, feature-dim].
         # In this problem [mini-batch feature-dim]
 
 
 
-        self.x = x
-        self.y = y
+        self.x = T.lmatrix('x')
+        self.z = T.lmatrix('z')
 
 
         self.word_num = kwargs['word_num']
@@ -48,27 +50,25 @@ class SentenceLevelNeuralModelCore(object):
         self.hidden_output_dim_2 = kwargs['hidden_output_dim_2']
 
 
-        batch_size = x.shape[0]
+        batch_size = self.x.shape[0]
         #feature_num = x.shape[1]
-#        assert (feature_num - 6) % 4 == 0, "Bad input parmeter X with wrong size {0}".format(x.shape)
+        #assert (feature_num - 6) % 4 == 0, "Bad input parmeter X with wrong size {0}".format(x.shape)
         #sentence_length = (feature_num - 6)/4
-        # [sentence.word_num()] + word_id_vec + pos_id_vec +
-        # [word_idx, PosTags.POSTAG_ID_MAP[word.pos], loc_diff[word_idx]]
 
         #all_word_id_input = x[:, 0 : sentence_length ]
         #all_pos_id_input = x[:, sentence_length : 2*sentence_length ]
         #all_dist_to_verb_id_input = x[:, 2*sentence_length :3*sentence_length ]
         #all_dist_to_word_id_input = x[:, 3*sentence_length :4*sentence_length ]
-        word_id_input = x[:, 0]
-        verb_id_input = x[:, 1]
-        word_pos_input = x[:, 2]
-        verb_pos_input = x[:, 3]
-        verb_loc_input = x[:, 4]
-        word_loc_input = x[:, 5]
-        dist_id_verb2word = x[:, 6]
+        word_id_input = self.x[:, 0]
+        verb_id_input = self.x[:, 1]
+        word_pos_input = self.x[:, 2]
+        verb_pos_input = self.x[:, 3]
+        verb_loc_input = self.x[:, 4]
+        word_loc_input = self.x[:, 5]
+        dist_id_verb2word = self.x[:, 6]
 
-        tree_word_input = z[0,:].reshape((1,z.shape[1]))
-        tree_POS_input = z[1,:].reshape((1,z.shape[1]))
+        tree_word_input = self.z[0,:].reshape((1,self.z.shape[1]))
+        tree_POS_input = self.z[1,:].reshape((1,self.z.shape[1]))
 
         # we have 5 lookup tables here:
         # 1,word vector
@@ -207,7 +207,7 @@ class SentenceLevelNeuralModelCore(object):
                                         n_out=self.SRL_type_num)
 
 
-        self.errors = self.output_layer.errors
+        #self.errors = self.output_layer.errors
         # TODO we use poitwise likelihood here
         # self.sentce_loglikelihood = SentenceLevelLogLikelihoodLayer(rng,self.hidden_layer.output,
         #         self.y,
@@ -215,7 +215,7 @@ class SentenceLevelNeuralModelCore(object):
         #         self.hidden_layer_size,
         #         self.tags_num)
         #
-        self.negative_log_likelihood = self.output_layer.negative_log_likelihood
+        #self.negative_log_likelihood = self.output_layer.negative_log_likelihood
         # self._errors = self.sentce_loglikelihood.errors()
 
         self.params = self.word_embedding_layer.params() \
@@ -231,23 +231,25 @@ class SentenceLevelNeuralModelCore(object):
                 #+ self.verb_pos_embedding_layer.params() \
 
 
-    #
-    # def errors(self):
-    #     return self._errors
+    def inputs(self):
+        return [self.x,self.z]
 
 import numpy as np
 
 
-class SentenceLevelNeuralModel(object):
+class SentenceLevelNeuralModel(BaseModel):
 
-    def __init__(self,rng, **kwargs):
-        self.input = T.lmatrix('input') # the data is a minibatch (a sentence)
+    def __init__(self,name,rng,load,dump,model_folder=None,init_model_name=None,**kwargs):
+        super(SentenceLevelNeuralModel,self).__init__(name,model_folder)
         self.label = T.lvector('label') # label's shape (mini_batch size)
-        self.tree = T.lmatrix('tree')
-        self.lr = T.scalar('lr')
+        self.lr = T.scalar('lr') # learning rate
+        self.load = load
+        self.dump = dump
 
-
-        self.core = SentenceLevelNeuralModelCore(rng, self.input, self.label,self.tree, **kwargs)
+        if self.load:
+            self.core = self.load_core(init_model_name)
+        else:
+            self.core = SentenceLevelNeuralModelCore(rng,**kwargs)
 
 
 
@@ -270,9 +272,9 @@ class SentenceLevelNeuralModel(object):
                 #+ (self.core.verb_embedding_layer.embeddings ** 2).sum() \
                 #+ (self.core.verb_pos_embedding_layer.embeddings ** 2).sum() \
 
-        self.cost = self.core.negative_log_likelihood(self.label) \
+        self.cost = self.core.output_layer.negative_log_likelihood(self.label) \
                     + self.L2_reg * self.L2_sqr
-        self.errors = self.core.errors(self.label)
+        self.errors = self.core.output_layer.errors(self.label)
 
         self.params = self.core.params
 
@@ -294,12 +296,12 @@ class SentenceLevelNeuralModel(object):
 
 
         self.train_model = theano.function(
-            inputs=[self.input,self.label,self.tree,self.lr],
+            inputs=self.core.inputs()+[self.label,self.lr],
             outputs=self.cost,
             updates=self.updates,
         )
         self.valid_model = theano.function(
-            inputs=[self.input,self.label,self.tree],
+            inputs=self.core.inputs()+[self.label],
             outputs=[self.errors,self.core.output_layer.y_pred],
             on_unused_input='ignore')
 
@@ -352,7 +354,7 @@ class SentenceLevelNeuralModel(object):
                     #print 'z shape',z.shape
                     start_time = time.clock()
                     #minibatch_avg_cost,tree_word_vec = self.train_model(X,y,z)
-                    minibatch_avg_cost= self.train_model(X,y,z,learning_rate)
+                    minibatch_avg_cost= self.train_model(X,z,y,learning_rate)
 
                     #print 'tree_word_vec shape',tree_word_vec.shape
                     end_time = time.clock()
@@ -367,6 +369,10 @@ class SentenceLevelNeuralModel(object):
 
 
                     if total_minibatch  % validation_frequency == 0:
+                        if self.dump:
+                            print 'dumping...'
+                            self.dump_core('%d-%d' % (epoch,minibatch),False)
+
                         # compute zero-one loss on validation set
                         validation_losses = []
                         validation_pred = []
@@ -374,7 +380,7 @@ class SentenceLevelNeuralModel(object):
                         test_num = 0
                         for valid_X, valid_y, valid_z in valid_problem.get_data_batch():
                             test_num += 1
-                            error,pred = self.valid_model(valid_X,valid_y,valid_z)
+                            error,pred = self.valid_model(valid_X,valid_z,valid_y)
                             validation_losses.append(error)
                             validation_pred += pred.tolist()
                             validation_label += valid_y.tolist()

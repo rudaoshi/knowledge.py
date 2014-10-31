@@ -135,7 +135,7 @@ class Sentence(object):
 
 
 
-        extended_words = paddings + self.words + paddings
+        extended_words = paddings + self.__words + paddings
 
         return moving_window(extended_words, windows_size)
 

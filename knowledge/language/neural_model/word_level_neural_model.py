@@ -1,4 +1,4 @@
-__author__ = 'Sun'
+__author__ = ['Sun','Huang']
 
 import theano
 import theano.tensor as T
@@ -11,60 +11,72 @@ from knowledge.machine.neuralnetwork.layer.mlp import HiddenLayer
 from knowledge.machine.neuralnetwork.layer.logistic_sgd import LogisticRegression
 from knowledge.machine.neuralnetwork.layer.lookup_table_layer import LookupTableLayer
 from knowledge.util.theano_util import shared_dataset
+from knowledge.machine.neuralnetwork.layer.base import BaseModel
 
 
 class WordLevelNeuralModelCore(object):
 
 
-    def __init__(self, word_ids, word_num, window_size, feature_num,
-                 hidden_layer_size, n_outs, L1_reg = 0.00, L2_reg = 0.0001,
-                 numpy_rng = None, theano_rng=None, ):
+    def __init__(self, numpy_rng = None,**kwargs):
 
-        self.L1_reg = L1_reg
-        self.L2_reg = L2_reg
+        self.word_ids = T.imatrix('input')
+
+        self.word_num = kwargs['word_num']
+        self.window_size = kwargs['window_size']
+        self.feature_num = kwargs['feature_num']
+        self.hidden_layer_size = kwargs['hidden_layer_size']
+        self.n_outs = kwargs['n_outs']
 
 
-        self.lookup_table_layer = LookupTableLayer(inputs = word_ids, table_size = word_num,
-                                                   window_size = window_size, feature_num = feature_num)
+        self.lookup_table_layer = LookupTableLayer(self.word_num,self.feature_num)
 
-        self.hidden_layer = HiddenLayer(rng=numpy_rng, input=self.lookup_table_layer.output,
-                                       n_in = self.lookup_table_layer.get_output_size(),
-                                       n_out = hidden_layer_size,
+        self.hidden_layer = HiddenLayer(rng=numpy_rng, input=self.lookup_table_layer.output(self.word_ids),
+                                       n_in = self.window_size * self.feature_num,
+                                       n_out = self.hidden_layer_size,
                                        activation=T.tanh)
 
         # The logistic regression layer gets as input the hidden units
         # of the hidden layer
         self.output_layer = LogisticRegression(
                                         input=self.hidden_layer.output,
-                                        n_in=hidden_layer_size,
-                                        n_out=n_outs)
+                                        n_in=self.hidden_layer_size,
+                                        n_out=self.n_outs)
+
+        self.params = self.lookup_table_layer.params() + \
+                self.hidden_layer.params() + \
+                self.output_layer.params()
+
+    def inputs(self):
+        return [self.word_ids]
 
 
-        self.errors = self.output_layer.errors
+
+class WordLevelNeuralModel(BaseModel):
 
 
 
-class WordLevelNeuralModel(object):
+    def __init__(self,name,load,dump,model_folder=None,init_model_name=None, numpy_rng = None, **kwargs ):
 
+        super(WordLevelNeuralModel,self).__init__(name,model_folder)
+        self.load = load
+        self.dump = dump
 
+        if self.load:
+            self.core = self.load_core(init_model_name)
+        else:
+            self.core = WordLevelNeuralModelCore(numpy_rng, **kwargs)
 
-    def __init__(self, word_num, window_size, feature_num,
-                 hidden_layer_size, n_outs, L1_reg = 0.00, L2_reg = 0.0001,
-                 numpy_rng = None, theano_rng=None, ):
-
-        self.L1_reg = L1_reg
-        self.L2_reg = L2_reg
+        self.L1_reg = kwargs['L1_reg']
+        self.L2_reg = kwargs['L2_reg']
 
 
         self.index = T.lscalar()
-        self.input = T.imatrix('input')  # the data is presented as rasterized images
+        #self.input = T.imatrix('input')  # the data is presented as rasterized images
+        self.input = self.core.inputs()[0]
         self.label = T.ivector('label')
 
-        self.core = WordLevelNeuralModelCore(self.input, word_num, window_size, feature_num,
-                 hidden_layer_size, n_outs, L1_reg, L2_reg,
-                 numpy_rng, theano_rng)
 
-        self.params = self.core.lookup_table_layer.params() + self.core.hidden_layer.params + self.core.output_layer.params
+        self.params = self.core.params
 
         # L1 norm ; one regularization option is to enforce L1 norm to
         # be small
@@ -93,9 +105,7 @@ class WordLevelNeuralModel(object):
                      + self.L2_reg * self.L2_sqr
 
 
-
-
-    def fit(self, X, y, valid_X, valid_y,  batch_size = 10000, n_epochs = 10000, learning_rate = 0.01,):
+    def fit(self, X, y, valid_X, valid_y,  batch_size = 10000, n_epochs = 10000, learning_rate = 0.1,):
 
         self.gparams = []
         for param in self.params:
@@ -192,6 +202,9 @@ class WordLevelNeuralModel(object):
                 iter = (epoch - 1) * n_train_batches + minibatch_index
 
                 if (iter + 1) % validation_frequency == 0:
+                    if self.dump:
+                        print 'dumping...'
+                        self.dump_core('%d-%d' % (epoch,minibatch_index),False)
                     # compute zero-one loss on validation set
                     validation_losses = [validate_model(i) for i
                                          in xrange(n_valid_batches)]

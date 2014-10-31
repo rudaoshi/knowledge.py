@@ -10,7 +10,7 @@ import sklearn
 import sklearn.cross_validation
 
 
-def xtest_neural_language_model():
+def test_neural_language_model():
 
     corpora = Corpora()
     corpora.load_nltk_conll2000()
@@ -37,14 +37,30 @@ def xtest_neural_language_model():
 
 
 
-    print >> sys.stderr, " y_valid shape", y_valid.shape
-    print >> sys.stderr, y_valid
+    #print >> sys.stderr, " y_valid shape", y_valid.shape
+    #print >> sys.stderr, y_valid
+    params = dict()
+    params['word_num'] = corpora.get_word_num()
+    params['window_size'] = 11
+    params['feature_num'] = 50
+    params['hidden_layer_size'] = 300
+    params['n_outs'] = problem.get_class_num()
+    params['L1_reg'] = 0
+    params['L2_reg'] = 0.0001
 
 
+    #model = WordLevelNeuralModel(word_num = corpora.get_word_num(), window_size = 11, feature_num = 100,
+    #             hidden_layer_size = 1000, n_outs = problem.get_class_num(), L1_reg = 0.00, L2_reg = 0.0001,
+    #             numpy_rng= rng)
 
-    model = WordLevelNeuralModel(word_num = corpora.get_word_num(), window_size = 11, feature_num = 100,
-                 hidden_layer_size = 1000, n_outs = problem.get_class_num(), L1_reg = 0.00, L2_reg = 0.0001,
-                 numpy_rng= rng)
+    model_name = 'pos'
+    load = False
+    dump = True
+    model_folder = '/home/kingsfield/workspace/knowledge.py'
+    init_model_name = None
+    model = WordLevelNeuralModel(model_name,load,dump,model_folder,init_model_name,numpy_rng= rng, **params)
 
     model.fit(X_train,y_train, X_valid, y_valid)
 
+if __name__ == '__main__':
+    test_neural_language_model()

@@ -19,8 +19,6 @@ from knowledge.machine.neuralnetwork.layer.logistic_sgd import LogisticRegressio
 from knowledge.language.problem.locdifftypes import LocDiffToWordTypes
 from theano.tensor.signal import downsample
 
-import cPickle
-
 def test_srl_neural_model():
 
     home = os.path.expanduser('~')

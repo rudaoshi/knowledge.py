@@ -1,4 +1,4 @@
-__author__ = 'huang'
+__author__ = 'Huang'
 
 import time
 

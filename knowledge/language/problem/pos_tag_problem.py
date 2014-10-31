@@ -28,7 +28,7 @@ class PosTagProblem(object):
                 for word_window in sentence.word_windows(window_size):
 
                     x.append([word.id for word in word_window])
-                    y.append(word_window[window_size/2].pos)
+                    y.append(word_window[window_size/2].tag)
 
         Y = [PosTags.POSTAG_ID_MAP[tag] for tag in y]
         X = np.array(x)

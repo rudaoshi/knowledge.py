@@ -70,6 +70,14 @@ class Sentence(object):
         for chunk in self.__chunks:
             yield chunk
 
+    def chunks_lst(self):
+        for idx in xrange(self.word_num()):
+            for chunk in self.__chunks:
+                if chunk.belongto(idx):
+                    yield chunk.type
+            yield '*'
+
+
     def add_phrase(self, chunk):
 
         self.__phrases.append(chunk)
@@ -88,8 +96,15 @@ class Sentence(object):
         return len(self.__nes)
 
     def nes(self):
-        for chunk in self.__nes:
-            yield chunk
+        for ne in self.__nes:
+            yield ne
+
+    def nes_lst(self):
+        for idx in xrange(self.word_num()):
+            for ne in self.__nes:
+                if ne.belongto(idx):
+                    yield ne.type
+            yield '*'
 
 
     def pad_sentece(self, windows_size):

@@ -8,6 +8,7 @@ from knowledge.language.core.sentence.property import WordProperty
 from knowledge.language.core.sentence.sentence import Sentence
 from knowledge.language.core.sentence.srl_structure import SRLStructure, Role
 from knowledge.language.core.sentence.chunk_structure import Chunk
+from knowledge.language.core.sentence.ner_structure import Ner
 from knowledge.language.problem import postags, srltypes, locdifftypes
 
 
@@ -31,6 +32,26 @@ def parse_start_end_components(tags):
                 raise Exception('Bad tags :' + " ".join(map(str,tags)))
 
             yield (tag_name, (tag_start_pos, tag_end_pos))
+
+def parse_components_to_tags(tags):
+    tag_name = "*"
+    tag_start_pos = 0
+    tag_end_pos = 0
+
+    for idx, tag in enumerate(tags):
+        if tag.startswith('('):
+            tag_name = tag[1:].replace("*","").replace(")","")
+            tag_start_pos = idx
+
+        yield tag_name
+
+        if tag.endswith(')'):
+            tag_end_pos =  idx
+            if not tag_name:
+                raise Exception('Bad tags :' + " ".join(map(str,tags)))
+            tag_name = '*'
+
+
 
 
 
@@ -126,10 +147,11 @@ class Conll05Corpora(Corpora):
 
 
 
-    def load(self, file_path):
+    def load(self, file_path, type=1):
         '''
         load corpora from Conll05 data file
         :param file_path:
+        :param type: 1, the data we found in Github;2, append with conll2005/synt.upc
         :return:
         '''
 
@@ -160,24 +182,24 @@ class Conll05Corpora(Corpora):
                         sentence.add_word(cur_word, word_property)
                         if  word_info[4] != "-":
 
-                            srl = SRLStructure(word, loc)
+                            srl = SRLStructure(word_name, loc)
                             srl.verb_sense = word_info[4]
                             srl.verb_infinitive = word_repo.get_word(word_info[5])
                             sentence.add_srl_struct(srl)
 
+                    # parse ne
                     for ne_type, (start_pos, end_pos) in parse_start_end_components(sentence_array[:,3]):
-                        chunk = Chunk(ne_type, start_pos, end_pos)
-                        sentence.add_ne(chunk)
-                    # for chunk_type, (start_pos, end_pos) in parse_start_end_components(sentence_info[:,3]):
-                    #     chunk = Chunk(chunk_type, start_pos, end_pos)
-                    #     sentence.add_chunk(chunk)
-                    # for phrase_type, (start_pos, end_pos) in parse_start_end_components(sentence_info[:,4]):
-                    #     chunk = Chunk(phrase_type, start_pos, end_pos)
-                    #     sentence.add_phrase(chunk)
-
-#                    sentence.syntree = sentence_info[:, 5]
-
-                    props = sentence_array[:,6:]
+                        ner = Ner(ne_type, start_pos, end_pos)
+                        sentence.add_ne(ner)
+                    if type == 2:
+                        # parse chunk
+                        for chunk_type, (start_pos, end_pos) in parse_start_end_components(sentence_array[:,-2]):
+                            chunk = Chunk(chunk_type, start_pos, end_pos)
+                            sentence.add_chunk(chunk)
+                    if type == 1:
+                        props = sentence_array[:,6:]
+                    else:
+                        props = sentence_array[:,6:-3]
 
 
                     for verb_idx, srl in enumerate(sentence.srl_structs()):

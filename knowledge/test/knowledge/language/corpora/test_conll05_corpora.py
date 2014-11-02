@@ -11,10 +11,11 @@ from knowledge.language.problem.srl_problem import SRLProblem
 def test_conll05_corpora():
 
     home = os.path.expanduser('~')
-    filename = os.path.join(home,'Data/conll05/training-set')
+    #filename = os.path.join(home,'Data/conll05/training-set')
+    filename = os.path.join(home,'Data/conll05/training-set.1')
 
     conll05corpora = Conll05Corpora()
-    conll05corpora.load(filename)
+    conll05corpora.load(filename,type=2)
 
 
     sentence_num = 0
@@ -27,3 +28,7 @@ def test_conll05_corpora():
                         "Bad corpora"
 
     print "There are {0} sentences in the corpora".format(sentence_num)
+
+
+if __name__ == '__main__':
+    test_conll05_corpora()

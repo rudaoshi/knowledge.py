@@ -12,7 +12,7 @@ from knowledge.language.problem.problem import Problem
 from knowledge.language.core.word import word_repo
 from knowledge.language.problem import postags, srltypes, locdifftypes
 
-class ChunkProblem(Problem):
+class NERProblem(Problem):
 
 
     def __init__(self, corpora, windows_size):
@@ -51,9 +51,9 @@ class ChunkProblem(Problem):
 
         X = [] #SRLFeatureBatch()
         y = []
-        for onex, oney in zip(sentence.word_windows(self.windows_size),sentence.chunks_lst()):
+        for onex, oney in zip(sentence.word_windows(self.windows_size),sentence.nes_lst()):
             word_ids = [w.id for w in onex]
-            tag = ChunkTypes.CHUNKTYPE_ID_MAP[oney]
+            tag = NERTypes.NERTYPE_ID_MAP[oney]
             X.append(word_ids)
             y.append(tag)
 
@@ -70,7 +70,7 @@ class ChunkProblem(Problem):
             X.extend(sentX)
             y.extend(senty)
 
-        #return X,y
+        # return X,y
         return np.array(X),np.array(y)
 
 

@@ -7,7 +7,7 @@ __author__ = 'Sun'
 class ChunkTypes(object):
 
     PADDING_CHUNK_TYPE = "#PAD#"
-
+    '''
     CHUNKTYPE_ID_MAP = dict((tag, id) for id, tag in enumerate([
                          'B-ADJP',
                          'B-ADVP',
@@ -33,4 +33,17 @@ class ChunkTypes(object):
                          'I-VP',
                          'O',
                          PADDING_CHUNK_TYPE]))
-
+    '''
+    CHUNKTYPE_ID_MAP = dict((tag, id) for id, tag in enumerate([
+            '*',
+            'PP',
+            'SBAR',
+            'ADJP',
+            'INTJ',
+            'VP',
+            'PRT',
+            'LST',
+            'NP',
+            'CONJP',
+            'ADVP',
+            PADDING_CHUNK_TYPE]))

@@ -46,4 +46,5 @@ class ChunkTypes(object):
             'NP',
             'CONJP',
             'ADVP',
+            'UCP',
             PADDING_CHUNK_TYPE]))

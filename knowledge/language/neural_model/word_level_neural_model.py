@@ -2,7 +2,7 @@ __author__ = ['Sun','Huang']
 
 import theano
 import theano.tensor as T
-import numpy
+import numpy as np
 import time
 import sys
 import os
@@ -13,11 +13,12 @@ from knowledge.machine.neuralnetwork.layer.lookup_table_layer import LookupTable
 from knowledge.util.theano_util import shared_dataset
 from knowledge.machine.neuralnetwork.layer.base import BaseModel
 
+from sklearn.metrics import f1_score
 
 class WordLevelNeuralModelCore(object):
 
 
-    def __init__(self, numpy_rng = None,**kwargs):
+    def __init__(self, np_rng = None,**kwargs):
 
         self.word_ids = T.imatrix('input')
 
@@ -30,7 +31,7 @@ class WordLevelNeuralModelCore(object):
 
         self.lookup_table_layer = LookupTableLayer(self.word_num,self.feature_num)
 
-        self.hidden_layer = HiddenLayer(rng=numpy_rng, input=self.lookup_table_layer.output(self.word_ids),
+        self.hidden_layer = HiddenLayer(rng=np_rng, input=self.lookup_table_layer.output(self.word_ids),
                                        n_in = self.window_size * self.feature_num,
                                        n_out = self.hidden_layer_size,
                                        activation=T.tanh)
@@ -55,7 +56,7 @@ class WordLevelNeuralModel(BaseModel):
 
 
 
-    def __init__(self,name,load,dump,model_folder=None,init_model_name=None, numpy_rng = None, **kwargs ):
+    def __init__(self,name,load,dump,model_folder=None,init_model_name=None, np_rng = None, **kwargs ):
 
         super(WordLevelNeuralModel,self).__init__(name,model_folder)
         self.load = load
@@ -64,7 +65,7 @@ class WordLevelNeuralModel(BaseModel):
         if self.load:
             self.core = self.load_core(init_model_name)
         else:
-            self.core = WordLevelNeuralModelCore(numpy_rng, **kwargs)
+            self.core = WordLevelNeuralModelCore(np_rng, **kwargs)
 
         self.L1_reg = kwargs['L1_reg']
         self.L2_reg = kwargs['L2_reg']
@@ -123,17 +124,17 @@ class WordLevelNeuralModel(BaseModel):
             updates.append((param, param - learning_rate * gparam))
 
         borrow = True
-        train_set_X = T.cast(theano.shared(numpy.asarray(X,
+        train_set_X = T.cast(theano.shared(np.asarray(X,
                                 dtype=theano.config.floatX),
                                  borrow=borrow), "int32")
-        train_set_y = T.cast(theano.shared(numpy.asarray(y,
+        train_set_y = T.cast(theano.shared(np.asarray(y,
                                 dtype=theano.config.floatX),
                                  borrow=borrow), "int32")
 
-        valid_set_X = T.cast(theano.shared(numpy.asarray(valid_X,
+        valid_set_X = T.cast(theano.shared(np.asarray(valid_X,
                                 dtype=theano.config.floatX),
                                  borrow=borrow), "int32")
-        valid_set_y = T.cast(theano.shared(numpy.asarray(valid_y,
+        valid_set_y = T.cast(theano.shared(np.asarray(valid_y,
                                 dtype=theano.config.floatX),
                                  borrow=borrow), "int32")
 
@@ -149,7 +150,7 @@ class WordLevelNeuralModel(BaseModel):
         n_train_batches = X.shape[0] / batch_size
 
         validate_model = theano.function(inputs=[self.index],
-            outputs=self.errors(self.label),
+            outputs=[self.errors(self.label),self.core.output_layer.y_pred],
             givens={
                 self.input: valid_set_X[self.index * batch_size:(self.index + 1) * batch_size],
                 self.label: valid_set_y[self.index * batch_size:(self.index + 1) * batch_size]
@@ -175,7 +176,7 @@ class WordLevelNeuralModel(BaseModel):
                                       # check every epoch
 
         best_params = None
-        best_validation_loss = numpy.inf
+        best_validation_loss = np.inf
         best_iter = 0
         test_score = 0.
         start_time = time.clock()
@@ -206,15 +207,20 @@ class WordLevelNeuralModel(BaseModel):
                         print 'dumping...'
                         self.dump_core('%d-%d' % (epoch,minibatch_index),False)
                     # compute zero-one loss on validation set
-                    validation_losses = [validate_model(i) for i
+                    validation_info = [validate_model(i) for i
                                          in xrange(n_valid_batches)]
-                    this_validation_loss = numpy.mean(validation_losses)
+                    this_validation_loss = np.mean([i[0] for i in validation_info])
+                    validation_pred = []
+                    _ = [validation_pred.extend(i[1]) for i in validation_info]
+                    f1 = f1_score(np.asarray(valid_y[:len(validation_pred)]),np.asarray(validation_pred),average='weighted')
 
-                    print >> sys.stderr, 'epoch %i, minibatch %i/%i, validation error %f %%' % \
+                    print >> sys.stderr, 'epoch %i, minibatch %i/%i, validation error %f %%, f1 %f %%' % \
                          (epoch, minibatch_index + 1, n_train_batches, \
-                          this_validation_loss * 100.)
+                          this_validation_loss * 100., \
+                          f1 * 100. )
 
                     # if we got the best validation score until now
+                    '''
                     if this_validation_loss < best_validation_loss:
                         #improve patience if loss improvement is good enough
                         if this_validation_loss < best_validation_loss *  \
@@ -227,6 +233,7 @@ class WordLevelNeuralModel(BaseModel):
                     if patience <= iter:
                         done_looping = True
                         break
+                    '''
 
 
         end_time = time.clock()

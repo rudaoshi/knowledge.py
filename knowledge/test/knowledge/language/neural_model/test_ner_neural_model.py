@@ -11,8 +11,8 @@ from knowledge.language.corpora.conll05 import Conll05Corpora
 def test_neural_language_model():
 
     home = os.path.expanduser('~')
-    #train_file_path = os.path.join(home,'Data/conll05/training-set')
-    train_file_path = os.path.join(home,'Data/conll05/dev-set')
+    train_file_path = os.path.join(home,'Data/conll05/training-set')
+    #train_file_path = os.path.join(home,'Data/conll05/dev-set')
     valid_file_path = os.path.join(home,'Data/conll05/dev-set')
 
     train_corpora = Conll05Corpora()
@@ -32,6 +32,11 @@ def test_neural_language_model():
 
     X_valid, y_valid = valid_problem.get_data_batch()
 
+    print 'train X shape',X_train.shape
+    print 'train y shape',y_train.shape
+    print 'valid X shape',X_valid.shape
+    print 'valid y shape',y_valid.shape
+
     rng = numpy.random.RandomState(1234)
 
     params = dict()
@@ -39,10 +44,11 @@ def test_neural_language_model():
     params['window_size'] = window_size
     params['feature_num'] = 50
     params['hidden_layer_size'] = 300
-    params['n_outs'] = problem_character['NE_type_num']
+    params['n_outs'] = problem_character['NER_type_num']
     params['L1_reg'] = 0
     params['L2_reg'] = 0.0001
 
+    print params
 
     #model = WordLevelNeuralModel(word_num = corpora.get_word_num(), window_size = 11, feature_num = 100,
     #             hidden_layer_size = 1000, n_outs = problem.get_class_num(), L1_reg = 0.00, L2_reg = 0.0001,
@@ -53,7 +59,7 @@ def test_neural_language_model():
     dump = False
     model_folder = '/home/kingsfield/workspace/knowledge.py'
     init_model_name = None
-    model = WordLevelNeuralModel(model_name,load,dump,model_folder,init_model_name,numpy_rng= rng, **params)
+    model = WordLevelNeuralModel(model_name,load,dump,model_folder,init_model_name,rng, **params)
 
     model.fit(X_train,y_train, X_valid, y_valid)
 

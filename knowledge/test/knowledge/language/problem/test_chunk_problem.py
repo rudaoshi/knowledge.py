@@ -9,8 +9,8 @@ def test_chunk_problem():
 
     home = os.path.expanduser('~')
     print 'begin'
-    #filename = os.path.join(home,'Data/conll05/training-set')
-    filename = os.path.join(home,'Data/conll05/dev-set.1')
+    filename = os.path.join(home,'Data/conll05/training-set.1')
+    #filename = os.path.join(home,'Data/conll05/dev-set.1')
 
     conll05corpora = Conll05Corpora()
     windows_size = 11

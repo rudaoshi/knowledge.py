@@ -46,7 +46,7 @@ def test_srl_neural_model():
     network_build_params['dist_to_verb_feature_dim'] = 60
     network_build_params['dist_to_word_feature_dim'] = 60
 
-    network_build_params['conv_window_size'] = 10
+    network_build_params['conv_window_size'] = 3
     network_build_params['conv_output_dim'] = 30
     network_build_params['hidden_output_dim_1'] = 100
     network_build_params['hidden_output_dim_2'] = 100
@@ -58,7 +58,7 @@ def test_srl_neural_model():
     print network_build_params
 
     load = False
-    dump = True
+    dump = False
     network = SentenceLevelNeuralModel('srl',rng,load,dump,'/Users/kingsfield/workspace/knowledge.py','srl_4-280.model',**network_build_params)
 
     fit_params = dict()
@@ -66,7 +66,7 @@ def test_srl_neural_model():
     fit_params['L2_reg'] = 0.00001
     fit_params["n_epochs"] = 1000
     fit_params["info"] = True
-    fit_params["learning_rate"] = 0.0001
+    fit_params["learning_rate"] = 0.1
     fit_params["min_learning_rate"] = 0.0001
     fit_params["learning_rate_decay_ratio"] = 0.8
 

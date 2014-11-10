@@ -12,7 +12,7 @@ class Conv1DLayer(object):
     Note : A faster version for GPU is avaliable at https://groups.google.com/forum/#!topic/theano-users/JJHZmuUDdPE
     '''
 
-    def __init__(self,name,rng, input_feature_map_num, output_feature_map_num, filter_width,
+    def __init__(self,name,rng, input_feature_map_num, output_feature_map_num, conv_window , filter_width,
                  init_W=None,init_b=None):
 
         # Input: a 4D tensor corresponding to a mini-batch of input images with shape:
@@ -20,7 +20,7 @@ class Conv1DLayer(object):
         # Weight: a 4D tensor with shape :
         #        [number of feature maps at layer m, number of feature maps at layer m-1, filter height, filter width]
 
-        w_shape = (output_feature_map_num, input_feature_map_num, 1, filter_width)
+        w_shape = (output_feature_map_num, input_feature_map_num, conv_window , filter_width)
         w_bound = np.sqrt(input_feature_map_num * filter_width)
 
         if init_W == None:

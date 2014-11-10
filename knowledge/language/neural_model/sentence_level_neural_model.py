@@ -29,7 +29,6 @@ class SentenceLevelNeuralModelCore(object):
 
 
         self.x = T.lmatrix('x')
-        self.z = T.lmatrix('z')
 
 
         self.word_num = kwargs['word_num']
@@ -67,8 +66,8 @@ class SentenceLevelNeuralModelCore(object):
         word_loc_input = self.x[:, 5]
         dist_id_verb2word = self.x[:, 6]
 
-        tree_word_input = self.z[0,:].reshape((1,self.z.shape[1]))
-        tree_POS_input = self.z[1,:].reshape((1,self.z.shape[1]))
+        tree_word_input = word_id_input.reshape((1,batch_size))
+        tree_POS_input = word_pos_input.reshape((1,batch_size))
 
         # we have 5 lookup tables here:
         # 1,word vector
@@ -139,10 +138,11 @@ class SentenceLevelNeuralModelCore(object):
         # we use conv here instead of rnn, which makes it easy to train
         # extend (1,sentence_len,POS_feature_num) to (1,1,sentence_len,word_feature_num)
         tree_word_raw = tree_word_raw.dimshuffle(0,'x',1,2)
-        self.tree_word_conv_layer = Conv1DLayer('conv',rng,1,self.conv_output_dim,self.word_feature_dim)
+        self.tree_word_conv_layer = Conv1DLayer('conv',rng,1,self.conv_output_dim,self.conv_window_size,self.word_feature_dim)
         # treecnov shape (batch size,conv_output_dim,sentence_length,1)
         # in here we have (1,conv_output_dim,sentence_length,1)
-        treewordconv = self.tree_word_conv_layer.output(tree_word_raw).reshape((tree_word_input.shape[0],self.conv_output_dim,tree_word_input.shape[1]))
+        treewordconv = self.tree_word_conv_layer.output(tree_word_raw).reshape((tree_word_input.shape[0],
+            self.conv_output_dim,tree_word_input.shape[1] - self.conv_window_size + 1))
         tree_word_vec = T.max(treewordconv,axis=2).reshape((tree_word_input.shape[0],self.conv_output_dim))
         tree_word_vec = tree_word_vec.repeat(batch_size,axis=0)
         self.tree_word_vec = tree_word_vec
@@ -157,10 +157,11 @@ class SentenceLevelNeuralModelCore(object):
         # we use conv here instead of rnn, which makes it easy to train
         # extend (1,sentence_len,POS_feature_num) to (1,1,sentence_len,word_feature_num)
         tree_POS_raw = tree_POS_raw.dimshuffle(0,'x',1,2)
-        self.tree_POS_conv_layer = Conv1DLayer('conv',rng,1,self.conv_output_dim,self.POS_feature_dim)
+        self.tree_POS_conv_layer = Conv1DLayer('conv',rng,1,self.conv_output_dim,self.conv_window_size,self.POS_feature_dim)
         # treecnov shape (batch size,conv_output_dim,sentence_length,1)
         # in here we have (1,conv_output_dim,sentence_length,1)
-        treeposconv = self.tree_POS_conv_layer.output(tree_POS_raw).reshape((tree_POS_input.shape[0],self.conv_output_dim,tree_POS_input.shape[1]))
+        treeposconv = self.tree_POS_conv_layer.output(tree_POS_raw).reshape((tree_POS_input.shape[0],
+            self.conv_output_dim,tree_POS_input.shape[1] - self.conv_window_size + 1))
         tree_POS_vec = T.max(treeposconv,axis=2).reshape((tree_POS_input.shape[0],self.conv_output_dim))
         tree_POS_vec = tree_POS_vec.repeat(batch_size,axis=0)
         self.tree_POS_vec = tree_POS_vec
@@ -232,7 +233,7 @@ class SentenceLevelNeuralModelCore(object):
 
 
     def inputs(self):
-        return [self.x,self.z]
+        return [self.x]
 
 import numpy as np
 
@@ -299,7 +300,7 @@ class SentenceLevelNeuralModel(BaseModel):
             inputs=self.core.inputs()+[self.label,self.lr],
             outputs=self.cost,
             updates=self.updates,
-        )
+            on_unused_input='ignore')
         self.valid_model = theano.function(
             inputs=self.core.inputs()+[self.label],
             outputs=[self.errors,self.core.output_layer.y_pred],
@@ -347,14 +348,12 @@ class SentenceLevelNeuralModel(BaseModel):
                 epoch = epoch + 1
 
                 minibatch = 0
-                for X, y, z in train_problem.get_data_batch():
+                for X, y in train_problem.get_data_batch():
 
                     #print 'X shape',X.shape
                     #print 'y shape',y.shape
-                    #print 'z shape',z.shape
                     start_time = time.clock()
-                    #minibatch_avg_cost,tree_word_vec = self.train_model(X,y,z)
-                    minibatch_avg_cost= self.train_model(X,z,y,learning_rate)
+                    minibatch_avg_cost= self.train_model(X,y,learning_rate)
 
                     #print 'tree_word_vec shape',tree_word_vec.shape
                     end_time = time.clock()
@@ -378,9 +377,9 @@ class SentenceLevelNeuralModel(BaseModel):
                         validation_pred = []
                         validation_label = []
                         test_num = 0
-                        for valid_X, valid_y, valid_z in valid_problem.get_data_batch():
+                        for valid_X, valid_y, in valid_problem.get_data_batch():
                             test_num += 1
-                            error,pred = self.valid_model(valid_X,valid_z,valid_y)
+                            error,pred = self.valid_model(valid_X,valid_y)
                             validation_losses.append(error)
                             validation_pred += pred.tolist()
                             validation_label += valid_y.tolist()

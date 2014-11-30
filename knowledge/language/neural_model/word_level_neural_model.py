@@ -1,19 +1,19 @@
 __author__ = ['Sun','Huang']
 
-import theano
-import theano.tensor as T
-import numpy as np
 import time
 import sys
 import os
 
-from knowledge.machine.neuralnetwork.layer.mlp import HiddenLayer
-from knowledge.machine.neuralnetwork.layer.logistic_sgd import LogisticRegression
+import theano
+import theano.tensor as T
+import numpy as np
+from sklearn.metrics import f1_score
+
+from knowledge.machine.neuralnetwork.mlp import HiddenLayer
+from knowledge.machine.neuralnetwork.layer.softmax import SoftMaxLayer
 from knowledge.machine.neuralnetwork.layer.lookup_table_layer import LookupTableLayer
-from knowledge.util.theano_util import shared_dataset
 from knowledge.machine.neuralnetwork.layer.base import BaseModel
 
-from sklearn.metrics import f1_score
 
 class WordLevelNeuralModelCore(object):
 
@@ -38,7 +38,7 @@ class WordLevelNeuralModelCore(object):
 
         # The logistic regression layer gets as input the hidden units
         # of the hidden layer
-        self.output_layer = LogisticRegression(
+        self.output_layer = SoftMaxLayer(
                                         input=self.hidden_layer.output,
                                         n_in=self.hidden_layer_size,
                                         n_out=self.n_outs)

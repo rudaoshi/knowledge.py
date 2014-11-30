@@ -4,8 +4,9 @@ import time
 
 import theano.tensor as T
 import theano
+
 from knowledge.language.neural_model.sentence_level_log_likelihood_layer import SentenceLevelLogLikelihoodLayer
-from knowledge.machine.neuralnetwork.layer.mlp import HiddenLayer
+from knowledge.machine.neuralnetwork.mlp import HiddenLayer
 from knowledge.machine.neuralnetwork.layer.conv_layer import Conv1DLayer
 from knowledge.machine.neuralnetwork.layer.lookup_table_layer import LookupTableLayer
 

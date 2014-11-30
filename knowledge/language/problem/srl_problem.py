@@ -4,7 +4,7 @@ import numpy as np
 
 from knowledge.language.problem.postags import PosTags
 from knowledge.language.problem.srltypes import SrlTypes
-from knowledge.language.problem.locdifftypes import LocDiffToVerbTypes, LocDiffToWordTypes
+from knowledge.language.problem.locdifftypes import LocDiffToVerbTypes, LocDiffToWordTypes, LocTypes
 from knowledge.language.core.word.word import Word
 
 from knowledge.language.problem.problem import Problem
@@ -43,6 +43,7 @@ class SRLProblem(Problem):
         character['word_num'] = word_repo.get_word_num()
         character['POS_type_num'] = len(postags.PosTags.POSTAG_ID_MAP)
         character['SRL_type_num'] = len(srltypes.SrlTypes.SRLTYPE_ID_MAP)
+        character['loc_type_num'] = len(locdifftypes.LocTypes.LOC_ID_MAP)
         character['dist_to_verb_num'] = len(locdifftypes.LocDiffToVerbTypes.DIFF_ID_MAP)
         character['dist_to_word_num'] = len(locdifftypes.LocDiffToWordTypes.DIFF_ID_MAP)
 
@@ -73,6 +74,8 @@ class SRLProblem(Problem):
 
         X = [] #SRLFeatureBatch()
         y = []
+
+        sentence_len = sentence.word_num()
         for srl in sentence.srl_structs():
             verb = srl.verb_infinitive
             verb_loc = srl.verb_loc  #given a verb 
@@ -88,28 +91,22 @@ class SRLProblem(Problem):
 
             for word_loc, wd in enumerate(sentence.words()): # for each word
 
-                loc_to_this_word = [LocDiffToWordTypes.get_locdiff_id(idx - word_loc)
+                loc_to_word = [LocDiffToWordTypes.get_locdiff_id(idx - word_loc)
                         for idx in range(sentence.word_num())]
 
-                #              X.word_id.append(word_id_vec)
- #              X.pos_id.append(pos_id_vec)
- #              X.other_feature.append(
-                '''
-                X.append(word_id_vec + pos_id_vec + loc_to_verb + loc_to_this_word +
-                         [verb_loc, word_loc,
+
+                X.append(
+                         [sentence_len, wd.id, verb.id,
                           PosTags.POSTAG_ID_MAP[sentence.get_word_property(verb_loc).pos],
                           PosTags.POSTAG_ID_MAP[sentence.get_word_property(word_loc).pos],
-                          LocDiffToVerbTypes.get_locdiff_id(word_loc - verb_loc),
-                          LocDiffToWordTypes.get_locdiff_id(verb_loc - word_loc)
-                         ]
+                          LocTypes.get_loc_id(word_loc),
+                          LocTypes.get_loc_id(verb_loc),
+                          LocDiffToWordTypes.get_locdiff_id(verb_loc - word_loc),
+                          LocDiffToVerbTypes.get_locdiff_id(word_loc - verb_loc )
+                         ] +  loc_to_word + loc_to_verb
                          )
-                '''
-                X.append([wd.id,verb.id,
-                    PosTags.POSTAG_ID_MAP[sentence.get_word_property(word_loc).pos],
-                    PosTags.POSTAG_ID_MAP[sentence.get_word_property(verb_loc).pos],
-                    verb_loc, word_loc,
-                    LocDiffToWordTypes.get_locdiff_id(verb_loc - word_loc)
-                    ])
+
+
                 y.append(label[word_loc])
 
 #        X.finsh_batch()

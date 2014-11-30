@@ -28,7 +28,7 @@ import numpy
 import theano
 import theano.tensor as T
 
-from knowledge.machine.neuralnetwork.layer.logistic_sgd import LogisticRegression, load_data
+from knowledge.machine.neuralnetwork.layer.softmax import SoftMaxLayer, load_data
 
 
 class HiddenLayer(object):
@@ -143,7 +143,7 @@ class MLP(object):
 
         # The logistic regression layer gets as input the hidden units
         # of the hidden layer
-        self.logRegressionLayer = LogisticRegression(
+        self.logRegressionLayer = SoftMaxLayer(
             input=self.hiddenLayer.output,
             n_in=n_hidden,
             n_out=n_out)

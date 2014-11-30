@@ -31,7 +31,7 @@ import theano.tensor as T
 from theano.tensor.signal import downsample
 from theano.tensor.nnet import conv
 
-from knowledge.machine.neuralnetwork.layer.logistic_sgd import LogisticRegression, load_data
+from knowledge.machine.neuralnetwork.layer.softmax import SoftMaxLayer, load_data
 from machine.neuralnetwork.layer.mlp import HiddenLayer
 
 
@@ -178,7 +178,7 @@ def evaluate_lenet5(learning_rate=0.1, n_epochs=200,
                          n_out=500, activation=T.tanh)
 
     # classify the values of the fully-connected sigmoidal layer
-    layer3 = LogisticRegression(input=layer2.output, n_in=500, n_out=10)
+    layer3 = SoftMaxLayer(input=layer2.output, n_in=500, n_out=10)
 
     # the cost we minimize during training is the NLL of the model
     cost = layer3.negative_log_likelihood(y)

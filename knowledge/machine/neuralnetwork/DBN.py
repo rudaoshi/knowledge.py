@@ -9,7 +9,7 @@ import theano
 import theano.tensor as T
 from theano.tensor.shared_randomstreams import RandomStreams
 
-from knowledge.machine.neuralnetwork.layer.logistic_sgd import LogisticRegression, load_data
+from knowledge.machine.neuralnetwork.layer.softmax import SoftMaxLayer, load_data
 from machine.neuralnetwork.layer.mlp import HiddenLayer
 from machine.neuralnetwork.rbm import RBM
 
@@ -119,7 +119,7 @@ class DBN(object):
             self.rbm_layers.append(rbm_layer)
 
         # We now need to add a logistic layer on top of the MLP
-        self.logLayer = LogisticRegression(
+        self.logLayer = SoftMaxLayer(
             input=self.sigmoid_layers[-1].output,
             n_in=hidden_layers_sizes[-1],
             n_out=n_outs)

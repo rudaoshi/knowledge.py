@@ -4,6 +4,7 @@ import theano
 import numpy as np
 import theano.tensor as T
 from theano.tensor.nnet import conv
+from knowledge.machine.neuralnetwork.random import get_numpy_rng
 
 class Conv1DLayer(object):
     '''
@@ -12,30 +13,39 @@ class Conv1DLayer(object):
     Note : A faster version for GPU is avaliable at https://groups.google.com/forum/#!topic/theano-users/JJHZmuUDdPE
     '''
 
-    def __init__(self,name,rng, input_feature_map_num, output_feature_map_num, conv_window , filter_width,
-                 init_W=None,init_b=None):
+    def __init__(self, init_W=None,init_b=None, tensor_shape = None):
+
+        if init_W is not None and tensor_shape is not None:
+            assert init_W.shape == tensor_shape, "init tensor size is not equal to the given tensor shape"
 
         # Input: a 4D tensor corresponding to a mini-batch of input images with shape:
         #        [mini-batch size, number of input feature maps, image height, image width].
         # Weight: a 4D tensor with shape :
         #        [number of feature maps at layer m, number of feature maps at layer m-1, filter height, filter width]
+        rng = get_numpy_rng()
+        if init_W is None and tensor_shape is None:
+            self.W = None
+        elif init_W is not None:
+            self.W = theano.shared(init_W.astype(theano.config.floatX) )
+        elif init_W is None:
+            (output_feature_map_num, input_feature_map_num, conv_window , filter_width) = tensor_shape
+            w_bound = np.sqrt(input_feature_map_num * filter_width)
+            init_W = rng.uniform(low=-1.0 / w_bound, high=1.0 / w_bound, size=tensor_shape)
 
-        w_shape = (output_feature_map_num, input_feature_map_num, conv_window , filter_width)
-        w_bound = np.sqrt(input_feature_map_num * filter_width)
+            self.W = theano.shared(init_W.astype(theano.config.floatX) )
 
-        if init_W == None:
-            self.W = theano.shared(rng.uniform(low=-1.0 / w_bound, high=1.0 / w_bound, size=w_shape).astype(theano.config.floatX),
-                               name ='cov_1d_layer_W_%s' %(name))
-        else:
-            self.W = theano.shared(init_W,name='cov_1d_layer_W_%s' %(name))
 
-        b_shape = (output_feature_map_num,)
-        if init_b == None:
-            self.b = theano.shared(rng.uniform(low=-.5, high=.5, size=b_shape).astype(theano.config.floatX),
-                        name='cov_1d_layer_b_%s' % (name))
-        else:
-            self.b = theano.shared(init_b,name='cov_1d_layer_b_%s' % (name))
 
+        if init_b is None and tensor_shape is None:
+            self.b = None
+        elif init_b is not None:
+            self.b = theano.shared(init_b.astype(theano.config.floatX) )
+        elif init_b is None:
+            (output_feature_map_num, input_feature_map_num, conv_window , filter_width) = tensor_shape
+            b_shape = (output_feature_map_num,)
+            init_b = rng.uniform(low=-.5, high=.5, size=b_shape)
+
+            self.b = theano.shared(init_b.astype(theano.config.floatX) )
 
 
     def output(self, input):
@@ -43,4 +53,21 @@ class Conv1DLayer(object):
 
     def params(self):
         return [self.W,self.b]
+
+
+    def __getstate__(self):
+
+        state = dict()
+        state['name'] = "conv1d"
+        state['W'] = self.W.get_value()
+        state['b'] = self.b.get_value()
+
+        return state
+
+    def __setstate__(self, state):
+
+        self.W = theano.shared(value=state['W'].astype(theano.config.floatX),
+                                name='W', borrow=True)
+        self.b = theano.shared(value=state['b'].astype(theano.config.floatX),
+                                name='b', borrow=True)
 

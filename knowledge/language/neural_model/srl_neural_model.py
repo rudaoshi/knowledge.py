@@ -12,7 +12,6 @@ from knowledge.machine.neuralnetwork.layer.lookup_table_layer import LookupTable
 from knowledge.machine.neuralnetwork.layer.softmax import SoftMaxLayer
 from knowledge.machine.neuralnetwork.layer.base import BaseModel
 from knowledge.language.problem.locdifftypes import LocDiffToWordTypes, LocDiffToVerbTypes, LocTypes
-from numpy import product
 
 class SRLNetowrkArchitecture(object):
 
@@ -145,7 +144,6 @@ class SRLNeuralLanguageModel(object):
         wordvec = self.word_embedding_layer.output(
             inputs = word_id_input
         )
-        wordvec = wordvec
 
         verbvec = self.word_embedding_layer.output(
             inputs = verb_id_input
@@ -443,7 +441,7 @@ def train_srl_neural_model(train_problem, valid_problem, nn_architecture,  hyper
 
             start_time = time.clock()
 
-            minibatch_avg_cost= train_func(X.astype("float32"), y)
+            minibatch_avg_cost= train_func(X.astype("float32"), y.astype('int32'))
 
             end_time = time.clock()
 
@@ -463,7 +461,7 @@ def train_srl_neural_model(train_problem, valid_problem, nn_architecture,  hyper
                 test_num = 0
                 for valid_X, valid_y, in valid_problem.get_data_batch():
                     test_num += 1
-                    error = valid_func(valid_X.astype("float32") ,valid_y)
+                    error = valid_func(valid_X.astype("float32") ,valid_y.astype('int32'))
                     validation_losses += error * valid_X.shape[0]
                     sample_num += valid_X.shape[0]
 

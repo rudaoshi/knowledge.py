@@ -2,6 +2,7 @@ __author__ = 'sun'
 
 import os
 
+import sys
 import numpy as np
 
 from knowledge.language.corpora.conll05 import Conll05Corpora
@@ -11,9 +12,15 @@ from knowledge.machine.neuralnetwork.random import init_rng
 
 def test_srl_neural_model():
 
-    DATA_PATH = "D:\\Experiment\\Projects\\nn_language"  # os.path.expanduser('~')
-    train_file_path = os.path.join(DATA_PATH,'data/conll05/training-set')
-    valid_file_path = os.path.join(DATA_PATH,'data/conll05/dev-set')
+    if len(sys.argv) > 1:
+        DATA_FOLDER = sys.arv[1]
+    elif sys.platform[:3] == 'win':
+        DATA_FOLDER = "D:\\Experiment\\Projects\\nn_language\\data"  # os.path.expanduser('~')
+    else:
+        DATA_FOLDER = os.path.join(os.path.expanduser('~'),'Data')
+
+    train_file_path = os.path.join(DATA_FOLDER,'conll05/training-set')
+    valid_file_path = os.path.join(DATA_FOLDER,'conll05/dev-set')
 
     train_corpora = Conll05Corpora()
     train_corpora.load(train_file_path)

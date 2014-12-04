@@ -45,7 +45,6 @@ class SentenceLevelLogLikelihoodLayer(object):
 
         self.Y = Y
 
-
         # initialize with 0 the weights W as a matrix of shape (n_in, n_out)
         self.W = theano.shared(value=np.asarray(rng.uniform(low=-2.0, high=2.0, size=(n_in, n_out)),
                                                  dtype=theano.config.floatX),
@@ -55,112 +54,52 @@ class SentenceLevelLogLikelihoodLayer(object):
                                                  dtype=theano.config.floatX),
                                name='b', borrow=True)
 
-        self.tag_trans_matrix = theano.shared(value = np.zeros((n_out + 1,n_out), dtype=theano.config.floatX),
+        # trasition matrix of class tags
+        # A_{i,j} means the transition prob from class i to class j
+        # A_{0, i} means the prob of start with class i
+        self.tag_trans_matrix = theano.shared(value = np.zeros((n_out + 1 ,n_out ), dtype=theano.config.floatX),
                                               name='tag_trans', borrow = True)
 
     def cost(self, X, y):
 
         # pointwise_score shape (batch_size,max_term_per_sent,n_out)
-        pointwise_score = T.nnet.softmax(T.dot(X, self.W) + self.b)
+        pointwise_score = T.dot(X, self.W) + self.b
         # y_pred_pointwise shape (batch_size,max_term_per_sent)
         y_pred_pointwise = T.argmax(pointwise_score, axis=2)
 
 #        self.results,_update = theano.scan(lambda score,y,mask: score[T.arange(max_term_per_sent),y] * mask,
 #                       sequences=[self.pointwise_score,self.Y,self.masks])
 
-
         #TODO: compute total score of all path (eq, 12, NLP from Scratch)
 
-        tag_num = self.tag_trans_matrix.shape[0]
-
-        result, updates = theano.scan(lambda s, delta_tm1, trans_mat: s + T.log(T.sum(T.exp(T.tile(delta_tm1, tag_num) + trans_mat),axis=0 )),
+        sentence_len = pointwise_score.shape[0]
+        tag_num = self.tag_trans_matrix.shape[1]
+        # comput logadd via eq, 14, NLP from scratch
+        # \delta_t(k) is the logadd of all path of terms 1:t that end with class k
+        # so, \delta_0(k) = logadd(A(0,k))
+        # we are calculating delta_t(k) for t=1:T+1 and k = 1:TagNum+1
+        result, updates = theano.scan(lambda s, delta_tm1, trans_mat: s + T.log(T.sum(T.exp(delta_tm1.repeat(tag_num,axis=0) + trans_mat),axis=0 )),
                                 sequences = pointwise_score,
-                                outputs_info= [{'initial': self.tag_trans_matrix[0,:] + pointwise_score[0,:],}],
+                                outputs_info= [{'initial': T.log(self.tag_trans_matrix[0, :])}],
                                 non_sequences=[self.tag_trans_matrix[range(1,tag_num+1),:]]
         )
         delta = result[-1]
 
-        result, update = theano.scan(lambda i, select_score, score_mat, delta, trans_mat, y_pred_pointwise: \
-                                         select_score + score_mat[i,y_pred_pointwise[i]] + trans_mat[y_pred_pointwise[i],y_pred_pointwise[i+1]],
-                                     sequences=range(input_num),
-                                     outputs_info= [{'initial': self.tag_trans_matrix[0,y_pred_pointwise[0]]}],
-                                     non_sequences=[pointwise_score, delta, self.tag_trans_matrix, y_pred_pointwise])
+        result, update = theano.scan(lambda i, select_score, score_mat, trans_mat, y_pred_pointwise: \
+                                         select_score + score_mat[i, y_pred_pointwise[i]] + trans_mat[y_pred_pointwise[i]+1,y_pred_pointwise[i+1]],
+                                     sequences=range(1,sentence_len),
+                                     outputs_info= [{'initial': self.tag_trans_matrix[0, y_pred_pointwise[0]] + pointwise_score[0, y_pred_pointwise[0]]}],
+                                     non_sequences=[pointwise_score, self.tag_trans_matrix, y_pred_pointwise])
 
         selected_path_score = result[-1]
 
-        self.log_likelihood = selected_path_score - T.sum(T.exp((delta)),axis=0)
+        return selected_path_score - T.sum(T.exp(delta),axis=0)
 
-
-
+    def params(self):
         # parameters of the model
         #self.params = [self.W, self.b, self.tag_trans_matrix]
-        self.params = [self.W, self.b]
+        return [self.W, self.b, self.tag_trans_matrix]
 
-    def negative_log_likelihood_pointwise(self):
-        #return -T.mean(T.log(pointwise_score)[T.arange(y.shape[0]), y] * len_or_masks)
-        #return -T.mean(self.pointwise_score)
-        return -T.mean(self.results)
-
-    def negative_log_likelihood(self, y):
-        """Return the mean of the negative log-likelihood of the prediction
-        of this model under a given target distribution.
-
-        .. math::
-
-            \frac{1}{|\mathcal{D}|} \mathcal{L} (\theta=\{W,b\}, \mathcal{D}) =
-            \frac{1}{|\mathcal{D}|} \sum_{i=0}^{|\mathcal{D}|} \log(P(Y=y^{(i)}|x^{(i)}, W,b)) \\
-                \ell (\theta=\{W,b\}, \mathcal{D})
-
-        :type y: theano.tensor.TensorType
-        :param y: corresponds to a vector that gives for each example the
-                  correct label
-
-        Note: we use the mean instead of the sum so that
-              the learning rate is less dependent on the batch size
-        """
-        # y.shape[0] is (symbolically) the number of rows in y, i.e.,
-        # number of examples (call it n) in the minibatch
-        # T.arange(y.shape[0]) is a symbolic vector which will contain
-        # [0,1,2,... n-1] T.log(self.p_y_given_x) is a matrix of
-        # Log-Probabilities (call it LP) with one row per example and
-        # one column per class LP[T.arange(y.shape[0]),y] is a vector
-        # v containing [LP[0,y[0]], LP[1,y[1]], LP[2,y[2]], ...,
-        # LP[n-1,y[n-1]]] and T.mean(LP[T.arange(y.shape[0]),y]) is
-        # the mean (across minibatch examples) of the elements in v,
-        # i.e., the mean log-likelihood across the minibatch.
-        return - self.log_likelihood
-
-    def errors(self):
-        """Return a float representing the number of errors in the minibatch
-        over the total number of examples of the minibatch ; zero one
-        loss over the size of the minibatch
-
-        :type y: theano.tensor.TensorType
-        :param y: corresponds to a vector that gives for each example the
-                  correct label
-        """
-
-        # check if y has same dimension of y_pred_pointwise
-        '''
-        if y.ndim != self.y_pred_pointwise.ndim:
-            raise TypeError('y should have the same shape as self.y_pred_pointwise',
-                ('y', target.type, 'y_pred_pointwise', self.y_pred_pointwise.type))
-        # check if y is of the correct datatype
-        if y.dtype.startswith('int'):
-            # the T.neq operator returns a vector of 0s and 1s, where 1
-            # represents a mistake in prediction
-            if len_or_masks.ndim == 0:
-                # len_or_masks is the number of terms in this sentence
-                return T.mean(T.neq(self.y_pred_pointwise, y)[:len_or_masks])
-            elif len_or_masks.ndim == 1:
-                return T.mean(T.neq(self.y_pred_pointwise, y) * len_or_masks)
-            else:
-                raise TypeError('len_or_masks should have 1 or 2 dimension')
-        else:
-            raise NotImplementedError()
-        '''
-
-        return T.cast(T.sum(T.neq(self.y_pred_pointwise, self.Y) * self.masks),'float32') / T.sum(self.masks)
 
 def load_data(dataset):
     ''' Loads the dataset

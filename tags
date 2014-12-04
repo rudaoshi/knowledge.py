@@ -3,56 +3,230 @@
 !_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
 !_TAG_PROGRAM_NAME	Exuberant Ctags	//
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
-!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
-CHUNKTYPE_ID_MAP	knowledge/language/core/definition.py	/^    CHUNKTYPE_ID_MAP = dict((tag, id) for id, tag in enumerate([$/;"	v	class:ChunkTypes
+!_TAG_PROGRAM_VERSION	5.8	//
+BaseModel	knowledge/language/neural_model/srl_neural_model.py	/^from knowledge.machine.neuralnetwork.layer.base import BaseModel$/;"	i
+BaseModel	knowledge/language/neural_model/word_level_neural_model.py	/^from knowledge.machine.neuralnetwork.layer.base import BaseModel$/;"	i
+BaseModel	knowledge/machine/neuralnetwork/layer/base.py	/^class BaseModel(object):$/;"	c
+CHUNKTYPE_ID_MAP	knowledge/language/problem/chunktypes.py	/^    CHUNKTYPE_ID_MAP = dict((tag, id) for id, tag in enumerate([$/;"	v	class:ChunkTypes
 COMPILE_MODE	knowledge/language/nn_languagemodel.py	/^COMPILE_MODE = theano.compile.Mode('c|py', 'fast_run')$/;"	v
-ChunkProblem	knowledge/language/neural_model/problem/chunk_problem.py	/^class ChunkProblem(object):$/;"	c
-ChunkTypes	knowledge/language/core/definition.py	/^class ChunkTypes(object):$/;"	c
-Conll05	knowledge/language/core/corpora.py	/^class Conll05(object):$/;"	c
+Chunk	knowledge/language/core/sentence/chunk_structure.py	/^class Chunk(object):$/;"	c
+Chunk	knowledge/language/core/sentence/ner_structure.py	/^from knowledge.language.core.sentence.chunk_structure import Chunk$/;"	i
+Chunk	knowledge/language/corpora/conll05.py	/^from knowledge.language.core.sentence.chunk_structure import Chunk$/;"	i
+ChunkProblem	knowledge/language/problem/chunk_problem.py	/^class ChunkProblem(Problem):$/;"	c
+ChunkProblem	knowledge/test/knowledge/language/neural_model/test_chunk_neural_model.py	/^from knowledge.language.problem.chunk_problem import ChunkProblem$/;"	i
+ChunkProblem	knowledge/test/knowledge/language/problem/test_chunk_problem.py	/^from knowledge.language.problem.chunk_problem import ChunkProblem$/;"	i
+ChunkTypes	knowledge/language/problem/chunk_problem.py	/^from knowledge.language.problem.chunktypes import ChunkTypes$/;"	i
+ChunkTypes	knowledge/language/problem/chunktypes.py	/^class ChunkTypes(object):$/;"	c
+ChunkTypes	knowledge/language/problem/ner_problem.py	/^from knowledge.language.problem.chunktypes import ChunkTypes$/;"	i
+Conll05	knowledge/test/knowledge/language/core/test_corpora.py	/^from knowledge.language.core.corpora_bak import Conll05$/;"	i
+Conll05	knowledge/test/knowledge/language/test_conv_neural_model.py	/^from knowledge.language.core.corpora_bak import Conll05$/;"	i
+Conll05Corpora	knowledge/language/corpora/conll05.py	/^class Conll05Corpora(Corpora):$/;"	c
+Conll05Corpora	knowledge/test/knowledge/language/corpora/test_conll05_corpora.py	/^from knowledge.language.corpora.conll05 import Conll05Corpora$/;"	i
+Conll05Corpora	knowledge/test/knowledge/language/neural_model/test_chunk_neural_model.py	/^from knowledge.language.corpora.conll05 import Conll05Corpora$/;"	i
+Conll05Corpora	knowledge/test/knowledge/language/neural_model/test_ner_neural_model.py	/^from knowledge.language.corpora.conll05 import Conll05Corpora$/;"	i
+Conll05Corpora	knowledge/test/knowledge/language/neural_model/test_srl_neural_model.py	/^from knowledge.language.corpora.conll05 import Conll05Corpora$/;"	i
+Conll05Corpora	knowledge/test/knowledge/language/problem/test_chunk_problem.py	/^from knowledge.language.corpora.conll05 import Conll05Corpora$/;"	i
+Conll05Corpora	knowledge/test/knowledge/language/problem/test_ner_problem.py	/^from knowledge.language.corpora.conll05 import Conll05Corpora$/;"	i
+Conll05Corpora	knowledge/test/knowledge/language/problem/test_srl_problem.py	/^from knowledge.language.corpora.conll05 import Conll05Corpora$/;"	i
+Conv1DLayer	knowledge/language/neural_model/sentence_level_neural_model_bak.py	/^from knowledge.machine.neuralnetwork.layer.conv_layer import Conv1DLayer$/;"	i
+Conv1DLayer	knowledge/language/neural_model/srl_neural_model.py	/^from knowledge.machine.neuralnetwork.layer.conv1d_layer import Conv1DLayer$/;"	i
+Conv1DLayer	knowledge/machine/neuralnetwork/layer/conv1d_layer.py	/^class Conv1DLayer(object):$/;"	c
+Conv1DLayer	knowledge/machine/neuralnetwork/layer/conv_layer.py	/^class Conv1DLayer(object):$/;"	c
+Conv1DLayer	knowledge/test/knowledge/machine/layer/test_conv1d_layer.py	/^from knowledge.machine.neuralnetwork.layer.conv1d_layer import Conv1DLayer$/;"	i
 Corpora	knowledge/language/core/corpora.py	/^class Corpora(object):$/;"	c
+Corpora	knowledge/language/core/corpora_bak.py	/^class Corpora(object):$/;"	c
+Corpora	knowledge/language/corpora/conll05.py	/^from knowledge.language.core.corpora import Corpora$/;"	i
+Corpora	knowledge/test/knowledge/language/test_conv_neural_model.py	/^from knowledge.language.core.corpora_bak import Corpora$/;"	i
+Corpora	knowledge/test/knowledge/language/test_neural_model.py	/^from knowledge.language.core.corpora_bak import Corpora$/;"	i
+Counter	knowledge/language/core/corpora_bak.py	/^from collections import defaultdict, Counter, deque$/;"	i
+Counter	knowledge/test/knowledge/language/test_conv_neural_model.py	/^    from collections import Counter$/;"	i
 DBN	knowledge/machine/neuralnetwork/DBN.py	/^class DBN(object):$/;"	c
+DIFF_ID_MAP	knowledge/language/problem/locdifftypes.py	/^    DIFF_ID_MAP = dict()$/;"	v	class:LocDiffToVerbTypes
+DIFF_ID_MAP	knowledge/language/problem/locdifftypes.py	/^    DIFF_ID_MAP = dict()$/;"	v	class:LocDiffToWordTypes
+Document	knowledge/language/core/corpora_bak.py	/^from knowledge.language.core.document import Document$/;"	i
 Document	knowledge/language/core/document.py	/^class Document(object):$/;"	c
 HMC_sampler	knowledge/machine/neuralnetwork/hmc.py	/^class HMC_sampler(object):$/;"	c
-HiddenLayer	knowledge/machine/neuralnetwork/layer/mlp.py	/^class HiddenLayer(object):$/;"	c
+HYPERPARAMETERS	knowledge/language/nn_languagemodel.py	/^        from hyperparameters import HYPERPARAMETERS$/;"	i
+HYPERPARAMETERS	knowledge/language/nn_languagemodel.py	/^    from hyperparameters import HYPERPARAMETERS$/;"	i
+HiddenLayer	knowledge/language/neural_model/sentence_level_neural_model_bak.py	/^from knowledge.machine.neuralnetwork.mlp import HiddenLayer$/;"	i
+HiddenLayer	knowledge/language/neural_model/word_level_neural_model.py	/^from knowledge.machine.neuralnetwork.mlp import HiddenLayer$/;"	i
+HiddenLayer	knowledge/machine/neuralnetwork/DBN.py	/^from machine.neuralnetwork.layer.mlp import HiddenLayer$/;"	i
+HiddenLayer	knowledge/machine/neuralnetwork/SdA.py	/^from machine.neuralnetwork.layer.mlp import HiddenLayer$/;"	i
+HiddenLayer	knowledge/machine/neuralnetwork/convolutional_mlp.py	/^from machine.neuralnetwork.layer.mlp import HiddenLayer$/;"	i
+HiddenLayer	knowledge/machine/neuralnetwork/mlp.py	/^class HiddenLayer(object):$/;"	c
+Image	knowledge/machine/neuralnetwork/layer/dA.py	/^import PIL.Image$/;"	i
+Image	knowledge/machine/neuralnetwork/rbm.py	/^import PIL.Image$/;"	i
+LOC_ID_MAP	knowledge/language/problem/locdifftypes.py	/^    LOC_ID_MAP = dict()$/;"	v	class:LocTypes
 LeNetConvPoolLayer	knowledge/machine/neuralnetwork/convolutional_mlp.py	/^class LeNetConvPoolLayer(object):$/;"	c
-LogisticRegression	knowledge/machine/neuralnetwork/layer/logistic_sgd.py	/^class LogisticRegression(object):$/;"	c
+LocDiffToVerbTypes	knowledge/language/neural_model/srl_neural_model.py	/^from knowledge.language.problem.locdifftypes import LocDiffToWordTypes, LocDiffToVerbTypes, LocTypes$/;"	i
+LocDiffToVerbTypes	knowledge/language/problem/chunk_problem.py	/^from knowledge.language.problem.locdifftypes import LocDiffToVerbTypes, LocDiffToWordTypes$/;"	i
+LocDiffToVerbTypes	knowledge/language/problem/locdifftypes.py	/^class LocDiffToVerbTypes(object):$/;"	c
+LocDiffToVerbTypes	knowledge/language/problem/ner_problem.py	/^from knowledge.language.problem.locdifftypes import LocDiffToVerbTypes, LocDiffToWordTypes$/;"	i
+LocDiffToVerbTypes	knowledge/language/problem/srl_problem.py	/^from knowledge.language.problem.locdifftypes import LocDiffToVerbTypes, LocDiffToWordTypes, LocTypes$/;"	i
+LocDiffToWordTypes	knowledge/language/neural_model/srl_neural_model.py	/^from knowledge.language.problem.locdifftypes import LocDiffToWordTypes, LocDiffToVerbTypes, LocTypes$/;"	i
+LocDiffToWordTypes	knowledge/language/problem/chunk_problem.py	/^from knowledge.language.problem.locdifftypes import LocDiffToVerbTypes, LocDiffToWordTypes$/;"	i
+LocDiffToWordTypes	knowledge/language/problem/locdifftypes.py	/^class LocDiffToWordTypes(object):$/;"	c
+LocDiffToWordTypes	knowledge/language/problem/ner_problem.py	/^from knowledge.language.problem.locdifftypes import LocDiffToVerbTypes, LocDiffToWordTypes$/;"	i
+LocDiffToWordTypes	knowledge/language/problem/srl_problem.py	/^from knowledge.language.problem.locdifftypes import LocDiffToVerbTypes, LocDiffToWordTypes, LocTypes$/;"	i
+LocTypes	knowledge/language/neural_model/srl_neural_model.py	/^from knowledge.language.problem.locdifftypes import LocDiffToWordTypes, LocDiffToVerbTypes, LocTypes$/;"	i
+LocTypes	knowledge/language/problem/locdifftypes.py	/^class LocTypes(object):$/;"	c
+LocTypes	knowledge/language/problem/srl_problem.py	/^from knowledge.language.problem.locdifftypes import LocDiffToVerbTypes, LocDiffToWordTypes, LocTypes$/;"	i
+LookupTableLayer	knowledge/language/neural_model/sentence_level_neural_model_bak.py	/^from knowledge.machine.neuralnetwork.layer.lookup_table_layer import LookupTableLayer$/;"	i
+LookupTableLayer	knowledge/language/neural_model/srl_neural_model.py	/^from knowledge.machine.neuralnetwork.layer.lookup_table_layer import LookupTableLayer$/;"	i
+LookupTableLayer	knowledge/language/neural_model/word_level_neural_model.py	/^from knowledge.machine.neuralnetwork.layer.lookup_table_layer import LookupTableLayer$/;"	i
 LookupTableLayer	knowledge/machine/neuralnetwork/layer/lookup_table_layer.py	/^class LookupTableLayer(object):$/;"	c
-MLP	knowledge/machine/neuralnetwork/layer/mlp.py	/^class MLP(object):$/;"	c
-MultiLookupTableLayer	knowledge/machine/neuralnetwork/layer/lookup_table_layer.py	/^class MultiLookupTableLayer(object):$/;"	c
-NeuralLanguageModel	knowledge/language/neural_model/neural_model.py	/^class NeuralLanguageModel(object):$/;"	c
-NeuralLanguageModelCore	knowledge/language/neural_model/neural_model.py	/^class NeuralLanguageModelCore(object):$/;"	c
-PADDING_WORD	knowledge/language/core/corpora.py	/^    PADDING_WORD = Word.padding_word()$/;"	v	class:Corpora
-PADDING_WORD2	knowledge/language/core/corpora.py	/^    PADDING_WORD2 = Word.padding_word2()$/;"	v	class:Corpora
-PosTagProblem	knowledge/language/neural_model/problem/pos_tag_problem.py	/^class PosTagProblem(object):$/;"	c
-PosTags	knowledge/language/core/definition.py	/^class PosTags(object):$/;"	c
+LookupTableLayer	knowledge/test/knowledge/machine/layer/test_conv1d_layer.py	/^from knowledge.machine.neuralnetwork.layer.lookup_table_layer import LookupTableLayer$/;"	i
+LookupTableLayer	knowledge/test/knowledge/machine/layer/test_lookup_table_layer.py	/^from knowledge.machine.neuralnetwork.layer.lookup_table_layer import LookupTableLayer$/;"	i
+MLP	knowledge/machine/neuralnetwork/mlp.py	/^class MLP(object):$/;"	c
+NERProblem	knowledge/language/problem/ner_problem.py	/^class NERProblem(Problem):$/;"	c
+NERProblem	knowledge/test/knowledge/language/neural_model/test_ner_neural_model.py	/^from knowledge.language.problem.ner_problem import NERProblem$/;"	i
+NERProblem	knowledge/test/knowledge/language/problem/test_ner_problem.py	/^from knowledge.language.problem.ner_problem import NERProblem$/;"	i
+NERTYPE_ID_MAP	knowledge/language/problem/nertypes.py	/^    NERTYPE_ID_MAP = dict((tag,id) for id,tag in enumerate([$/;"	v	class:NERTypes
+NERTypes	knowledge/language/problem/chunk_problem.py	/^from knowledge.language.problem.nertypes import NERTypes$/;"	i
+NERTypes	knowledge/language/problem/ner_problem.py	/^from knowledge.language.problem.nertypes import NERTypes$/;"	i
+NERTypes	knowledge/language/problem/nertypes.py	/^class NERTypes(object):$/;"	c
+Ner	knowledge/language/core/sentence/ner_structure.py	/^Ner = Chunk/;"	v
+Ner	knowledge/language/corpora/conll05.py	/^from knowledge.language.core.sentence.ner_structure import Ner$/;"	i
+NeuralModelHyperParameter	knowledge/language/neural_model/srl_neural_model.py	/^class NeuralModelHyperParameter(object):$/;"	c
+NeuralModelHyperParameter	knowledge/test/knowledge/language/neural_model/test_srl_neural_model.py	/^from knowledge.language.neural_model.srl_neural_model import SRLNetowrkArchitecture, NeuralModelHyperParameter, train_srl_neural_model$/;"	i
+PADDING_CHUNK_TYPE	knowledge/language/problem/chunktypes.py	/^    PADDING_CHUNK_TYPE = "#PAD#"$/;"	v	class:ChunkTypes
+PADDING_NER_TYPE	knowledge/language/problem/nertypes.py	/^    PADDING_NER_TYPE = "#PAD#"$/;"	v	class:NERTypes
+PADDING_POS_STR	knowledge/language/core/pos.py	/^PADDING_POS_STR = "$$$$"$/;"	v
+PADDING_POS_TAG	knowledge/language/problem/postags.py	/^    PADDING_POS_TAG = "#PAD#"$/;"	v	class:PosTags
+PADDING_SRL_TYPE	knowledge/language/problem/srltypes.py	/^    PADDING_SRL_TYPE = "#PAD#"$/;"	v	class:SrlTypes
+PADDING_WORD	knowledge/language/core/corpora_bak.py	/^    PADDING_WORD = Word(0,'$$$$')$/;"	v	class:Corpora
+PADDING_WORD_STR	knowledge/language/core/word/word.py	/^from .wordid_allocator import alloc_word_id, PADDING_WORD_STR$/;"	i
+PADDING_WORD_STR	knowledge/language/core/word/word_repo.py	/^from .wordid_allocator import PADDING_WORD_STR$/;"	i
+PADDING_WORD_STR	knowledge/language/core/word/wordid_allocator.py	/^PADDING_WORD_STR = "$$$$"$/;"	v
+PIL	knowledge/machine/neuralnetwork/layer/dA.py	/^import PIL.Image$/;"	i
+PIL	knowledge/machine/neuralnetwork/rbm.py	/^import PIL.Image$/;"	i
+PerceptionLayer	knowledge/language/neural_model/srl_neural_model.py	/^from knowledge.machine.neuralnetwork.layer.perception import PerceptionLayer$/;"	i
+PerceptionLayer	knowledge/machine/neuralnetwork/layer/perception.py	/^class PerceptionLayer(object):$/;"	c
+Pos	knowledge/language/core/pos.py	/^class Pos(object):$/;"	c
+PosTagProblem	knowledge/language/problem/pos_tag_problem.py	/^class PosTagProblem(object):$/;"	c
+PosTagProblem	knowledge/test/knowledge/language/test_neural_model.py	/^from knowledge.language.problem.pos_tag_problem import PosTagProblem$/;"	i
+PosTags	knowledge/language/core/sentence/sentence.py	/^from knowledge.language.problem.postags import PosTags$/;"	i
+PosTags	knowledge/language/problem/chunk_problem.py	/^from knowledge.language.problem.postags import PosTags$/;"	i
+PosTags	knowledge/language/problem/ner_problem.py	/^from knowledge.language.problem.postags import PosTags$/;"	i
+PosTags	knowledge/language/problem/pos_tag_problem.py	/^from knowledge.language.problem.postags import PosTags$/;"	i
+PosTags	knowledge/language/problem/postags.py	/^class PosTags(object):$/;"	c
+PosTags	knowledge/language/problem/srl_problem.py	/^from knowledge.language.problem.postags import PosTags$/;"	i
+Problem	knowledge/language/problem/chunk_problem.py	/^from knowledge.language.problem.problem import Problem$/;"	i
+Problem	knowledge/language/problem/ner_problem.py	/^from knowledge.language.problem.problem import Problem$/;"	i
+Problem	knowledge/language/problem/problem.py	/^class Problem(object):$/;"	c
+Problem	knowledge/language/problem/srl_problem.py	/^from knowledge.language.problem.problem import Problem$/;"	i
+RBM	knowledge/machine/neuralnetwork/DBN.py	/^from machine.neuralnetwork.rbm import RBM$/;"	i
 RBM	knowledge/machine/neuralnetwork/rbm.py	/^class RBM(object):$/;"	c
-SRL_ID_MAP	knowledge/language/core/definition.py	/^    SRL_ID_MAP = dict((tag,id) for id,tag in enumerate([]))$/;"	v	class:SrlTypes
+RandomStreams	knowledge/machine/neuralnetwork/DBN.py	/^from theano.tensor.shared_randomstreams import RandomStreams$/;"	i
+RandomStreams	knowledge/machine/neuralnetwork/SdA.py	/^from theano.tensor.shared_randomstreams import RandomStreams$/;"	i
+RandomStreams	knowledge/machine/neuralnetwork/layer/dA.py	/^from theano.tensor.shared_randomstreams import RandomStreams$/;"	i
+RandomStreams	knowledge/machine/neuralnetwork/rbm.py	/^from theano.tensor.shared_randomstreams import RandomStreams$/;"	i
+Role	knowledge/language/core/sentence/srl_structure.py	/^class Role(object):$/;"	c
+Role	knowledge/language/corpora/conll05.py	/^from knowledge.language.core.sentence.srl_structure import SRLStructure, Role$/;"	i
+SRLFeatureBatch	knowledge/language/problem/srl_problem.py	/^class SRLFeatureBatch(object):$/;"	c
+SRLNetowrkArchitecture	knowledge/language/neural_model/srl_neural_model.py	/^class SRLNetowrkArchitecture(object):$/;"	c
+SRLNetowrkArchitecture	knowledge/test/knowledge/language/neural_model/test_srl_neural_model.py	/^from knowledge.language.neural_model.srl_neural_model import SRLNetowrkArchitecture, NeuralModelHyperParameter, train_srl_neural_model$/;"	i
+SRLNeuralLanguageModel	knowledge/language/neural_model/srl_neural_model.py	/^class SRLNeuralLanguageModel(object):$/;"	c
+SRLProblem	knowledge/language/problem/srl_problem.py	/^class SRLProblem(Problem):$/;"	c
+SRLProblem	knowledge/test/knowledge/language/corpora/test_conll05_corpora.py	/^from knowledge.language.problem.srl_problem import SRLProblem$/;"	i
+SRLProblem	knowledge/test/knowledge/language/neural_model/test_srl_neural_model.py	/^from knowledge.language.problem.srl_problem import SRLProblem$/;"	i
+SRLProblem	knowledge/test/knowledge/language/problem/test_srl_problem.py	/^from knowledge.language.problem.srl_problem import SRLProblem$/;"	i
+SRLStructure	knowledge/language/core/sentence/srl_structure.py	/^class SRLStructure(object):$/;"	c
+SRLStructure	knowledge/language/corpora/conll05.py	/^from knowledge.language.core.sentence.srl_structure import SRLStructure, Role$/;"	i
+SRLTYPE_ID_MAP	knowledge/language/problem/srltypes.py	/^    SRLTYPE_ID_MAP = dict((tag,id) for id,tag in enumerate([$/;"	v	class:SrlTypes
 SdA	knowledge/machine/neuralnetwork/SdA.py	/^class SdA(object):$/;"	c
-Sentence	knowledge/language/core/sentence.py	/^class Sentence(object):$/;"	c
+Sentence	knowledge/language/core/corpora_bak.py	/^from knowledge.language.core.sentence.sentence import Sentence$/;"	i
+Sentence	knowledge/language/core/sentence/sentence.py	/^class Sentence(object):$/;"	c
+Sentence	knowledge/language/corpora/conll05.py	/^from knowledge.language.core.sentence.sentence import Sentence$/;"	i
 SentenceLevelLogLikelihoodLayer	knowledge/language/neural_model/sentence_level_log_likelihood_layer.py	/^class SentenceLevelLogLikelihoodLayer(object):$/;"	c
-SrlConvLayer	knowledge/machine/neuralnetwork/layer/conv_layer.py	/^class SrlConvLayer(object):$/;"	c
-SrlNeuralLanguageModelCore	knowledge/language/neural_model/conv_neural_model.py	/^class SrlNeuralLanguageModelCore(object):$/;"	c
-SrlProblem	knowledge/language/neural_model/problem/srl_problem.py	/^class SrlProblem(object):$/;"	c
-SrlTypes	knowledge/language/core/definition.py	/^class SrlTypes(object):$/;"	c
+SentenceLevelLogLikelihoodLayer	knowledge/language/neural_model/sentence_level_neural_model_bak.py	/^from knowledge.language.neural_model.sentence_level_log_likelihood_layer import SentenceLevelLogLikelihoodLayer$/;"	i
+SentenceLevelNeuralModel	knowledge/language/neural_model/sentence_level_neural_model_bak.py	/^class SentenceLevelNeuralModel(object):$/;"	c
+SentenceLevelNeuralModel	knowledge/test/knowledge/language/test_conv_neural_model.py	/^from knowledge.language.neural_model.sentence_level_neural_model_bak import SentenceLevelNeuralModel$/;"	i
+SentenceLevelNeuralModelCore	knowledge/language/neural_model/sentence_level_neural_model_bak.py	/^class SentenceLevelNeuralModelCore(object):$/;"	c
+SoftMaxLayer	knowledge/language/neural_model/srl_neural_model.py	/^from knowledge.machine.neuralnetwork.layer.softmax import SoftMaxLayer$/;"	i
+SoftMaxLayer	knowledge/language/neural_model/word_level_neural_model.py	/^from knowledge.machine.neuralnetwork.layer.softmax import SoftMaxLayer$/;"	i
+SoftMaxLayer	knowledge/machine/neuralnetwork/DBN.py	/^from knowledge.machine.neuralnetwork.layer.softmax import SoftMaxLayer, load_data$/;"	i
+SoftMaxLayer	knowledge/machine/neuralnetwork/SdA.py	/^from knowledge.machine.neuralnetwork.layer.softmax import SoftMaxLayer, load_data$/;"	i
+SoftMaxLayer	knowledge/machine/neuralnetwork/convolutional_mlp.py	/^from knowledge.machine.neuralnetwork.layer.softmax import SoftMaxLayer, load_data$/;"	i
+SoftMaxLayer	knowledge/machine/neuralnetwork/layer/softmax.py	/^class SoftMaxLayer(object):$/;"	c
+SoftMaxLayer	knowledge/machine/neuralnetwork/mlp.py	/^from knowledge.machine.neuralnetwork.layer.softmax import SoftMaxLayer, load_data$/;"	i
+SrlProblem	knowledge/test/knowledge/language/test_conv_neural_model.py	/^from knowledge.language.problem.srl_problem import SrlProblem$/;"	i
+SrlProblem2	knowledge/language/problem/srl_problem.py	/^class SrlProblem2(object):$/;"	c
+SrlTypes	knowledge/language/problem/srl_problem.py	/^from knowledge.language.problem.srltypes import SrlTypes$/;"	i
+SrlTypes	knowledge/language/problem/srltypes.py	/^class SrlTypes(object):$/;"	c
+SrlTypes	knowledge/test/knowledge/language/test_conv_neural_model.py	/^from knowledge.language.problem.postags import SrlTypes$/;"	i
+T	knowledge/language/neural_model/sentence_level_log_likelihood_layer.py	/^import theano.tensor as T$/;"	i
+T	knowledge/language/neural_model/sentence_level_neural_model_bak.py	/^import theano.tensor as T$/;"	i
+T	knowledge/language/neural_model/srl_neural_model.py	/^import theano.tensor as T$/;"	i
+T	knowledge/language/neural_model/word_level_neural_model.py	/^import theano.tensor as T$/;"	i
+T	knowledge/machine/neuralnetwork/DBN.py	/^import theano.tensor as T$/;"	i
+T	knowledge/machine/neuralnetwork/SdA.py	/^import theano.tensor as T$/;"	i
+T	knowledge/machine/neuralnetwork/convolutional_mlp.py	/^import theano.tensor as T$/;"	i
+T	knowledge/machine/neuralnetwork/layer/base.py	/^import theano.tensor as T$/;"	i
+T	knowledge/machine/neuralnetwork/layer/conv1d_layer.py	/^import theano.tensor as T$/;"	i
+T	knowledge/machine/neuralnetwork/layer/conv_layer.py	/^import theano.tensor as T$/;"	i
+T	knowledge/machine/neuralnetwork/layer/dA.py	/^import theano.tensor as T$/;"	i
+T	knowledge/machine/neuralnetwork/layer/lookup_table_layer.py	/^import theano.tensor as T$/;"	i
+T	knowledge/machine/neuralnetwork/layer/perception.py	/^import theano.tensor as T$/;"	i
+T	knowledge/machine/neuralnetwork/layer/softmax.py	/^import theano.tensor as T$/;"	i
+T	knowledge/machine/neuralnetwork/mlp.py	/^import theano.tensor as T$/;"	i
+T	knowledge/machine/neuralnetwork/rbm.py	/^import theano.tensor as T$/;"	i
+T	knowledge/test/knowledge/machine/layer/test_conv1d_layer.py	/^import theano.tensor as T$/;"	i
+T	knowledge/test/knowledge/machine/layer/test_lookup_table_layer.py	/^import theano.tensor as T$/;"	i
+T	knowledge/util/theano_util.py	/^import theano.tensor as T$/;"	i
+TT	knowledge/machine/neuralnetwork/hmc.py	/^from theano import tensor as TT$/;"	i
 VectorSpaceModel	knowledge/language/vector_space_model/vector_space_model.py	/^class VectorSpaceModel(object):$/;"	c
 WSJPosTagDocumentProtocol	knowledge/language/protocol/WSJ_postag_document_protocol.py	/^class WSJPosTagDocumentProtocol(object):$/;"	c
-Word	knowledge/language/core/word.py	/^class Word(object):$/;"	c
+Word	knowledge/language/core/corpora_bak.py	/^class Word(object):$/;"	c
+Word	knowledge/language/core/word/word.py	/^class Word(object):$/;"	c
+Word	knowledge/language/core/word/word_repo.py	/^from .word import Word$/;"	i
+Word	knowledge/language/problem/chunk_problem.py	/^from knowledge.language.core.word.word import Word$/;"	i
+Word	knowledge/language/problem/ner_problem.py	/^from knowledge.language.core.word.word import Word$/;"	i
+Word	knowledge/language/problem/srl_problem.py	/^from knowledge.language.core.word.word import Word$/;"	i
+Word	knowledge/test/knowledge/language/test_conv_neural_model.py	/^from knowledge.language.core.word import Word$/;"	i
+WordLevelNeuralModel	knowledge/language/neural_model/word_level_neural_model.py	/^class WordLevelNeuralModel(BaseModel):$/;"	c
+WordLevelNeuralModel	knowledge/test/knowledge/language/neural_model/test_chunk_neural_model.py	/^from knowledge.language.neural_model.word_level_neural_model import WordLevelNeuralModel$/;"	i
+WordLevelNeuralModel	knowledge/test/knowledge/language/neural_model/test_ner_neural_model.py	/^from knowledge.language.neural_model.word_level_neural_model import WordLevelNeuralModel$/;"	i
+WordLevelNeuralModel	knowledge/test/knowledge/language/test_neural_model.py	/^from knowledge.language.neural_model.word_level_neural_model import WordLevelNeuralModel$/;"	i
+WordLevelNeuralModelCore	knowledge/language/neural_model/word_level_neural_model.py	/^class WordLevelNeuralModelCore(object):$/;"	c
+WordProperty	knowledge/language/core/sentence/property.py	/^class WordProperty(object):$/;"	c
+WordProperty	knowledge/language/core/sentence/sentence.py	/^from knowledge.language.core.sentence.property import WordProperty$/;"	i
+WordProperty	knowledge/language/corpora/conll05.py	/^from knowledge.language.core.sentence.property import WordProperty$/;"	i
 __author__	knowledge/__init__.py	/^__author__ = 'Sun'$/;"	v
 __author__	knowledge/language/__init__.py	/^__author__ = 'Sun'$/;"	v
 __author__	knowledge/language/core/__init__.py	/^__author__ = 'sun'$/;"	v
-__author__	knowledge/language/core/corpora.py	/^__author__ = 'Sun','Huang'$/;"	v
-__author__	knowledge/language/core/definition.py	/^__author__ = 'Sun'$/;"	v
-__author__	knowledge/language/core/sentence.py	/^__author__ = 'sun'$/;"	v
-__author__	knowledge/language/core/word.py	/^__author__ = 'sun'$/;"	v
+__author__	knowledge/language/core/corpora.py	/^__author__ = 'sunmingming01'$/;"	v
+__author__	knowledge/language/core/corpora_bak.py	/^__author__ = 'Sun','Huang'$/;"	v
+__author__	knowledge/language/core/pos.py	/^__author__ = 'sunmingming01'$/;"	v
+__author__	knowledge/language/core/sentence/__init__.py	/^__author__ = 'sunmingming01'$/;"	v
+__author__	knowledge/language/core/sentence/chunk_structure.py	/^__author__ = 'sun'$/;"	v
+__author__	knowledge/language/core/sentence/property.py	/^__author__ = 'sunmingming01'$/;"	v
+__author__	knowledge/language/core/sentence/relationship.py	/^__author__ = 'sunmingming01'$/;"	v
+__author__	knowledge/language/core/sentence/sentence.py	/^__author__ = 'sun'$/;"	v
+__author__	knowledge/language/core/sentence/srl_structure.py	/^__author__ = 'sunmingming01'$/;"	v
+__author__	knowledge/language/core/word/__init__.py	/^__author__ = 'sunmingming01'$/;"	v
+__author__	knowledge/language/core/word/word.py	/^__author__ = 'sun'$/;"	v
+__author__	knowledge/language/core/word/word_repo.py	/^__author__ = 'sunmingming01'$/;"	v
+__author__	knowledge/language/core/word/wordid_allocator.py	/^__author__ = 'sunmingming01'$/;"	v
+__author__	knowledge/language/corpora/__init__.py	/^__author__ = 'sunmingming01'$/;"	v
+__author__	knowledge/language/corpora/conll05.py	/^__author__ = 'sunmingming01'$/;"	v
 __author__	knowledge/language/neural_model/__init__.py	/^__author__ = 'Sun'$/;"	v
-__author__	knowledge/language/neural_model/conv_neural_model.py	/^__author__ = 'huang'$/;"	v
-__author__	knowledge/language/neural_model/neural_model.py	/^__author__ = 'Sun'$/;"	v
-__author__	knowledge/language/neural_model/problem/__init__.py	/^__author__ = 'Sun'$/;"	v
-__author__	knowledge/language/neural_model/problem/chunk_problem.py	/^__author__ = 'Sun'$/;"	v
-__author__	knowledge/language/neural_model/problem/pos_tag_problem.py	/^__author__ = 'Sun'$/;"	v
-__author__	knowledge/language/neural_model/problem/srl_problem.py	/^__author__ = 'huang'$/;"	v
-__author__	knowledge/language/neural_model/sentence_level_log_likelihood_layer.py	/^__author__ = 'Sun'$/;"	v
+__author__	knowledge/language/neural_model/sentence_level_log_likelihood_layer.py	/^__author__ = ['Sun','Huang']$/;"	v
+__author__	knowledge/language/neural_model/sentence_level_neural_model_bak.py	/^__author__ = 'huang'$/;"	v
+__author__	knowledge/language/neural_model/srl_neural_model.py	/^__author__ = 'Huang'$/;"	v
+__author__	knowledge/language/neural_model/word_level_neural_model.py	/^__author__ = ['Sun','Huang']$/;"	v
 __author__	knowledge/language/nn_languagemodel.py	/^__author__ = 'Sun'$/;"	v
+__author__	knowledge/language/problem/__init__.py	/^__author__ = 'Sun'$/;"	v
+__author__	knowledge/language/problem/chunk_problem.py	/^__author__ = 'Huang'$/;"	v
+__author__	knowledge/language/problem/chunktypes.py	/^__author__ = 'Sun'$/;"	v
+__author__	knowledge/language/problem/locdifftypes.py	/^__author__ = 'sun'$/;"	v
+__author__	knowledge/language/problem/ner_problem.py	/^__author__ = 'Huang'$/;"	v
+__author__	knowledge/language/problem/nertypes.py	/^__author__ = 'Sun'$/;"	v
+__author__	knowledge/language/problem/pos_tag_problem.py	/^__author__ = 'Sun'$/;"	v
+__author__	knowledge/language/problem/postags.py	/^__author__ = 'Sun'$/;"	v
+__author__	knowledge/language/problem/problem.py	/^__author__ = 'sun'$/;"	v
+__author__	knowledge/language/problem/srl_problem.py	/^__author__ = 'huang'$/;"	v
+__author__	knowledge/language/problem/srltypes.py	/^__author__ = 'Sun'$/;"	v
 __author__	knowledge/language/protocol/WSJ_postag_document_protocol.py	/^__author__ = 'Sun'$/;"	v
 __author__	knowledge/language/protocol/__init__.py	/^__author__ = 'Sun'$/;"	v
 __author__	knowledge/language/vector_space_model/__init__.py	/^__author__ = 'Sun'$/;"	v
@@ -60,148 +234,476 @@ __author__	knowledge/language/vector_space_model/vector_space_model.py	/^__autho
 __author__	knowledge/machine/__init__.py	/^__author__ = 'Sun'$/;"	v
 __author__	knowledge/machine/neuralnetwork/__init__.py	/^__author__ = 'Sun'$/;"	v
 __author__	knowledge/machine/neuralnetwork/layer/__init__.py	/^__author__ = 'Sun'$/;"	v
+__author__	knowledge/machine/neuralnetwork/layer/base.py	/^__author__ = 'huang'$/;"	v
+__author__	knowledge/machine/neuralnetwork/layer/conv1d_layer.py	/^__author__ = 'huang'$/;"	v
 __author__	knowledge/machine/neuralnetwork/layer/conv_layer.py	/^__author__ = 'huang'$/;"	v
 __author__	knowledge/machine/neuralnetwork/layer/lookup_table_layer.py	/^__author__ = 'Sun'$/;"	v
+__author__	knowledge/machine/neuralnetwork/layer/max_pool_layer.py	/^__author__ = 'Sun'$/;"	v
+__author__	knowledge/machine/neuralnetwork/random.py	/^__author__ = 'Sun'$/;"	v
+__author__	knowledge/test/__init__.py	/^__author__ = 'Sun'$/;"	v
+__author__	knowledge/test/knowledge/__init__.py	/^__author__ = 'Sun'$/;"	v
+__author__	knowledge/test/knowledge/language/__init__.py	/^__author__ = 'Sun'$/;"	v
+__author__	knowledge/test/knowledge/language/core/__init__.py	/^__author__ = 'Sun'$/;"	v
+__author__	knowledge/test/knowledge/language/corpora/__init__.py	/^__author__ = 'sun'$/;"	v
+__author__	knowledge/test/knowledge/language/corpora/test_conll05_corpora.py	/^__author__ = 'sun'$/;"	v
+__author__	knowledge/test/knowledge/language/neural_model/__init__.py	/^__author__ = 'sun'$/;"	v
+__author__	knowledge/test/knowledge/language/neural_model/test_chunk_neural_model.py	/^__author__ = 'Sun'$/;"	v
+__author__	knowledge/test/knowledge/language/neural_model/test_ner_neural_model.py	/^__author__ = 'Sun'$/;"	v
+__author__	knowledge/test/knowledge/language/neural_model/test_srl_neural_model.py	/^__author__ = 'sun'$/;"	v
+__author__	knowledge/test/knowledge/language/problem/__init__.py	/^__author__ = 'sun'$/;"	v
+__author__	knowledge/test/knowledge/language/test_neural_model.py	/^__author__ = 'Sun'$/;"	v
+__author__	knowledge/test/knowledge/machine/__init__.py	/^__author__ = 'Sun'$/;"	v
+__author__	knowledge/test/knowledge/machine/layer/__init__.py	/^__author__ = 'Sun'$/;"	v
+__author__	knowledge/test/knowledge/machine/layer/test_conv1d_layer.py	/^__author__ = 'huang'$/;"	v
+__author__	knowledge/test/knowledge/machine/layer/test_lookup_table_layer.py	/^__author__ = 'huang'$/;"	v
 __author__	knowledge/util/__init__.py	/^__author__ = 'Sun'$/;"	v
 __author__	knowledge/util/data_process.py	/^__author__ = 'Sun'$/;"	v
 __author__	knowledge/util/theano_util.py	/^__author__ = 'Sun'$/;"	v
-__author__	test/__init__.py	/^__author__ = 'Sun'$/;"	v
-__author__	test/knowledge/__init__.py	/^__author__ = 'Sun'$/;"	v
-__author__	test/knowledge/language/__init__.py	/^__author__ = 'Sun'$/;"	v
-__author__	test/knowledge/language/core/__init__.py	/^__author__ = 'Sun'$/;"	v
-__author__	test/knowledge/language/test_neural_model.py	/^__author__ = 'Sun'$/;"	v
-__author__	test/knowledge/machine/__init__.py	/^__author__ = 'Sun'$/;"	v
-__author__	test/knowledge/machine/layer/__init__.py	/^__author__ = 'Sun'$/;"	v
-__author__	test/knowledge/machine/layer/test_lookup_table_layer.py	/^__author__ = 'huang'$/;"	v
 __docformat__	knowledge/language/neural_model/sentence_level_log_likelihood_layer.py	/^__docformat__ = 'restructedtext en'$/;"	v
-__docformat__	knowledge/machine/neuralnetwork/layer/logistic_sgd.py	/^__docformat__ = 'restructedtext en'$/;"	v
-__docformat__	knowledge/machine/neuralnetwork/layer/mlp.py	/^__docformat__ = 'restructedtext en'$/;"	v
-__init__	knowledge/language/core/corpora.py	/^    def __init__(self):$/;"	m	class:Conll05
-__init__	knowledge/language/core/corpora.py	/^    def __init__(self):$/;"	m	class:Corpora
+__docformat__	knowledge/machine/neuralnetwork/layer/perception.py	/^__docformat__ = 'restructedtext en'$/;"	v
+__docformat__	knowledge/machine/neuralnetwork/layer/softmax.py	/^__docformat__ = 'restructedtext en'$/;"	v
+__docformat__	knowledge/machine/neuralnetwork/mlp.py	/^__docformat__ = 'restructedtext en'$/;"	v
+__get_dataset_for_sentence	knowledge/language/problem/chunk_problem.py	/^    def __get_dataset_for_sentence(self, sentence):$/;"	m	class:ChunkProblem	file:
+__get_dataset_for_sentence	knowledge/language/problem/ner_problem.py	/^    def __get_dataset_for_sentence(self, sentence):$/;"	m	class:NERProblem	file:
+__get_dataset_for_sentence	knowledge/language/problem/srl_problem.py	/^    def __get_dataset_for_sentence(self, sentence):$/;"	m	class:SRLProblem	file:
+__getstate__	knowledge/language/neural_model/srl_neural_model.py	/^    def __getstate__(self):$/;"	m	class:SRLNeuralLanguageModel	file:
+__getstate__	knowledge/machine/neuralnetwork/layer/conv1d_layer.py	/^    def __getstate__(self):$/;"	m	class:Conv1DLayer	file:
+__getstate__	knowledge/machine/neuralnetwork/layer/lookup_table_layer.py	/^    def __getstate__(self):$/;"	m	class:LookupTableLayer	file:
+__getstate__	knowledge/machine/neuralnetwork/layer/perception.py	/^    def __getstate__(self):$/;"	m	class:PerceptionLayer	file:
+__getstate__	knowledge/machine/neuralnetwork/layer/softmax.py	/^    def __getstate__(self):$/;"	m	class:SoftMaxLayer	file:
+__hidden_output	knowledge/language/neural_model/srl_neural_model.py	/^    def __hidden_output(self, X):$/;"	m	class:SRLNeuralLanguageModel	file:
+__init__	knowledge/language/core/corpora_bak.py	/^    def __init__(self):$/;"	m	class:Corpora
+__init__	knowledge/language/core/corpora_bak.py	/^    def __init__(self,id,content):$/;"	m	class:Word
 __init__	knowledge/language/core/document.py	/^    def __init__(self, id, content = ""):$/;"	m	class:Document
-__init__	knowledge/language/core/sentence.py	/^    def __init__(self, id, content = ""):$/;"	m	class:Sentence
-__init__	knowledge/language/core/word.py	/^    def __init__(self, id, content):$/;"	m	class:Word
-__init__	knowledge/language/neural_model/conv_neural_model.py	/^    def __init__(self,rng,inputs, word_num, window_size, word_feature_num,word_pos_feature_num,verb_pos_feature_num,$/;"	m	class:SrlNeuralLanguageModelCore
-__init__	knowledge/language/neural_model/neural_model.py	/^    def __init__(self, word_ids, word_num, window_size, feature_num,$/;"	m	class:NeuralLanguageModelCore
-__init__	knowledge/language/neural_model/neural_model.py	/^    def __init__(self, word_num, window_size, feature_num,$/;"	m	class:NeuralLanguageModel
-__init__	knowledge/language/neural_model/problem/chunk_problem.py	/^    def __init__(self, corpora, iob_sents):$/;"	m	class:ChunkProblem
-__init__	knowledge/language/neural_model/problem/pos_tag_problem.py	/^    def __init__(self, corpora):$/;"	m	class:PosTagProblem
-__init__	knowledge/language/neural_model/problem/srl_problem.py	/^    def __init__(self, corpora, srl_sents):$/;"	m	class:SrlProblem
-__init__	knowledge/language/neural_model/sentence_level_log_likelihood_layer.py	/^    def __init__(self, input, n_in, n_out):$/;"	m	class:SentenceLevelLogLikelihoodLayer
+__init__	knowledge/language/core/pos.py	/^    def __init__(self, content):$/;"	m	class:Pos
+__init__	knowledge/language/core/sentence/chunk_structure.py	/^    def __init__(self, type, start_pos, end_pos):$/;"	m	class:Chunk
+__init__	knowledge/language/core/sentence/property.py	/^    def __init__(self):$/;"	m	class:WordProperty
+__init__	knowledge/language/core/sentence/sentence.py	/^    def __init__(self):$/;"	m	class:Sentence
+__init__	knowledge/language/core/sentence/srl_structure.py	/^    def __init__(self, type, start_pos, end_pos):$/;"	m	class:Role
+__init__	knowledge/language/core/sentence/srl_structure.py	/^    def __init__(self, verb, verb_loc):$/;"	m	class:SRLStructure
+__init__	knowledge/language/core/word/word.py	/^    def __init__(self, content):$/;"	m	class:Word
+__init__	knowledge/language/corpora/conll05.py	/^    def __init__(self):$/;"	m	class:Conll05Corpora
+__init__	knowledge/language/neural_model/sentence_level_log_likelihood_layer.py	/^    def __init__(self,rng, input , Y , max_term_per_sent, n_in, n_out):$/;"	m	class:SentenceLevelLogLikelihoodLayer
+__init__	knowledge/language/neural_model/sentence_level_neural_model_bak.py	/^    def __init__(self,rng,model_params):$/;"	m	class:SentenceLevelNeuralModel
+__init__	knowledge/language/neural_model/sentence_level_neural_model_bak.py	/^    def __init__(self,rng,x,y,sent_length,masks,$/;"	m	class:SentenceLevelNeuralModelCore
+__init__	knowledge/language/neural_model/srl_neural_model.py	/^    def __init__(self):$/;"	m	class:NeuralModelHyperParameter
+__init__	knowledge/language/neural_model/srl_neural_model.py	/^    def __init__(self):$/;"	m	class:SRLNetowrkArchitecture
+__init__	knowledge/language/neural_model/srl_neural_model.py	/^    def __init__(self, problem_character = None,$/;"	m	class:SRLNeuralLanguageModel
+__init__	knowledge/language/neural_model/word_level_neural_model.py	/^    def __init__(self, np_rng = None,**kwargs):$/;"	m	class:WordLevelNeuralModelCore
+__init__	knowledge/language/neural_model/word_level_neural_model.py	/^    def __init__(self,name,load,dump,model_folder=None,init_model_name=None, np_rng = None, **kwargs ):$/;"	m	class:WordLevelNeuralModel
+__init__	knowledge/language/problem/chunk_problem.py	/^    def __init__(self, corpora, windows_size):$/;"	m	class:ChunkProblem
+__init__	knowledge/language/problem/ner_problem.py	/^    def __init__(self, corpora, windows_size):$/;"	m	class:NERProblem
+__init__	knowledge/language/problem/pos_tag_problem.py	/^    def __init__(self, corpora):$/;"	m	class:PosTagProblem
+__init__	knowledge/language/problem/srl_problem.py	/^    def __init__(self):$/;"	m	class:SRLFeatureBatch
+__init__	knowledge/language/problem/srl_problem.py	/^    def __init__(self, corpora):$/;"	m	class:SRLProblem
+__init__	knowledge/language/problem/srl_problem.py	/^    def __init__(self, corpora, pos, srl_sents):$/;"	m	class:SrlProblem2
 __init__	knowledge/language/vector_space_model/vector_space_model.py	/^    def __init__(self):$/;"	m	class:VectorSpaceModel
 __init__	knowledge/machine/neuralnetwork/DBN.py	/^    def __init__(self, numpy_rng, theano_rng=None, n_ins=784,$/;"	m	class:DBN
 __init__	knowledge/machine/neuralnetwork/SdA.py	/^    def __init__(self, numpy_rng, theano_rng=None, n_ins=784,$/;"	m	class:SdA
 __init__	knowledge/machine/neuralnetwork/convolutional_mlp.py	/^    def __init__(self, rng, input, filter_shape, image_shape, poolsize=(2, 2)):$/;"	m	class:LeNetConvPoolLayer
 __init__	knowledge/machine/neuralnetwork/hmc.py	/^    def __init__(self, **kwargs):$/;"	m	class:HMC_sampler
-__init__	knowledge/machine/neuralnetwork/layer/conv_layer.py	/^    def __init__(self,name,rng,inputs, hiden_size,input_size,window_size,feature_num,init_W=None,init_b=None):$/;"	m	class:SrlConvLayer
+__init__	knowledge/machine/neuralnetwork/layer/base.py	/^    def __init__(self,name,model_folder=None):$/;"	m	class:BaseModel
+__init__	knowledge/machine/neuralnetwork/layer/conv1d_layer.py	/^    def __init__(self, init_W=None,init_b=None, tensor_shape = None):$/;"	m	class:Conv1DLayer
+__init__	knowledge/machine/neuralnetwork/layer/conv_layer.py	/^    def __init__(self,name,rng,inputs, hiden_size,input_size,window_size,feature_num,init_W=None,init_b=None):$/;"	m	class:Conv1DLayer
 __init__	knowledge/machine/neuralnetwork/layer/dA.py	/^    def __init__(self, numpy_rng, theano_rng=None, input=None,$/;"	m	class:dA
-__init__	knowledge/machine/neuralnetwork/layer/logistic_sgd.py	/^    def __init__(self, input, n_in, n_out):$/;"	m	class:LogisticRegression
-__init__	knowledge/machine/neuralnetwork/layer/lookup_table_layer.py	/^    def __init__(self, inputs, table_size, window_size, feature_num,reshp=None):$/;"	m	class:LookupTableLayer
-__init__	knowledge/machine/neuralnetwork/layer/lookup_table_layer.py	/^    def __init__(self, inputs_lst,table_size_lst, feature_num_lst):$/;"	m	class:MultiLookupTableLayer
-__init__	knowledge/machine/neuralnetwork/layer/mlp.py	/^    def __init__(self, rng, input, n_in, n_hidden, n_out):$/;"	m	class:MLP
-__init__	knowledge/machine/neuralnetwork/layer/mlp.py	/^    def __init__(self, rng, input, n_in, n_out, W=None, b=None,$/;"	m	class:HiddenLayer
+__init__	knowledge/machine/neuralnetwork/layer/lookup_table_layer.py	/^    def __init__(self, embeddings = None, table_size = None, feature_num = None):$/;"	m	class:LookupTableLayer
+__init__	knowledge/machine/neuralnetwork/layer/perception.py	/^    def __init__(self, W=None, b=None, n_in = None, n_out = None,$/;"	m	class:PerceptionLayer
+__init__	knowledge/machine/neuralnetwork/layer/softmax.py	/^    def __init__(self, W = None, b = None, n_in = None, n_out = None):$/;"	m	class:SoftMaxLayer
+__init__	knowledge/machine/neuralnetwork/mlp.py	/^    def __init__(self, rng, input, n_in, n_hidden, n_out):$/;"	m	class:MLP
+__init__	knowledge/machine/neuralnetwork/mlp.py	/^    def __init__(self, rng, input, n_in, n_out, W=None, b=None,$/;"	m	class:HiddenLayer
 __init__	knowledge/machine/neuralnetwork/rbm.py	/^        W=None, hbias=None, vbias=None, numpy_rng=None,$/;"	m	class:RBM
+__setstate__	knowledge/language/neural_model/srl_neural_model.py	/^    def __setstate__(self, state):$/;"	m	class:SRLNeuralLanguageModel	file:
+__setstate__	knowledge/machine/neuralnetwork/layer/conv1d_layer.py	/^    def __setstate__(self, state):$/;"	m	class:Conv1DLayer	file:
+__setstate__	knowledge/machine/neuralnetwork/layer/lookup_table_layer.py	/^    def __setstate__(self, state):$/;"	m	class:LookupTableLayer	file:
+__setstate__	knowledge/machine/neuralnetwork/layer/perception.py	/^    def __setstate__(self, state):$/;"	m	class:PerceptionLayer	file:
+__setstate__	knowledge/machine/neuralnetwork/layer/softmax.py	/^    def __setstate__(self, state):$/;"	m	class:SoftMaxLayer	file:
 activation_function	knowledge/language/nn_languagemodel.py	/^def activation_function(r):$/;"	f
-add_document	knowledge/language/core/corpora.py	/^    def add_document(self, document):$/;"	m	class:Corpora
+add_chunk	knowledge/language/core/sentence/sentence.py	/^    def add_chunk(self, chunk):$/;"	m	class:Sentence
+add_document	knowledge/language/core/corpora_bak.py	/^    def add_document(self, document):$/;"	m	class:Corpora
+add_ne	knowledge/language/core/sentence/sentence.py	/^    def add_ne(self, chunk):$/;"	m	class:Sentence
+add_phrase	knowledge/language/core/sentence/sentence.py	/^    def add_phrase(self, chunk):$/;"	m	class:Sentence
+add_role	knowledge/language/core/sentence/srl_structure.py	/^    def add_role(self, role):$/;"	m	class:SRLStructure
 add_sentence	knowledge/language/core/document.py	/^    def add_sentence(self, sentence):$/;"	m	class:Document
-add_word	knowledge/language/core/sentence.py	/^    def add_word(self, word_obj):$/;"	m	class:Sentence
-alloc_global_word_id	knowledge/language/core/corpora.py	/^    def alloc_global_word_id(self, word):$/;"	m	class:Corpora
+add_srl_struct	knowledge/language/core/sentence/sentence.py	/^    def add_srl_struct(self, srl):$/;"	m	class:Sentence
+add_word	knowledge/language/core/sentence/sentence.py	/^    def add_word(self, word_obj, word_property = None):$/;"	m	class:Sentence
+alloc_global_word_id	knowledge/language/core/corpora_bak.py	/^    def alloc_global_word_id(self, word):$/;"	m	class:Corpora
+alloc_pos_id	knowledge/language/core/pos.py	/^def alloc_pos_id(pos):$/;"	f
+alloc_word_id	knowledge/language/core/word/word.py	/^from .wordid_allocator import alloc_word_id, PADDING_WORD_STR$/;"	i
+alloc_word_id	knowledge/language/core/word/wordid_allocator.py	/^def alloc_word_id(word_str):$/;"	f
+belongto	knowledge/language/core/sentence/chunk_structure.py	/^    def belongto(self, pos):$/;"	m	class:Chunk
+belongto	knowledge/language/core/sentence/srl_structure.py	/^    def belongto(self, pos):$/;"	m	class:Role
+bidict	knowledge/language/core/pos.py	/^import bidict$/;"	i
+bidict	knowledge/language/core/word/wordid_allocator.py	/^from bidict import bidict$/;"	i
 build_WSJ_postag_parser	knowledge/language/protocol/WSJ_postag_document_protocol.py	/^def build_WSJ_postag_parser():$/;"	f
 build_finetune_functions	knowledge/machine/neuralnetwork/DBN.py	/^    def build_finetune_functions(self, datasets, batch_size, learning_rate):$/;"	m	class:DBN
 build_finetune_functions	knowledge/machine/neuralnetwork/SdA.py	/^    def build_finetune_functions(self, datasets, batch_size, learning_rate):$/;"	m	class:SdA
+cPickle	knowledge/language/neural_model/sentence_level_log_likelihood_layer.py	/^import cPickle$/;"	i
+cPickle	knowledge/machine/neuralnetwork/layer/base.py	/^import cPickle$/;"	i
+cPickle	knowledge/test/knowledge/machine/layer/test_lookup_table_layer.py	/^import cPickle$/;"	i
 cached_functions	knowledge/language/nn_languagemodel.py	/^cached_functions = {}$/;"	v
+chunk_num	knowledge/language/core/sentence/sentence.py	/^    def chunk_num(self):$/;"	m	class:Sentence
+chunks	knowledge/language/core/sentence/sentence.py	/^    def chunks(self):$/;"	m	class:Sentence
+chunks_lst	knowledge/language/core/sentence/sentence.py	/^    def chunks_lst(self):$/;"	m	class:Sentence
+compile	knowledge/language/nn_languagemodel.py	/^import theano.compile$/;"	i
+config	knowledge/language/nn_languagemodel.py	/^from theano import config$/;"	i
+conv	knowledge/machine/neuralnetwork/convolutional_mlp.py	/^from theano.tensor.nnet import conv$/;"	i
+conv	knowledge/machine/neuralnetwork/layer/conv1d_layer.py	/^from theano.tensor.nnet import conv$/;"	i
+conv	knowledge/machine/neuralnetwork/layer/conv_layer.py	/^from theano.tensor.nnet import conv$/;"	i
+cost	knowledge/language/neural_model/srl_neural_model.py	/^    def cost(self, X, y):$/;"	m	class:SRLNeuralLanguageModel
+cost	knowledge/machine/neuralnetwork/layer/softmax.py	/^    def cost(self, X, y):$/;"	m	class:SoftMaxLayer
+cross_validation	knowledge/test/knowledge/language/test_neural_model.py	/^import sklearn.cross_validation$/;"	i
+csv	knowledge/language/core/corpora_bak.py	/^import csv$/;"	i
+dA	knowledge/machine/neuralnetwork/SdA.py	/^from machine.neuralnetwork.layer import dA$/;"	i
 dA	knowledge/machine/neuralnetwork/layer/dA.py	/^class dA(object):$/;"	c
+datetime	knowledge/machine/neuralnetwork/layer/base.py	/^import datetime$/;"	i
+defaultdict	knowledge/language/core/corpora_bak.py	/^from collections import defaultdict, Counter, deque$/;"	i
+deque	knowledge/language/core/corpora_bak.py	/^from collections import defaultdict, Counter, deque$/;"	i
+dot	knowledge/language/nn_languagemodel.py	/^from theano.tensor import dot$/;"	i
+downsample	knowledge/machine/neuralnetwork/convolutional_mlp.py	/^from theano.tensor.signal import downsample$/;"	i
 draw	knowledge/machine/neuralnetwork/hmc.py	/^    def draw(self, **kwargs):$/;"	m	class:HMC_sampler
+dump_core	knowledge/machine/neuralnetwork/layer/base.py	/^    def dump_core(self,tag=None,add_time_stamp=False):$/;"	m	class:BaseModel
 embeddings	knowledge/machine/neuralnetwork/layer/lookup_table_layer.py	/^    def embeddings(self):$/;"	m	class:LookupTableLayer
-embeddings	knowledge/machine/neuralnetwork/layer/lookup_table_layer.py	/^    def embeddings(self):$/;"	m	class:MultiLookupTableLayer
-errors	knowledge/language/neural_model/sentence_level_log_likelihood_layer.py	/^    def errors(self, y):$/;"	m	class:SentenceLevelLogLikelihoodLayer
-errors	knowledge/machine/neuralnetwork/layer/logistic_sgd.py	/^    def errors(self, y):$/;"	m	class:LogisticRegression
+end_pos	knowledge/language/core/sentence/chunk_structure.py	/^    def end_pos(self):$/;"	m	class:Chunk
+end_pos	knowledge/language/core/sentence/srl_structure.py	/^    def end_pos(self):$/;"	m	class:Role
+error	knowledge/language/neural_model/srl_neural_model.py	/^    def error(self, X,y ):$/;"	m	class:SRLNeuralLanguageModel
+error	knowledge/machine/neuralnetwork/layer/softmax.py	/^    def error(self, X, y):$/;"	m	class:SoftMaxLayer
+errors	knowledge/language/neural_model/sentence_level_log_likelihood_layer.py	/^    def errors(self):$/;"	m	class:SentenceLevelLogLikelihoodLayer
+errors	knowledge/language/neural_model/sentence_level_neural_model_bak.py	/^    def errors(self):$/;"	m	class:SentenceLevelNeuralModelCore
 evaluate_lenet5	knowledge/machine/neuralnetwork/convolutional_mlp.py	/^def evaluate_lenet5(learning_rate=0.1, n_epochs=200,$/;"	f
 experiment	knowledge/machine/neuralnetwork/convolutional_mlp.py	/^def experiment(state, channel):$/;"	f
-fit	knowledge/language/neural_model/neural_model.py	/^    def fit(self, X, y, valid_X, valid_y,  batch_size = 10000, n_epochs = 10000, learning_rate = 0.01,):$/;"	m	class:NeuralLanguageModel
+f1_score	knowledge/language/neural_model/srl_neural_model.py	/^from sklearn.metrics import f1_score$/;"	i
+f1_score	knowledge/language/neural_model/word_level_neural_model.py	/^from sklearn.metrics import f1_score$/;"	i
+finsh_batch	knowledge/language/problem/srl_problem.py	/^    def finsh_batch(self):$/;"	m	class:SRLFeatureBatch
+fit	knowledge/language/neural_model/word_level_neural_model.py	/^    def fit(self, X, y, valid_X, valid_y,  batch_size = 10000, n_epochs = 10000, learning_rate = 0.1,):$/;"	m	class:WordLevelNeuralModel
+fit_batch	knowledge/language/neural_model/sentence_level_neural_model_bak.py	/^    def fit_batch(self,x,y,sent_length,masks,batch_iter_num=1,learning_rate=0.1):$/;"	m	class:SentenceLevelNeuralModel
 floatX	knowledge/language/nn_languagemodel.py	/^floatX = config.floatX$/;"	v
 free_energy	knowledge/machine/neuralnetwork/rbm.py	/^    def free_energy(self, v_sample):$/;"	m	class:RBM
+function	knowledge/machine/neuralnetwork/hmc.py	/^from theano import function, shared$/;"	i
 functions	knowledge/language/nn_languagemodel.py	/^def functions(sequence_length):$/;"	f
-get_class_num	knowledge/language/neural_model/problem/chunk_problem.py	/^    def get_class_num(self):$/;"	m	class:ChunkProblem
-get_class_num	knowledge/language/neural_model/problem/pos_tag_problem.py	/^    def get_class_num(self):$/;"	m	class:PosTagProblem
-get_class_num	knowledge/language/neural_model/problem/srl_problem.py	/^    def get_class_num(self):$/;"	m	class:SrlProblem
+get_batch	knowledge/language/problem/srl_problem.py	/^    def get_batch(self, **kwargs):$/;"	m	class:SrlProblem2
+get_class_num	knowledge/language/problem/pos_tag_problem.py	/^    def get_class_num(self):$/;"	m	class:PosTagProblem
+get_class_num	knowledge/language/problem/srl_problem.py	/^    def get_class_num(self):$/;"	m	class:SrlProblem2
 get_corrupted_input	knowledge/machine/neuralnetwork/layer/dA.py	/^    def get_corrupted_input(self, input, corruption_level):$/;"	m	class:dA
 get_cost_updates	knowledge/machine/neuralnetwork/layer/dA.py	/^    def get_cost_updates(self, corruption_level, learning_rate):$/;"	m	class:dA
 get_cost_updates	knowledge/machine/neuralnetwork/rbm.py	/^    def get_cost_updates(self, lr=0.1, persistent=None, k=1):$/;"	m	class:RBM
-get_data_set	knowledge/language/neural_model/problem/chunk_problem.py	/^    def get_data_set(self, **kwargs):$/;"	m	class:ChunkProblem
-get_data_set	knowledge/language/neural_model/problem/pos_tag_problem.py	/^    def get_data_set(self, window_size, **kwargs):$/;"	m	class:PosTagProblem
-get_data_set	knowledge/language/neural_model/problem/srl_problem.py	/^    def get_data_set(self, **kwargs):$/;"	m	class:SrlProblem
+get_data_batch	knowledge/language/problem/chunk_problem.py	/^    def get_data_batch(self):$/;"	m	class:ChunkProblem
+get_data_batch	knowledge/language/problem/ner_problem.py	/^    def get_data_batch(self):$/;"	m	class:NERProblem
+get_data_batch	knowledge/language/problem/srl_problem.py	/^    def get_data_batch(self):$/;"	m	class:SRLProblem
+get_data_set	knowledge/language/problem/pos_tag_problem.py	/^    def get_data_set(self, window_size, **kwargs):$/;"	m	class:PosTagProblem
+get_data_set	knowledge/language/problem/problem.py	/^    def get_data_set(self):$/;"	m	class:Problem
 get_hidden_values	knowledge/machine/neuralnetwork/layer/dA.py	/^    def get_hidden_values(self, input):$/;"	m	class:dA
-get_output_size	knowledge/machine/neuralnetwork/layer/lookup_table_layer.py	/^    def get_output_size(self):$/;"	m	class:LookupTableLayer
-get_output_size	knowledge/machine/neuralnetwork/layer/lookup_table_layer.py	/^    def get_output_size(self):$/;"	m	class:MultiLookupTableLayer
+get_loc_id	knowledge/language/problem/locdifftypes.py	/^    def get_loc_id(cls, loc):$/;"	m	class:LocTypes
+get_locdiff_id	knowledge/language/problem/locdifftypes.py	/^    def get_locdiff_id(cls, loc_diff):$/;"	m	class:LocDiffToVerbTypes
+get_locdiff_id	knowledge/language/problem/locdifftypes.py	/^    def get_locdiff_id(cls, loc_diff):$/;"	m	class:LocDiffToWordTypes
+get_numpy_rng	knowledge/machine/neuralnetwork/layer/conv1d_layer.py	/^from knowledge.machine.neuralnetwork.random import get_numpy_rng$/;"	i
+get_numpy_rng	knowledge/machine/neuralnetwork/layer/perception.py	/^from knowledge.machine.neuralnetwork.random import get_numpy_rng$/;"	i
+get_numpy_rng	knowledge/machine/neuralnetwork/random.py	/^def get_numpy_rng():$/;"	f
+get_padding_word	knowledge/language/core/sentence/sentence.py	/^from knowledge.language.core.word.word_repo import get_padding_word$/;"	i
+get_padding_word	knowledge/language/core/word/word_repo.py	/^def get_padding_word():$/;"	f
+get_problem_property	knowledge/language/problem/chunk_problem.py	/^    def get_problem_property(self):$/;"	m	class:ChunkProblem
+get_problem_property	knowledge/language/problem/ner_problem.py	/^    def get_problem_property(self):$/;"	m	class:NERProblem
+get_problem_property	knowledge/language/problem/srl_problem.py	/^    def get_problem_property(self):$/;"	m	class:SRLProblem
 get_pseudo_likelihood_cost	knowledge/machine/neuralnetwork/rbm.py	/^    def get_pseudo_likelihood_cost(self, updates):$/;"	m	class:RBM
 get_reconstructed_input	knowledge/machine/neuralnetwork/layer/dA.py	/^    def get_reconstructed_input(self, hidden):$/;"	m	class:dA
 get_reconstruction_cost	knowledge/machine/neuralnetwork/rbm.py	/^    def get_reconstruction_cost(self, updates, pre_sigmoid_nv):$/;"	m	class:RBM
-get_word_num	knowledge/language/core/corpora.py	/^    def get_word_num(self):$/;"	m	class:Corpora
+get_test_func	knowledge/language/neural_model/srl_neural_model.py	/^def get_test_func(srl_nn):$/;"	f
+get_train_func	knowledge/language/neural_model/srl_neural_model.py	/^def get_train_func(srl_nn, learning_rate = 0.001, l1_reg = 0, l2_reg = 0 ):$/;"	f
+get_word	knowledge/language/core/sentence/sentence.py	/^    def get_word(self, pos):$/;"	m	class:Sentence
+get_word	knowledge/language/core/word/word_repo.py	/^def get_word(word_str):$/;"	f
+get_word_num	knowledge/language/core/corpora_bak.py	/^    def get_word_num(self):$/;"	m	class:Corpora
+get_word_num	knowledge/language/core/word/word_repo.py	/^def get_word_num():$/;"	f
+get_word_property	knowledge/language/core/sentence/sentence.py	/^    def get_word_property(self, pos):$/;"	m	class:Sentence
 gibbs_hvh	knowledge/machine/neuralnetwork/rbm.py	/^    def gibbs_hvh(self, h0_sample):$/;"	m	class:RBM
 gibbs_vhv	knowledge/machine/neuralnetwork/rbm.py	/^    def gibbs_vhv(self, v0_sample):$/;"	m	class:RBM
+gof	knowledge/language/nn_languagemodel.py	/^        import theano.gof.graph$/;"	i
+gradient	knowledge/language/nn_languagemodel.py	/^from theano import gradient$/;"	i
+graph	knowledge/language/nn_languagemodel.py	/^        import theano.gof.graph$/;"	i
+gzip	knowledge/language/neural_model/sentence_level_log_likelihood_layer.py	/^import gzip$/;"	i
+gzip	knowledge/machine/neuralnetwork/layer/base.py	/^import gzip$/;"	i
 hamiltonian	knowledge/machine/neuralnetwork/hmc.py	/^def hamiltonian(pos, vel, energy_fn):$/;"	f
 hmc_move	knowledge/machine/neuralnetwork/hmc.py	/^def hmc_move(s_rng, positions, energy_fn, stepsize, n_steps):$/;"	f
 hmc_updates	knowledge/machine/neuralnetwork/hmc.py	/^def hmc_updates(positions, stepsize, avg_acceptance_rate, final_pos, accept,$/;"	f
-is_begin	knowledge/language/core/corpora.py	/^        def is_begin(ss):$/;"	f	function:Conll05.sentence2iobsentece
-is_end	knowledge/language/core/corpora.py	/^        def is_end(ss):$/;"	f	function:Conll05.sentence2iobsentece
-is_verb	knowledge/language/core/corpora.py	/^        def is_verb(ss):$/;"	f	function:Conll05.sentence2iobsentece
+horizontal_stack	knowledge/language/nn_languagemodel.py	/^from theano.tensor.basic import horizontal_stack$/;"	i
+init_rng	knowledge/machine/neuralnetwork/random.py	/^def init_rng(random_seed = None):$/;"	f
+init_rng	knowledge/test/knowledge/language/neural_model/test_srl_neural_model.py	/^from knowledge.machine.neuralnetwork.random import init_rng$/;"	i
+inputs	knowledge/language/neural_model/word_level_neural_model.py	/^    def inputs(self):$/;"	m	class:WordLevelNeuralModelCore
+islice	knowledge/util/data_process.py	/^from itertools import islice$/;"	i
 kinetic_energy	knowledge/machine/neuralnetwork/hmc.py	/^def kinetic_energy(vel):$/;"	f
 leapfrog	knowledge/machine/neuralnetwork/hmc.py	/^    def leapfrog(pos, vel, step):$/;"	f	function:simulate_dynamics
-load_conll2005	knowledge/language/core/corpora.py	/^    def load_conll2005(self,filename):$/;"	m	class:Corpora
+likelihood	knowledge/language/neural_model/sentence_level_neural_model_bak.py	/^    def likelihood(self):$/;"	m	class:SentenceLevelNeuralModelCore
+load	knowledge/language/corpora/conll05.py	/^    def load(self, file_path, type=1):$/;"	m	class:Conll05Corpora
+load_core	knowledge/machine/neuralnetwork/layer/base.py	/^    def load_core(self,model_file):$/;"	m	class:BaseModel
 load_data	knowledge/language/neural_model/sentence_level_log_likelihood_layer.py	/^def load_data(dataset):$/;"	f
-load_data	knowledge/machine/neuralnetwork/layer/logistic_sgd.py	/^def load_data(dataset):$/;"	f
-load_nltk_conll2000	knowledge/language/core/corpora.py	/^    def load_nltk_conll2000(self):$/;"	m	class:Corpora
-loadraw	knowledge/language/core/corpora.py	/^    def loadraw(filename):$/;"	m	class:Conll05
+load_data	knowledge/machine/neuralnetwork/DBN.py	/^from knowledge.machine.neuralnetwork.layer.softmax import SoftMaxLayer, load_data$/;"	i
+load_data	knowledge/machine/neuralnetwork/SdA.py	/^from knowledge.machine.neuralnetwork.layer.softmax import SoftMaxLayer, load_data$/;"	i
+load_data	knowledge/machine/neuralnetwork/convolutional_mlp.py	/^from knowledge.machine.neuralnetwork.layer.softmax import SoftMaxLayer, load_data$/;"	i
+load_data	knowledge/machine/neuralnetwork/layer/dA.py	/^from knowledge.machine.neuralnetwork.layer.softmax import load_data$/;"	i
+load_data	knowledge/machine/neuralnetwork/mlp.py	/^from knowledge.machine.neuralnetwork.layer.softmax import SoftMaxLayer, load_data$/;"	i
+load_data	knowledge/machine/neuralnetwork/rbm.py	/^from knowledge.machine.neuralnetwork.layer.softmax import load_data$/;"	i
+load_nltk_conll2000	knowledge/language/core/corpora_bak.py	/^    def load_nltk_conll2000(self):$/;"	m	class:Corpora
+locdifftypes	knowledge/language/corpora/conll05.py	/^from knowledge.language.problem import postags, srltypes, locdifftypes$/;"	i
+locdifftypes	knowledge/language/problem/chunk_problem.py	/^from knowledge.language.problem import postags, srltypes, locdifftypes$/;"	i
+locdifftypes	knowledge/language/problem/ner_problem.py	/^from knowledge.language.problem import postags, srltypes, locdifftypes$/;"	i
+locdifftypes	knowledge/language/problem/srl_problem.py	/^from knowledge.language.problem import postags, srltypes, locdifftypes$/;"	i
 metropolis_hastings_accept	knowledge/machine/neuralnetwork/hmc.py	/^def metropolis_hastings_accept(energy_prev, energy_next, s_rng):$/;"	f
+model_file_name	knowledge/machine/neuralnetwork/layer/base.py	/^def model_file_name(model_folder,model_name,tag=None,add_time_stamp=False):$/;"	f
+moving_window	knowledge/language/core/sentence/sentence.py	/^from knowledge.util.data_process import moving_window$/;"	i
 moving_window	knowledge/util/data_process.py	/^def moving_window(seq, window_size):$/;"	f
+ne	knowledge/language/core/sentence/property.py	/^    def ne(self):$/;"	m	class:WordProperty
+ne	knowledge/language/core/sentence/property.py	/^    def ne(self, value):$/;"	m	class:WordProperty
+ne_num	knowledge/language/core/sentence/sentence.py	/^    def ne_num(self):$/;"	m	class:Sentence
 negative_log_likelihood	knowledge/language/neural_model/sentence_level_log_likelihood_layer.py	/^    def negative_log_likelihood(self, y):$/;"	m	class:SentenceLevelLogLikelihoodLayer
-negative_log_likelihood	knowledge/machine/neuralnetwork/layer/logistic_sgd.py	/^    def negative_log_likelihood(self, y):$/;"	m	class:LogisticRegression
+negative_log_likelihood_pointwise	knowledge/language/neural_model/sentence_level_log_likelihood_layer.py	/^    def negative_log_likelihood_pointwise(self):$/;"	m	class:SentenceLevelLogLikelihoodLayer
+nes	knowledge/language/core/sentence/sentence.py	/^    def nes(self):$/;"	m	class:Sentence
+nes_lst	knowledge/language/core/sentence/sentence.py	/^    def nes_lst(self):$/;"	m	class:Sentence
 new_from_shared_positions	knowledge/machine/neuralnetwork/hmc.py	/^    def new_from_shared_positions(cls, shared_positions, energy_fn,$/;"	m	class:HMC_sampler
-pad_sent_word	knowledge/language/neural_model/problem/srl_problem.py	/^    def pad_sent_word(sentence,window_sz,max_sz):$/;"	m	class:SrlProblem
-padding_word	knowledge/language/core/word.py	/^    def padding_word(cls):$/;"	m	class:Word
-padding_word2	knowledge/language/core/word.py	/^    def padding_word2(cls):$/;"	m	class:Word
+nltk	knowledge/language/core/corpora_bak.py	/^        import nltk$/;"	i
+np	knowledge/language/corpora/conll05.py	/^import numpy as np$/;"	i
+np	knowledge/language/neural_model/sentence_level_log_likelihood_layer.py	/^import numpy as np$/;"	i
+np	knowledge/language/neural_model/srl_neural_model.py	/^import numpy as np$/;"	i
+np	knowledge/language/neural_model/word_level_neural_model.py	/^import numpy as np$/;"	i
+np	knowledge/language/problem/chunk_problem.py	/^import numpy as np$/;"	i
+np	knowledge/language/problem/ner_problem.py	/^import numpy as np$/;"	i
+np	knowledge/language/problem/pos_tag_problem.py	/^import numpy as np$/;"	i
+np	knowledge/language/problem/srl_problem.py	/^import numpy as np$/;"	i
+np	knowledge/machine/neuralnetwork/layer/base.py	/^import numpy as np$/;"	i
+np	knowledge/machine/neuralnetwork/layer/conv1d_layer.py	/^import numpy as np$/;"	i
+np	knowledge/machine/neuralnetwork/layer/conv_layer.py	/^import numpy as np$/;"	i
+np	knowledge/machine/neuralnetwork/layer/lookup_table_layer.py	/^import numpy as np$/;"	i
+np	knowledge/test/knowledge/language/neural_model/test_srl_neural_model.py	/^import numpy as np$/;"	i
+np	knowledge/test/knowledge/language/test_conv_neural_model.py	/^import numpy as np$/;"	i
+np	knowledge/test/knowledge/machine/layer/test_conv1d_layer.py	/^import numpy as np$/;"	i
+np	knowledge/test/knowledge/machine/layer/test_lookup_table_layer.py	/^import numpy as np$/;"	i
+numpy	knowledge/language/nn_languagemodel.py	/^import numpy$/;"	i
+numpy	knowledge/machine/neuralnetwork/DBN.py	/^import numpy$/;"	i
+numpy	knowledge/machine/neuralnetwork/SdA.py	/^import numpy$/;"	i
+numpy	knowledge/machine/neuralnetwork/convolutional_mlp.py	/^import numpy$/;"	i
+numpy	knowledge/machine/neuralnetwork/hmc.py	/^import numpy$/;"	i
+numpy	knowledge/machine/neuralnetwork/layer/dA.py	/^import numpy$/;"	i
+numpy	knowledge/machine/neuralnetwork/layer/perception.py	/^import numpy$/;"	i
+numpy	knowledge/machine/neuralnetwork/layer/softmax.py	/^import numpy$/;"	i
+numpy	knowledge/machine/neuralnetwork/mlp.py	/^import numpy$/;"	i
+numpy	knowledge/machine/neuralnetwork/random.py	/^import numpy$/;"	i
+numpy	knowledge/machine/neuralnetwork/random.py	/^import numpy.random$/;"	i
+numpy	knowledge/machine/neuralnetwork/rbm.py	/^import numpy$/;"	i
+numpy	knowledge/test/knowledge/language/neural_model/test_chunk_neural_model.py	/^import numpy$/;"	i
+numpy	knowledge/test/knowledge/language/neural_model/test_ner_neural_model.py	/^import numpy$/;"	i
+numpy	knowledge/test/knowledge/language/test_neural_model.py	/^import numpy$/;"	i
+numpy	knowledge/util/theano_util.py	/^import numpy$/;"	i
+os	knowledge/language/neural_model/sentence_level_log_likelihood_layer.py	/^import os$/;"	i
+os	knowledge/language/neural_model/word_level_neural_model.py	/^import os$/;"	i
+os	knowledge/machine/neuralnetwork/DBN.py	/^import os$/;"	i
+os	knowledge/machine/neuralnetwork/SdA.py	/^import os$/;"	i
+os	knowledge/machine/neuralnetwork/convolutional_mlp.py	/^import os$/;"	i
+os	knowledge/machine/neuralnetwork/layer/base.py	/^import os$/;"	i
+os	knowledge/machine/neuralnetwork/layer/dA.py	/^import os$/;"	i
+os	knowledge/machine/neuralnetwork/layer/lookup_table_layer.py	/^import os$/;"	i
+os	knowledge/machine/neuralnetwork/layer/perception.py	/^import os$/;"	i
+os	knowledge/machine/neuralnetwork/mlp.py	/^import os$/;"	i
+os	knowledge/machine/neuralnetwork/rbm.py	/^import os$/;"	i
+os	knowledge/test/knowledge/language/core/test_corpora.py	/^import os$/;"	i
+os	knowledge/test/knowledge/language/corpora/test_conll05_corpora.py	/^import os$/;"	i
+os	knowledge/test/knowledge/language/neural_model/test_chunk_neural_model.py	/^import os$/;"	i
+os	knowledge/test/knowledge/language/neural_model/test_ner_neural_model.py	/^import os$/;"	i
+os	knowledge/test/knowledge/language/neural_model/test_srl_neural_model.py	/^import os$/;"	i
+os	knowledge/test/knowledge/language/problem/test_chunk_problem.py	/^import os$/;"	i
+os	knowledge/test/knowledge/language/problem/test_ner_problem.py	/^import os$/;"	i
+os	knowledge/test/knowledge/language/problem/test_srl_problem.py	/^import os$/;"	i
+os	knowledge/test/knowledge/language/test_conv_neural_model.py	/^import os$/;"	i
+output	knowledge/language/neural_model/srl_neural_model.py	/^    def output(self, X):$/;"	m	class:SRLNeuralLanguageModel
+output	knowledge/machine/neuralnetwork/layer/conv1d_layer.py	/^    def output(self, input):$/;"	m	class:Conv1DLayer
+output	knowledge/machine/neuralnetwork/layer/lookup_table_layer.py	/^    def output(self, inputs, tensor_output = False):$/;"	m	class:LookupTableLayer
+output	knowledge/machine/neuralnetwork/layer/perception.py	/^    def output(self, X):$/;"	m	class:PerceptionLayer
+output	knowledge/machine/neuralnetwork/layer/softmax.py	/^    def output(self, X):$/;"	m	class:SoftMaxLayer
+owner	knowledge/language/core/sentence/srl_structure.py	/^    def owner(self):$/;"	m	class:SRLStructure
+owner	knowledge/language/core/sentence/srl_structure.py	/^    def owner(self,value):$/;"	m	class:SRLStructure
+pad_sent_word	knowledge/language/problem/srl_problem.py	/^    def pad_sent_word(self,sentence,window_size,max_term_per_sent):$/;"	m	class:SrlProblem2
+pad_sentece	knowledge/language/core/sentence/sentence.py	/^    def pad_sentece(self, windows_size):$/;"	m	class:Sentence
+padding_pos	knowledge/language/core/pos.py	/^    def padding_pos(cls):$/;"	m	class:Pos
+padding_pos2	knowledge/language/core/pos.py	/^    def padding_pos2(cls):$/;"	m	class:Pos
+params	knowledge/language/neural_model/srl_neural_model.py	/^    def params(self):$/;"	m	class:SRLNeuralLanguageModel
+params	knowledge/machine/neuralnetwork/layer/conv1d_layer.py	/^    def params(self):$/;"	m	class:Conv1DLayer
+params	knowledge/machine/neuralnetwork/layer/conv_layer.py	/^    def params(self):$/;"	m	class:Conv1DLayer
 params	knowledge/machine/neuralnetwork/layer/lookup_table_layer.py	/^    def params(self):$/;"	m	class:LookupTableLayer
-params	knowledge/machine/neuralnetwork/layer/lookup_table_layer.py	/^    def params(self):$/;"	m	class:MultiLookupTableLayer
+params	knowledge/machine/neuralnetwork/layer/perception.py	/^    def params(self):$/;"	m	class:PerceptionLayer
+params	knowledge/machine/neuralnetwork/layer/softmax.py	/^    def params(self):$/;"	m	class:SoftMaxLayer
+params	knowledge/machine/neuralnetwork/mlp.py	/^    def params(self):$/;"	m	class:HiddenLayer
+parse_components_to_tags	knowledge/language/corpora/conll05.py	/^def parse_components_to_tags(tags):$/;"	f
+parse_start_end_components	knowledge/language/corpora/conll05.py	/^def parse_start_end_components(tags):$/;"	f
+pfunc	knowledge/language/nn_languagemodel.py	/^from theano.compile import pfunc, shared$/;"	i
+phrase_num	knowledge/language/core/sentence/sentence.py	/^    def phrase_num(self):$/;"	m	class:Sentence
+phrases	knowledge/language/core/sentence/sentence.py	/^    def phrases(self):$/;"	m	class:Sentence
+pos	knowledge/language/core/sentence/property.py	/^    def pos(self):$/;"	m	class:WordProperty
+pos	knowledge/language/core/sentence/property.py	/^    def pos(self, value):$/;"	m	class:WordProperty
+pos_id_map	knowledge/language/core/pos.py	/^pos_id_map = bidict({PADDING_POS_STR : 0})  # reserved for padding str$/;"	v
+pos_shift	knowledge/language/core/sentence/chunk_structure.py	/^    def pos_shift(self, shift):$/;"	m	class:Chunk
+pos_shift	knowledge/language/core/sentence/srl_structure.py	/^    def pos_shift(self, shift):$/;"	m	class:Role
+pos_shift	knowledge/language/core/sentence/srl_structure.py	/^    def pos_shift(self, shift):$/;"	m	class:SRLStructure
+postags	knowledge/language/corpora/conll05.py	/^from knowledge.language.problem import postags, srltypes, locdifftypes$/;"	i
+postags	knowledge/language/problem/chunk_problem.py	/^from knowledge.language.problem import postags, srltypes, locdifftypes$/;"	i
+postags	knowledge/language/problem/ner_problem.py	/^from knowledge.language.problem import postags, srltypes, locdifftypes$/;"	i
+postags	knowledge/language/problem/srl_problem.py	/^from knowledge.language.problem import postags, srltypes, locdifftypes$/;"	i
+pprint	knowledge/test/knowledge/language/test_conv_neural_model.py	/^import pprint$/;"	i
+predict	knowledge/language/neural_model/srl_neural_model.py	/^    def predict(self, X):$/;"	m	class:SRLNeuralLanguageModel
 predict	knowledge/language/nn_languagemodel.py	/^def predict(correct_sequence):$/;"	f
+predict	knowledge/machine/neuralnetwork/layer/softmax.py	/^    def predict(self, X):$/;"	m	class:SoftMaxLayer
 pretraining_functions	knowledge/machine/neuralnetwork/DBN.py	/^    def pretraining_functions(self, train_set_x, batch_size, k):$/;"	m	class:DBN
 pretraining_functions	knowledge/machine/neuralnetwork/SdA.py	/^    def pretraining_functions(self, train_set_x, batch_size):$/;"	m	class:SdA
+product	knowledge/language/neural_model/srl_neural_model.py	/^from numpy import product$/;"	i
 propdown	knowledge/machine/neuralnetwork/rbm.py	/^    def propdown(self, hid):$/;"	m	class:RBM
 propup	knowledge/machine/neuralnetwork/rbm.py	/^    def propup(self, vis):$/;"	m	class:RBM
+random	knowledge/machine/neuralnetwork/random.py	/^import numpy.random$/;"	i
+random	knowledge/util/mis.py	/^import random, string$/;"	i
+random_generator	knowledge/machine/neuralnetwork/random.py	/^random_generator = None$/;"	v
+randomword	knowledge/util/mis.py	/^def randomword(length):$/;"	f
 read_document	knowledge/language/protocol/WSJ_postag_document_protocol.py	/^    def read_document(self, doc_file_path):$/;"	m	class:WSJPosTagDocumentProtocol
+roles	knowledge/language/core/sentence/srl_structure.py	/^    def roles(self):$/;"	m	class:SRLStructure
+s	knowledge/language/nn_languagemodel.py	/^from theano import scalar as s$/;"	i
 sample_h_given_v	knowledge/machine/neuralnetwork/rbm.py	/^    def sample_h_given_v(self, v0_sample):$/;"	m	class:RBM
 sample_v_given_h	knowledge/machine/neuralnetwork/rbm.py	/^    def sample_v_given_h(self, h0_sample):$/;"	m	class:RBM
-save_doc_word_freq	knowledge/language/core/corpora.py	/^    def save_doc_word_freq(self, file_name):$/;"	m	class:Corpora
-save_word_dictionary	knowledge/language/core/corpora.py	/^    def save_word_dictionary(self, file_name):$/;"	m	class:Corpora
+save_doc_word_freq	knowledge/language/core/corpora_bak.py	/^    def save_doc_word_freq(self, file_name):$/;"	m	class:Corpora
+save_word_dictionary	knowledge/language/core/corpora_bak.py	/^    def save_word_dictionary(self, file_name):$/;"	m	class:Corpora
 score	knowledge/language/nn_languagemodel.py	/^def score(x):$/;"	f
 segement_words	knowledge/language/core/document.py	/^    def segement_words(self, word_segmenter):$/;"	m	class:Document
-segement_words	knowledge/language/core/sentence.py	/^    def segement_words(self, word_segmenter):$/;"	m	class:Sentence
-sentence2iobsentece	knowledge/language/core/corpora.py	/^    def sentence2iobsentece(sentence):$/;"	m	class:Conll05
+sentences	knowledge/language/core/corpora.py	/^    def sentences(self):$/;"	m	class:Corpora
+sentences	knowledge/language/corpora/conll05.py	/^    def sentences(self):$/;"	m	class:Conll05Corpora
 sgd_optimization_mnist	knowledge/language/neural_model/sentence_level_log_likelihood_layer.py	/^def sgd_optimization_mnist(learning_rate=0.13, n_epochs=1000,$/;"	f
-sgd_optimization_mnist	knowledge/machine/neuralnetwork/layer/logistic_sgd.py	/^def sgd_optimization_mnist(learning_rate=0.13, n_epochs=1000,$/;"	f
+shared	knowledge/language/nn_languagemodel.py	/^from theano.compile import pfunc, shared$/;"	i
+shared	knowledge/machine/neuralnetwork/hmc.py	/^from theano import function, shared$/;"	i
 sharedX	knowledge/machine/neuralnetwork/hmc.py	/^        shared(numpy.asarray(X, dtype=theano.config.floatX), name=name)$/;"	v
 shared_dataset	knowledge/language/neural_model/sentence_level_log_likelihood_layer.py	/^    def shared_dataset(data_xy, borrow=True):$/;"	f	function:load_data
-shared_dataset	knowledge/machine/neuralnetwork/layer/logistic_sgd.py	/^    def shared_dataset(data_xy, borrow=True):$/;"	f	function:load_data
 shared_dataset	knowledge/util/theano_util.py	/^def shared_dataset(data_xy, borrow=True):$/;"	f
 simulate_dynamics	knowledge/machine/neuralnetwork/hmc.py	/^def simulate_dynamics(initial_pos, initial_vel, stepsize, n_steps, energy_fn):$/;"	f
+sklearn	knowledge/test/knowledge/language/test_neural_model.py	/^import sklearn$/;"	i
+sklearn	knowledge/test/knowledge/language/test_neural_model.py	/^import sklearn.cross_validation$/;"	i
+softsign	knowledge/language/nn_languagemodel.py	/^        from theano.sandbox.softsign import softsign$/;"	i
 split_sentences	knowledge/language/core/document.py	/^    def split_sentences(self, sentence_segmenter):$/;"	m	class:Document
+srl_num	knowledge/language/core/sentence/sentence.py	/^    def srl_num(self):$/;"	m	class:Sentence
+srl_structs	knowledge/language/core/sentence/sentence.py	/^    def srl_structs(self):$/;"	m	class:Sentence
+srltypes	knowledge/language/corpora/conll05.py	/^from knowledge.language.problem import postags, srltypes, locdifftypes$/;"	i
+srltypes	knowledge/language/problem/chunk_problem.py	/^from knowledge.language.problem import postags, srltypes, locdifftypes$/;"	i
+srltypes	knowledge/language/problem/ner_problem.py	/^from knowledge.language.problem import postags, srltypes, locdifftypes$/;"	i
+srltypes	knowledge/language/problem/srl_problem.py	/^from knowledge.language.problem import postags, srltypes, locdifftypes$/;"	i
 stack	knowledge/language/nn_languagemodel.py	/^def stack(x):$/;"	f
-strip_label	knowledge/language/core/corpora.py	/^        def strip_label(ss):$/;"	f	function:Conll05.sentence2iobsentece
-test_Cornll05	test/knowledge/language/core/test_corpora.py	/^def test_Cornll05():$/;"	f
+start_pos	knowledge/language/core/sentence/chunk_structure.py	/^    def start_pos(self):$/;"	m	class:Chunk
+start_pos	knowledge/language/core/sentence/srl_structure.py	/^    def start_pos(self):$/;"	m	class:Role
+string	knowledge/util/mis.py	/^import random, string$/;"	i
+sys	knowledge/language/neural_model/sentence_level_log_likelihood_layer.py	/^import sys$/;"	i
+sys	knowledge/language/neural_model/word_level_neural_model.py	/^import sys$/;"	i
+sys	knowledge/machine/neuralnetwork/DBN.py	/^import sys$/;"	i
+sys	knowledge/machine/neuralnetwork/SdA.py	/^import sys$/;"	i
+sys	knowledge/machine/neuralnetwork/convolutional_mlp.py	/^import sys$/;"	i
+sys	knowledge/machine/neuralnetwork/layer/base.py	/^import sys$/;"	i
+sys	knowledge/machine/neuralnetwork/layer/dA.py	/^import sys$/;"	i
+sys	knowledge/machine/neuralnetwork/layer/perception.py	/^import sys$/;"	i
+sys	knowledge/machine/neuralnetwork/mlp.py	/^import sys$/;"	i
+sys	knowledge/test/knowledge/language/neural_model/test_chunk_neural_model.py	/^import sys$/;"	i
+sys	knowledge/test/knowledge/language/neural_model/test_ner_neural_model.py	/^import sys$/;"	i
+sys	knowledge/test/knowledge/language/test_conv_neural_model.py	/^import sys$/;"	i
+sys	knowledge/test/knowledge/language/test_neural_model.py	/^import sys$/;"	i
+t	knowledge/language/nn_languagemodel.py	/^from theano import tensor as t$/;"	i
 test_DBN	knowledge/machine/neuralnetwork/DBN.py	/^def test_DBN(finetune_lr=0.1, pretraining_epochs=100,$/;"	f
 test_SdA	knowledge/machine/neuralnetwork/SdA.py	/^def test_SdA(finetune_lr=0.1, pretraining_epochs=15,$/;"	f
+test_chunk_problem	knowledge/test/knowledge/language/problem/test_chunk_problem.py	/^def test_chunk_problem():$/;"	f
+test_conll05_corpora	knowledge/test/knowledge/language/corpora/test_conll05_corpora.py	/^def test_conll05_corpora():$/;"	f
 test_dA	knowledge/machine/neuralnetwork/layer/dA.py	/^def test_dA(learning_rate=0.1, training_epochs=15,$/;"	f
-test_foo	test/knowledge/language/test_conv_neural_model.py	/^def test_foo():$/;"	f
-test_lookup	test/knowledge/machine/layer/test_lookup_table_layer.py	/^def test_lookup():$/;"	f
-test_mlp	knowledge/machine/neuralnetwork/layer/mlp.py	/^def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000,$/;"	f
+test_lookup	knowledge/test/knowledge/machine/layer/test_conv1d_layer.py	/^def test_lookup():$/;"	f
+test_lookup	knowledge/test/knowledge/machine/layer/test_lookup_table_layer.py	/^def test_lookup():$/;"	f
+test_mlp	knowledge/machine/neuralnetwork/mlp.py	/^def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000,$/;"	f
+test_ner_problem	knowledge/test/knowledge/language/problem/test_ner_problem.py	/^def test_ner_problem():$/;"	f
+test_neural_language_model	knowledge/test/knowledge/language/neural_model/test_chunk_neural_model.py	/^def test_neural_language_model():$/;"	f
+test_neural_language_model	knowledge/test/knowledge/language/neural_model/test_ner_neural_model.py	/^def test_neural_language_model():$/;"	f
+test_neural_language_model	knowledge/test/knowledge/language/test_neural_model.py	/^def test_neural_language_model():$/;"	f
+test_pos_neural_model	knowledge/test/knowledge/language/neural_model/test_pos_neural_model.py	/^def test_pos_neural_model():$/;"	f
 test_rbm	knowledge/machine/neuralnetwork/rbm.py	/^def test_rbm(learning_rate=0.1, training_epochs=15,$/;"	f
 test_score	knowledge/machine/neuralnetwork/DBN.py	/^        def test_score():$/;"	f	function:DBN.build_finetune_functions
 test_score	knowledge/machine/neuralnetwork/SdA.py	/^        def test_score():$/;"	f	function:SdA.build_finetune_functions
+test_srl_conv_network	knowledge/test/knowledge/language/test_conv_neural_model.py	/^def test_srl_conv_network():$/;"	f
+test_srl_neural_model	knowledge/test/knowledge/language/neural_model/test_srl_neural_model.py	/^def test_srl_neural_model():$/;"	f
+test_srl_problem	knowledge/test/knowledge/language/problem/test_srl_problem.py	/^def test_srl_problem():$/;"	f
+theano	knowledge/language/neural_model/sentence_level_log_likelihood_layer.py	/^import theano$/;"	i
+theano	knowledge/language/neural_model/sentence_level_log_likelihood_layer.py	/^import theano.tensor as T$/;"	i
+theano	knowledge/language/neural_model/sentence_level_neural_model_bak.py	/^import theano$/;"	i
+theano	knowledge/language/neural_model/sentence_level_neural_model_bak.py	/^import theano.tensor as T$/;"	i
+theano	knowledge/language/neural_model/srl_neural_model.py	/^import theano$/;"	i
+theano	knowledge/language/neural_model/srl_neural_model.py	/^import theano.tensor as T$/;"	i
+theano	knowledge/language/neural_model/word_level_neural_model.py	/^import theano$/;"	i
+theano	knowledge/language/neural_model/word_level_neural_model.py	/^import theano.tensor as T$/;"	i
+theano	knowledge/language/nn_languagemodel.py	/^        import theano.gof.graph$/;"	i
+theano	knowledge/language/nn_languagemodel.py	/^import theano$/;"	i
+theano	knowledge/language/nn_languagemodel.py	/^import theano.compile$/;"	i
+theano	knowledge/machine/neuralnetwork/DBN.py	/^import theano$/;"	i
+theano	knowledge/machine/neuralnetwork/DBN.py	/^import theano.tensor as T$/;"	i
+theano	knowledge/machine/neuralnetwork/SdA.py	/^import theano$/;"	i
+theano	knowledge/machine/neuralnetwork/SdA.py	/^import theano.tensor as T$/;"	i
+theano	knowledge/machine/neuralnetwork/convolutional_mlp.py	/^import theano$/;"	i
+theano	knowledge/machine/neuralnetwork/convolutional_mlp.py	/^import theano.tensor as T$/;"	i
+theano	knowledge/machine/neuralnetwork/hmc.py	/^import theano$/;"	i
+theano	knowledge/machine/neuralnetwork/layer/base.py	/^import theano$/;"	i
+theano	knowledge/machine/neuralnetwork/layer/base.py	/^import theano.tensor as T$/;"	i
+theano	knowledge/machine/neuralnetwork/layer/conv1d_layer.py	/^import theano$/;"	i
+theano	knowledge/machine/neuralnetwork/layer/conv1d_layer.py	/^import theano.tensor as T$/;"	i
+theano	knowledge/machine/neuralnetwork/layer/conv_layer.py	/^import theano$/;"	i
+theano	knowledge/machine/neuralnetwork/layer/conv_layer.py	/^import theano.tensor as T$/;"	i
+theano	knowledge/machine/neuralnetwork/layer/dA.py	/^import theano$/;"	i
+theano	knowledge/machine/neuralnetwork/layer/dA.py	/^import theano.tensor as T$/;"	i
+theano	knowledge/machine/neuralnetwork/layer/lookup_table_layer.py	/^import theano$/;"	i
+theano	knowledge/machine/neuralnetwork/layer/lookup_table_layer.py	/^import theano.tensor as T$/;"	i
+theano	knowledge/machine/neuralnetwork/layer/perception.py	/^import theano$/;"	i
+theano	knowledge/machine/neuralnetwork/layer/perception.py	/^import theano.tensor as T$/;"	i
+theano	knowledge/machine/neuralnetwork/layer/softmax.py	/^import theano$/;"	i
+theano	knowledge/machine/neuralnetwork/layer/softmax.py	/^import theano.tensor as T$/;"	i
+theano	knowledge/machine/neuralnetwork/mlp.py	/^import theano$/;"	i
+theano	knowledge/machine/neuralnetwork/mlp.py	/^import theano.tensor as T$/;"	i
+theano	knowledge/machine/neuralnetwork/rbm.py	/^import theano$/;"	i
+theano	knowledge/machine/neuralnetwork/rbm.py	/^import theano.tensor as T$/;"	i
+theano	knowledge/test/knowledge/machine/layer/test_conv1d_layer.py	/^import theano.tensor as T$/;"	i
+theano	knowledge/test/knowledge/machine/layer/test_lookup_table_layer.py	/^import theano.tensor as T$/;"	i
+theano	knowledge/util/theano_util.py	/^import theano$/;"	i
+theano	knowledge/util/theano_util.py	/^import theano.tensor as T$/;"	i
+tile_raster_images	knowledge/machine/neuralnetwork/layer/dA.py	/^from utils import tile_raster_images$/;"	i
+tile_raster_images	knowledge/machine/neuralnetwork/rbm.py	/^from utils import tile_raster_images$/;"	i
+time	knowledge/language/neural_model/sentence_level_log_likelihood_layer.py	/^import time$/;"	i
+time	knowledge/language/neural_model/sentence_level_neural_model_bak.py	/^import time$/;"	i
+time	knowledge/language/neural_model/srl_neural_model.py	/^import time$/;"	i
+time	knowledge/language/neural_model/word_level_neural_model.py	/^import time$/;"	i
+time	knowledge/machine/neuralnetwork/DBN.py	/^import time$/;"	i
+time	knowledge/machine/neuralnetwork/SdA.py	/^import time$/;"	i
+time	knowledge/machine/neuralnetwork/convolutional_mlp.py	/^import time$/;"	i
+time	knowledge/machine/neuralnetwork/layer/base.py	/^import time$/;"	i
+time	knowledge/machine/neuralnetwork/layer/dA.py	/^import time$/;"	i
+time	knowledge/machine/neuralnetwork/layer/perception.py	/^import time$/;"	i
+time	knowledge/machine/neuralnetwork/mlp.py	/^import time$/;"	i
+time	knowledge/machine/neuralnetwork/random.py	/^import time$/;"	i
+time	knowledge/machine/neuralnetwork/rbm.py	/^import time$/;"	i
 train	knowledge/language/nn_languagemodel.py	/^def train(correct_sequence, noise_sequence, learning_rate):$/;"	f
+train_srl_neural_model	knowledge/language/neural_model/srl_neural_model.py	/^def train_srl_neural_model(train_problem, valid_problem, nn_architecture,  hyper_param):$/;"	f
+train_srl_neural_model	knowledge/test/knowledge/language/neural_model/test_srl_neural_model.py	/^from knowledge.language.neural_model.srl_neural_model import SRLNetowrkArchitecture, NeuralModelHyperParameter, train_srl_neural_model$/;"	i
+type	knowledge/language/core/sentence/chunk_structure.py	/^    def type(self):$/;"	m	class:Chunk
+type	knowledge/language/core/sentence/srl_structure.py	/^    def type(self):$/;"	m	class:Role
+urllib	knowledge/language/neural_model/sentence_level_log_likelihood_layer.py	/^        import urllib$/;"	i
+valid	knowledge/language/neural_model/sentence_level_neural_model_bak.py	/^    def valid(self,x,y,sent_length,masks):$/;"	m	class:SentenceLevelNeuralModel
 valid_score	knowledge/machine/neuralnetwork/DBN.py	/^        def valid_score():$/;"	f	function:DBN.build_finetune_functions
 valid_score	knowledge/machine/neuralnetwork/SdA.py	/^        def valid_score():$/;"	f	function:SdA.build_finetune_functions
+verb	knowledge/language/core/sentence/srl_structure.py	/^    def verb(self):$/;"	m	class:SRLStructure
+verb_infinitive	knowledge/language/core/sentence/srl_structure.py	/^    def verb_infinitive(self):$/;"	m	class:SRLStructure
+verb_infinitive	knowledge/language/core/sentence/srl_structure.py	/^    def verb_infinitive(self, value):$/;"	m	class:SRLStructure
+verb_loc	knowledge/language/core/sentence/srl_structure.py	/^    def verb_loc(self):$/;"	m	class:SRLStructure
+verb_sense	knowledge/language/core/sentence/srl_structure.py	/^    def verb_sense(self):$/;"	m	class:SRLStructure
+verb_sense	knowledge/language/core/sentence/srl_structure.py	/^    def verb_sense(self, value):$/;"	m	class:SRLStructure
 verbose_predict	knowledge/language/nn_languagemodel.py	/^def verbose_predict(correct_sequence):$/;"	f
-word_dist	knowledge/language/neural_model/problem/srl_problem.py	/^    def word_dist(self,sent_sz,idx,pos_cov_size,window_sz,max_sz):$/;"	m	class:SrlProblem
-word_windows	knowledge/language/core/sentence.py	/^    def word_windows(self, windows_size):$/;"	m	class:Sentence
-xtest_multilookup	test/knowledge/machine/layer/test_lookup_table_layer.py	/^def xtest_multilookup():$/;"	f
-xtest_neural_language_model	test/knowledge/language/test_neural_model.py	/^def xtest_neural_language_model():$/;"	f
+word	knowledge/language/corpora/conll05.py	/^from knowledge.language.core.word import word, word_repo$/;"	i
+word_dist	knowledge/language/problem/srl_problem.py	/^    def word_dist(self,sent_sz,idx,window_size,max_term_per_sent):$/;"	m	class:SrlProblem2
+word_id_map	knowledge/language/core/word/wordid_allocator.py	/^word_id_map = bidict({PADDING_WORD_STR: 0})  # reserved for padding str$/;"	v
+word_num	knowledge/language/core/sentence/sentence.py	/^    def word_num(self):$/;"	m	class:Sentence
+word_properties	knowledge/language/core/sentence/sentence.py	/^    def word_properties(self):$/;"	m	class:Sentence
+word_repo	knowledge/language/core/word/word_repo.py	/^word_repo = dict({PADDING_WORD_STR: Word(PADDING_WORD_STR)})$/;"	v
+word_repo	knowledge/language/corpora/conll05.py	/^from knowledge.language.core.word import word, word_repo$/;"	i
+word_repo	knowledge/language/problem/chunk_problem.py	/^from knowledge.language.core.word import word_repo$/;"	i
+word_repo	knowledge/language/problem/ner_problem.py	/^from knowledge.language.core.word import word_repo$/;"	i
+word_repo	knowledge/language/problem/srl_problem.py	/^from knowledge.language.core.word import word_repo$/;"	i
+word_windows	knowledge/language/core/sentence/sentence.py	/^    def word_windows(self, windows_size):$/;"	m	class:Sentence
+words	knowledge/language/core/corpora.py	/^    def words(self):$/;"	m	class:Corpora
+words	knowledge/language/core/sentence/sentence.py	/^    def words(self):$/;"	m	class:Sentence
+xtest_Cornll05	knowledge/test/knowledge/language/core/test_corpora.py	/^def xtest_Cornll05():$/;"	f
+xtest_print_all_srl_tag	knowledge/test/knowledge/language/core/test_corpora.py	/^def xtest_print_all_srl_tag():$/;"	f

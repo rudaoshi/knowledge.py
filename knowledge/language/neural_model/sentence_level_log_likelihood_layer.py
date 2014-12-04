@@ -55,24 +55,27 @@ class SentenceLevelLogLikelihoodLayer(object):
                                                  dtype=theano.config.floatX),
                                name='b', borrow=True)
 
-        #self.tag_trans_matrix = theano.shared(value = numpy.zeros((n_out + 1,n_out), dtype=theano.config.floatX),
-        #                                      name='tag_trans', borrow = True)
+        self.tag_trans_matrix = theano.shared(value = np.zeros((n_out + 1,n_out), dtype=theano.config.floatX),
+                                              name='tag_trans', borrow = True)
+
+    def cost(self, X, y):
 
         # pointwise_score shape (batch_size,max_term_per_sent,n_out)
-        self.pointwise_score = T.dot(input, self.W) + self.b.dimshuffle('x',0)
+        pointwise_score = T.nnet.softmax(T.dot(X, self.W) + self.b)
         # y_pred_pointwise shape (batch_size,max_term_per_sent)
-        self.y_pred_pointwise = T.argmax(self.pointwise_score, axis=2)
+        y_pred_pointwise = T.argmax(pointwise_score, axis=2)
 
-        self.results,_update = theano.scan(lambda score,y,mask: score[T.arange(max_term_per_sent),y] * mask,
-                       sequences=[self.pointwise_score,self.Y,self.masks])
+#        self.results,_update = theano.scan(lambda score,y,mask: score[T.arange(max_term_per_sent),y] * mask,
+#                       sequences=[self.pointwise_score,self.Y,self.masks])
 
 
         #TODO: compute total score of all path (eq, 12, NLP from Scratch)
-        '''
+
+        tag_num = self.tag_trans_matrix.shape[0]
+
         result, updates = theano.scan(lambda s, delta_tm1, trans_mat: s + T.log(T.sum(T.exp(T.tile(delta_tm1, tag_num) + trans_mat),axis=0 )),
                                 sequences = pointwise_score,
-                                outputs_info= [{'initial': self.tag_trans_matrix[0,:] + pointwise_score[0,:],
-                                                }],
+                                outputs_info= [{'initial': self.tag_trans_matrix[0,:] + pointwise_score[0,:],}],
                                 non_sequences=[self.tag_trans_matrix[range(1,tag_num+1),:]]
         )
         delta = result[-1]
@@ -80,13 +83,13 @@ class SentenceLevelLogLikelihoodLayer(object):
         result, update = theano.scan(lambda i, select_score, score_mat, delta, trans_mat, y_pred_pointwise: \
                                          select_score + score_mat[i,y_pred_pointwise[i]] + trans_mat[y_pred_pointwise[i],y_pred_pointwise[i+1]],
                                      sequences=range(input_num),
-                                     outputs_info= [{'initial': self.tag_trans_matrix[0,self.y_pred_pointwise[0]]}],
-                                     non_sequences=[pointwise_score, delta, self.tag_trans_matrix, self.y_pred_pointwise])
+                                     outputs_info= [{'initial': self.tag_trans_matrix[0,y_pred_pointwise[0]]}],
+                                     non_sequences=[pointwise_score, delta, self.tag_trans_matrix, y_pred_pointwise])
 
         selected_path_score = result[-1]
 
         self.log_likelihood = selected_path_score - T.sum(T.exp((delta)),axis=0)
-        '''
+
 
 
         # parameters of the model

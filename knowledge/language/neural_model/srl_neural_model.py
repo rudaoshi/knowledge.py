@@ -10,9 +10,7 @@ from knowledge.machine.neuralnetwork.layer.perception import PerceptionLayer
 from knowledge.machine.neuralnetwork.layer.conv1d_layer import Conv1DLayer
 from knowledge.machine.neuralnetwork.layer.lookup_table_layer import LookupTableLayer
 from knowledge.machine.neuralnetwork.layer.softmax import SoftMaxLayer
-from knowledge.machine.neuralnetwork.layer.base import BaseModel
-from knowledge.language.problem.locdifftypes import LocDiffToWordTypes, LocDiffToVerbTypes, LocTypes
-
+from knowledge.language.neural_model.sentence_level_log_likelihood_layer import SentenceLevelLogLikelihoodLayer
 class SRLNetowrkArchitecture(object):
 
     def __init__(self):
@@ -105,7 +103,7 @@ class SRLNeuralLanguageModel(object):
                 self.hidden_layers.append(hidden_layer)
                 input_dim = output_dim
 
-            self.output_layer = SoftMaxLayer(
+            self.output_layer = SentenceLevelLogLikelihoodLayer(
                                         n_in=nn_architecture.hidden_layer_output_dims[-1],
                                         n_out=SRL_type_num)
 

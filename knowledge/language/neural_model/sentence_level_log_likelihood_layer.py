@@ -12,6 +12,7 @@ import numpy as np
 
 import theano
 import theano.tensor as T
+from knowledge.machine.neuralnetwork.random import get_numpy_rng
 
 
 class SentenceLevelLogLikelihoodLayer(object):
@@ -23,7 +24,7 @@ class SentenceLevelLogLikelihoodLayer(object):
     determine a class membership probability.
     """
 
-    def __init__(self,rng, input , Y , max_term_per_sent, n_in, n_out):
+    def __init__(self, n_in, n_out):
         """ Initialize the parameters of the logistic regression
 
         :type input: theano.tensor.TensorType
@@ -40,11 +41,8 @@ class SentenceLevelLogLikelihoodLayer(object):
 
         """
 
-        self.n_in = n_in
-        self.n_out = n_out
 
-        self.Y = Y
-
+        rng = get_numpy_rng()
         # initialize with 0 the weights W as a matrix of shape (n_in, n_out)
         self.W = theano.shared(value=np.asarray(rng.uniform(low=-2.0, high=2.0, size=(n_in, n_out)),
                                                  dtype=theano.config.floatX),
@@ -65,7 +63,7 @@ class SentenceLevelLogLikelihoodLayer(object):
         # pointwise_score shape (batch_size,max_term_per_sent,n_out)
         pointwise_score = T.dot(X, self.W) + self.b
         # y_pred_pointwise shape (batch_size,max_term_per_sent)
-        y_pred_pointwise = T.argmax(pointwise_score, axis=2)
+        # y_pred_pointwise = T.argmax(pointwise_score, axis=2)
 
 #        self.results,_update = theano.scan(lambda score,y,mask: score[T.arange(max_term_per_sent),y] * mask,
 #                       sequences=[self.pointwise_score,self.Y,self.masks])
@@ -78,18 +76,35 @@ class SentenceLevelLogLikelihoodLayer(object):
         # \delta_t(k) is the logadd of all path of terms 1:t that end with class k
         # so, \delta_0(k) = logadd(A(0,k))
         # we are calculating delta_t(k) for t=1:T+1 and k = 1:TagNum+1
-        result, updates = theano.scan(lambda s, delta_tm1, trans_mat: s + T.log(T.sum(T.exp(delta_tm1.repeat(tag_num,axis=0) + trans_mat),axis=0 )),
+
+        def calculate_delta(s, delta_tm1, tag_num, trans_mat):
+            delta = s + T.log(T.sum(T.exp(delta_tm1.dimshuffle('x',0).repeat(tag_num,axis=0) + trans_mat), axis=0))
+            return delta
+
+        result, updates = theano.scan(fn = calculate_delta,
                                 sequences = pointwise_score,
-                                outputs_info= [{'initial': T.log(self.tag_trans_matrix[0, :])}],
-                                non_sequences=[self.tag_trans_matrix[range(1,tag_num+1),:]]
+                                outputs_info= [
+                                    dict(
+                                        initial = T.log(self.tag_trans_matrix[0, :]),
+                                        taps=[-1]
+                                    )],
+                                non_sequences=[tag_num, self.tag_trans_matrix[1:,:]]
         )
         delta = result[-1]
 
-        result, update = theano.scan(lambda i, select_score, score_mat, trans_mat, y_pred_pointwise: \
-                                         select_score + score_mat[i, y_pred_pointwise[i]] + trans_mat[y_pred_pointwise[i]+1,y_pred_pointwise[i+1]],
-                                     sequences=range(1,sentence_len),
-                                     outputs_info= [{'initial': self.tag_trans_matrix[0, y_pred_pointwise[0]] + pointwise_score[0, y_pred_pointwise[0]]}],
-                                     non_sequences=[pointwise_score, self.tag_trans_matrix, y_pred_pointwise])
+        def calculate_score_given_path(i, select_score, score_mat, trans_mat, y):
+            return select_score + score_mat[i, y[i]] + trans_mat[y[i-1]+1,y[i]]
+
+
+        result, update = theano.scan(fn = calculate_score_given_path,
+                                     sequences = T.arange(1,sentence_len),
+                                     outputs_info = [
+                                         dict(
+                                             initial = self.tag_trans_matrix[0, y[0]] + pointwise_score[0, y[0]],
+                                             taps=[-1]
+                                         ),
+                                        ],
+                                     non_sequences=[pointwise_score, self.tag_trans_matrix, y])
 
         selected_path_score = result[-1]
 
@@ -99,6 +114,58 @@ class SentenceLevelLogLikelihoodLayer(object):
         # parameters of the model
         #self.params = [self.W, self.b, self.tag_trans_matrix]
         return [self.W, self.b, self.tag_trans_matrix]
+
+
+    def predict(self, X):
+        pointwise_score = T.dot(X, self.W) + self.b
+
+        sentence_len = pointwise_score.shape[0]
+        tag_num = self.tag_trans_matrix.shape[1]
+        # Viterbi algorithm
+        # \delta_t(k) is the max  of all path of terms 1:t that end with class k
+        # so, \delta_0(k) = A(0,k)
+        # we are calculating delta_t(k) for t=1:T+1 and k = 1:TagNum+1
+        # m_t is the class that achieve max obj of the path end at i-th word
+
+        def viterbi_algo(current_word_scores, delta_tm1, tag_num, trans_mat):
+
+            delta = current_word_scores + T.max(T.sum(delta_tm1.dimshuffle('x',0).repeat(tag_num,axis=0) + trans_mat,axis=0 ), axis=0)
+            return delta
+        
+        (delta, updates) = theano.scan(fn = viterbi_algo,
+                                sequences = pointwise_score,
+                                outputs_info= [
+                                    dict(
+                                        initial = T.log(self.tag_trans_matrix[0, :]),
+                                        taps =[-1]
+                                    )],
+                                non_sequences=[tag_num, self.tag_trans_matrix[1:,:]]
+        )
+
+        return T.argmax(delta, axis= 1)
+
+    def error(self, X, y):
+        """Return a float representing the number of errors in the minibatch
+        over the total number of examples of the minibatch ; zero one
+        loss over the size of the minibatch
+
+        :type y: theano.tensor.TensorType
+        :param y: corresponds to a vector that gives for each example the
+                  correct label
+        """
+
+        y_pred = self.predict(X)
+        # check if y has same dimension of y_pred
+        assert  y.ndim == y_pred.ndim
+
+        # check if y is of the correct datatype
+        if y.dtype.startswith('int'):
+            # the T.neq operator returns a vector of 0s and 1s, where 1
+            # represents a mistake in prediction
+            return T.mean(T.neq(y_pred, y))
+        else:
+            raise NotImplementedError()
+
 
 
 def load_data(dataset):

@@ -103,6 +103,11 @@ class SRLNeuralLanguageModel(object):
                 self.hidden_layers.append(hidden_layer)
                 input_dim = output_dim
 
+            last_hidden_layer = SoftMaxLayer(
+                    n_in = nn_architecture.hidden_layer_output_dims[-1],
+                    n_out = SRL_type_num)
+            self.hidden_layers.append(last_hidden_layer)
+
             self.output_layer = SentenceLevelLogLikelihoodLayer(
                                         n_in=nn_architecture.hidden_layer_output_dims[-1],
                                         n_out=SRL_type_num)

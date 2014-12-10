@@ -72,11 +72,13 @@ class SRLProblem(Problem):
         '''
 
 
-        X = [] #SRLFeatureBatch()
-        y = []
+
 
         sentence_len = sentence.word_num()
         for srl in sentence.srl_structs():
+            X = [] #SRLFeatureBatch()
+            y = []
+
             verb = srl.verb_infinitive
             verb_loc = srl.verb_loc  #given a verb 
 
@@ -109,19 +111,18 @@ class SRLProblem(Problem):
 
                 y.append(label[word_loc])
 
-#        X.finsh_batch()
-
-        return np.array(X), np.array(y)
+            yield np.array(X), np.array(y)
 
     def get_data_batch(self):
 
 
         for sentence in  self.__corpora.sentences():
-            X, y = self.__get_dataset_for_sentence(sentence)
-            if len(y) == 0:
-                continue
 
-            yield X, y
+            for X, y in self.__get_dataset_for_sentence(sentence):
+                if len(y) == 0:
+                    continue
+
+                yield X, y
 
 
 

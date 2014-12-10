@@ -7,8 +7,9 @@ import gzip
 import os
 import sys
 import time
-
+import warnings
 import numpy as np
+warnings.simplefilter("ignore", DeprecationWarning)
 
 import theano
 import theano.tensor as T
@@ -44,13 +45,13 @@ class SentenceLevelLogLikelihoodLayer(object):
 
         rng = get_numpy_rng()
         # initialize with 0 the weights W as a matrix of shape (n_in, n_out)
-        self.W = theano.shared(value=np.asarray(rng.uniform(low=-2.0, high=2.0, size=(n_in, n_out)),
-                                                 dtype=theano.config.floatX),
-                                name='W', borrow=True)
+#        self.W = theano.shared(value=np.asarray(rng.uniform(low=-2.0, high=2.0, size=(n_in, n_out)),
+#                                                 dtype=theano.config.floatX),
+#                                name='W', borrow=True)
         # initialize the baises b as a vector of n_out 0s
-        self.b = theano.shared(value=np.asarray(rng.uniform(low=-2.0, high=2.0, size=(n_out,)),
-                                                 dtype=theano.config.floatX),
-                               name='b', borrow=True)
+#        self.b = theano.shared(value=np.asarray(rng.uniform(low=-2.0, high=2.0, size=(n_out,)),
+#                                                 dtype=theano.config.floatX),
+#                               name='b', borrow=True)
 
         # trasition matrix of class tags
         # A_{i,j} means the transition prob from class i to class j
@@ -61,7 +62,7 @@ class SentenceLevelLogLikelihoodLayer(object):
     def cost(self, X, y):
 
         # pointwise_score shape (batch_size,max_term_per_sent,n_out)
-        pointwise_score = T.dot(X, self.W) + self.b
+        pointwise_score = X #T.dot(X, self.W) + self.b
         # y_pred_pointwise shape (batch_size,max_term_per_sent)
         # y_pred_pointwise = T.argmax(pointwise_score, axis=2)
 
@@ -77,19 +78,29 @@ class SentenceLevelLogLikelihoodLayer(object):
         # so, \delta_0(k) = logadd(A(0,k))
         # we are calculating delta_t(k) for t=1:T+1 and k = 1:TagNum+1
 
+        trans_mat = T.nnet.softmax(self.tag_trans_matrix)
         def calculate_delta(s, delta_tm1, tag_num, trans_mat):
-            delta = s + T.log(T.sum(T.exp(delta_tm1.dimshuffle('x',0).repeat(tag_num,axis=0) + trans_mat), axis=0))
+            min_delta_tm1 = T.min(delta_tm1)
+
+            delta = s + min_delta_tm1 + T.log(
+                T.sum(
+                    T.exp(
+                        (delta_tm1-min_delta_tm1).dimshuffle('x',0).T.repeat(tag_num,axis=1) + trans_mat
+                    ), axis=0)
+            )
+
             return delta
 
         result, updates = theano.scan(fn = calculate_delta,
                                 sequences = pointwise_score,
                                 outputs_info= [
                                     dict(
-                                        initial = T.log(self.tag_trans_matrix[0, :]),
+                                        initial = trans_mat[0, :],
                                         taps=[-1]
                                     )],
-                                non_sequences=[tag_num, self.tag_trans_matrix[1:,:]]
+                                non_sequences=[tag_num, trans_mat[1:,:]]
         )
+        # theano.printing.Print('Trans')(
         delta = result[-1]
 
         def calculate_score_given_path(i, select_score, score_mat, trans_mat, y):
@@ -100,24 +111,28 @@ class SentenceLevelLogLikelihoodLayer(object):
                                      sequences = T.arange(1,sentence_len),
                                      outputs_info = [
                                          dict(
-                                             initial = self.tag_trans_matrix[0, y[0]] + pointwise_score[0, y[0]],
+                                             initial = trans_mat[0, y[0]] + pointwise_score[0, y[0]],
                                              taps=[-1]
                                          ),
                                         ],
-                                     non_sequences=[pointwise_score, self.tag_trans_matrix, y])
+                                     non_sequences=[pointwise_score, trans_mat, y])
 
         selected_path_score = result[-1]
 
-        return selected_path_score - T.sum(T.exp(delta),axis=0)
+        min_delta = T.min(delta)
+
+        logadd = min_delta + T.log(T.sum(T.exp(delta - min_delta),axis=0))
+
+        return logadd - selected_path_score
 
     def params(self):
         # parameters of the model
         #self.params = [self.W, self.b, self.tag_trans_matrix]
-        return [self.W, self.b, self.tag_trans_matrix]
+        return [ self.tag_trans_matrix]
 
 
     def predict(self, X):
-        pointwise_score = T.dot(X, self.W) + self.b
+        pointwise_score = X # T.dot(X, self.W) + self.b
 
         sentence_len = pointwise_score.shape[0]
         tag_num = self.tag_trans_matrix.shape[1]
@@ -126,20 +141,20 @@ class SentenceLevelLogLikelihoodLayer(object):
         # so, \delta_0(k) = A(0,k)
         # we are calculating delta_t(k) for t=1:T+1 and k = 1:TagNum+1
         # m_t is the class that achieve max obj of the path end at i-th word
-
+        trans_mat = T.nnet.softmax(self.tag_trans_matrix)
         def viterbi_algo(current_word_scores, delta_tm1, tag_num, trans_mat):
 
-            delta = current_word_scores + T.max(T.sum(delta_tm1.dimshuffle('x',0).repeat(tag_num,axis=0) + trans_mat,axis=0 ), axis=0)
+            delta = current_word_scores + T.max(T.sum(delta_tm1.dimshuffle('x',0).T.repeat(tag_num,axis=1) + trans_mat,axis=0 ), axis=0)
             return delta
         
         (delta, updates) = theano.scan(fn = viterbi_algo,
                                 sequences = pointwise_score,
                                 outputs_info= [
                                     dict(
-                                        initial = T.log(self.tag_trans_matrix[0, :]),
+                                        initial = T.log(trans_mat[0, :]),
                                         taps =[-1]
                                     )],
-                                non_sequences=[tag_num, self.tag_trans_matrix[1:,:]]
+                                non_sequences=[tag_num, trans_mat[1:,:]]
         )
 
         return T.argmax(delta, axis= 1)

@@ -72,7 +72,7 @@ class SentenceLevelLogLikelihoodLayer(object):
         #TODO: compute total score of all path (eq, 12, NLP from Scratch)
 
         sentence_len = pointwise_score.shape[0]
-        tag_num = self.tag_trans_matrix.shape[1]
+        tag_num = self.tag_trans_matrix.shape[1].astype('int32')
         # comput logadd via eq, 14, NLP from scratch
         # \delta_t(k) is the logadd of all path of terms 1:t that end with class k
         # so, \delta_0(k) = logadd(A(0,k))
@@ -121,7 +121,10 @@ class SentenceLevelLogLikelihoodLayer(object):
 
         min_delta = T.min(delta)
 
-        logadd = min_delta + T.log(T.sum(T.exp(delta - min_delta),axis=0))
+
+
+
+        logadd = min_delta + T.log(T.sum(T.exp(delta - min_delta)))
 
         return logadd - selected_path_score
 
@@ -132,19 +135,20 @@ class SentenceLevelLogLikelihoodLayer(object):
 
 
     def predict(self, X):
-        pointwise_score = X # T.dot(X, self.W) + self.b
+        pointwise_score =  X # T.dot(X, self.W) + self.b
 
         sentence_len = pointwise_score.shape[0]
-        tag_num = self.tag_trans_matrix.shape[1]
+        tag_num = self.tag_trans_matrix.shape[1].astype('int32')
         # Viterbi algorithm
         # \delta_t(k) is the max  of all path of terms 1:t that end with class k
         # so, \delta_0(k) = A(0,k)
         # we are calculating delta_t(k) for t=1:T+1 and k = 1:TagNum+1
         # m_t is the class that achieve max obj of the path end at i-th word
-        trans_mat = T.nnet.softmax(self.tag_trans_matrix)
+        trans_mat =  T.nnet.softmax(self.tag_trans_matrix)
         def viterbi_algo(current_word_scores, delta_tm1, tag_num, trans_mat):
 
-            delta = current_word_scores + T.max(T.sum(delta_tm1.dimshuffle('x',0).T.repeat(tag_num,axis=1) + trans_mat,axis=0 ), axis=0)
+            delta = current_word_scores + T.max(delta_tm1.dimshuffle('x',0).T.repeat(tag_num,axis=1) + trans_mat, axis=0)
+            #delta = theano.printing.Print('Delta')(delta)
             return delta
 
         delta1 = trans_mat[0, :] + pointwise_score[0,:]
@@ -158,7 +162,8 @@ class SentenceLevelLogLikelihoodLayer(object):
                                 non_sequences=[tag_num, trans_mat[1:,:]]
         )
 
-        return T.argmax(T.concatenate([delta1.dimshuffle('x',0),delta]), axis= 1)
+        delta = T.concatenate([delta1.dimshuffle('x',0),delta])
+        return T.argmax(delta, axis= 1)
 
     def error(self, X, y):
         """Return a float representing the number of errors in the minibatch

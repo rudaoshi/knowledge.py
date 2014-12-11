@@ -80,22 +80,22 @@ class SentenceLevelLogLikelihoodLayer(object):
 
         trans_mat = T.nnet.softmax(self.tag_trans_matrix)
         def calculate_delta(s, delta_tm1, tag_num, trans_mat):
-            min_delta_tm1 = T.min(delta_tm1)
 
-            delta = s + min_delta_tm1 + T.log(
-                T.sum(
-                    T.exp(
-                        (delta_tm1-min_delta_tm1).dimshuffle('x',0).T.repeat(tag_num,axis=1) + trans_mat
-                    ), axis=0)
+            sum_mat = delta_tm1.dimshuffle('x',0).T.repeat(tag_num,axis=1) + trans_mat
+
+            min_sum_mat = T.min(sum_mat)
+
+            delta = s + min_sum_mat + T.log(
+                T.sum(T.exp(sum_mat - min_sum_mat), axis=0)
             )
 
             return delta
 
         result, updates = theano.scan(fn = calculate_delta,
-                                sequences = pointwise_score,
+                                sequences = pointwise_score[1:,:],
                                 outputs_info= [
                                     dict(
-                                        initial = trans_mat[0, :],
+                                        initial = trans_mat[0, :] + pointwise_score[0,:],
                                         taps=[-1]
                                     )],
                                 non_sequences=[tag_num, trans_mat[1:,:]]
@@ -146,18 +146,19 @@ class SentenceLevelLogLikelihoodLayer(object):
 
             delta = current_word_scores + T.max(T.sum(delta_tm1.dimshuffle('x',0).T.repeat(tag_num,axis=1) + trans_mat,axis=0 ), axis=0)
             return delta
-        
+
+        delta1 = trans_mat[0, :] + pointwise_score[0,:]
         (delta, updates) = theano.scan(fn = viterbi_algo,
-                                sequences = pointwise_score,
+                                sequences = pointwise_score[1:,:],
                                 outputs_info= [
                                     dict(
-                                        initial = T.log(trans_mat[0, :]),
+                                        initial = delta1,
                                         taps =[-1]
                                     )],
                                 non_sequences=[tag_num, trans_mat[1:,:]]
         )
 
-        return T.argmax(delta, axis= 1)
+        return T.argmax(T.concatenate([delta1.dimshuffle('x',0),delta]), axis= 1)
 
     def error(self, X, y):
         """Return a float representing the number of errors in the minibatch

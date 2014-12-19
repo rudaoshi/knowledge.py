@@ -62,8 +62,7 @@ class SentenceLevelLogLikelihoodLayer(object):
     def cost(self, X, y):
 
         # pointwise_score shape (batch_size,max_term_per_sent,n_out)
-        pointwise_score = theano.printing.Print('Score')(X) #T.dot(X, self.W) + self.b
-        y = theano.printing.Print("y")(y)
+        pointwise_score = X #T.dot(X, self.W) + self.b
         # y_pred_pointwise shape (batch_size,max_term_per_sent)
         # y_pred_pointwise = T.argmax(pointwise_score, axis=2)
 
@@ -79,15 +78,15 @@ class SentenceLevelLogLikelihoodLayer(object):
         # so, \delta_0(k) = logadd(A(0,k))
         # we are calculating delta_t(k) for t=1:T+1 and k = 1:TagNum+1
 
-        trans_mat = theano.printing.Print('Trans')(T.nnet.softmax(self.tag_trans_matrix))
+        trans_mat = T.nnet.softmax(self.tag_trans_matrix)
         def calculate_delta(s, delta_tm1, tag_num, trans_mat):
 
             sum_mat = delta_tm1.dimshuffle('x',0).T.repeat(tag_num,axis=1) + trans_mat
 
-            max_sum_mat = T.max(sum_mat)
+            min_sum_mat = T.min(sum_mat)
 
-            delta = s + max_sum_mat + T.log(
-                T.sum(T.exp(sum_mat - max_sum_mat), axis=0)
+            delta = s + min_sum_mat + T.log(
+                T.sum(T.exp(sum_mat - min_sum_mat), axis=0)
             )
 
             return delta
@@ -105,7 +104,7 @@ class SentenceLevelLogLikelihoodLayer(object):
         delta = result[-1]
 
         def calculate_score_given_path(i, select_score, score_mat, trans_mat, y):
-            return select_score + score_mat[i, y[i]] + trans_mat[y[i-1],y[i]]
+            return select_score + score_mat[i, y[i]] + trans_mat[y[i-1]+1,y[i]]
 
 
         result, update = theano.scan(fn = calculate_score_given_path,
@@ -116,13 +115,13 @@ class SentenceLevelLogLikelihoodLayer(object):
                                              taps=[-1]
                                          ),
                                         ],
-                                     non_sequences=[pointwise_score, trans_mat[1:,:], y])
+                                     non_sequences=[pointwise_score, trans_mat, y])
 
         selected_path_score = result[-1]
 
-        max_delta = T.max(delta)
+        min_delta = T.min(delta)
 
-        logadd = max_delta + T.log(T.sum(T.exp(delta - max_delta),axis=0))
+        logadd = min_delta + T.log(T.sum(T.exp(delta - min_delta),axis=0))
 
         return logadd - selected_path_score
 
@@ -136,50 +135,30 @@ class SentenceLevelLogLikelihoodLayer(object):
         pointwise_score = X # T.dot(X, self.W) + self.b
 
         sentence_len = pointwise_score.shape[0]
-        tag_num = self.tag_trans_matrix.shape[1].astype("int32")
+        tag_num = self.tag_trans_matrix.shape[1]
         # Viterbi algorithm
         # \delta_t(k) is the max  of all path of terms 1:t that end with class k
         # so, \delta_0(k) = A(0,k)
         # we are calculating delta_t(k) for t=1:T+1 and k = 1:TagNum+1
         # m_t is the class that achieve max obj of the path end at i-th word
         trans_mat = T.nnet.softmax(self.tag_trans_matrix)
-        def viterbi_algo(current_word_scores, path_score_tm1, tag_num, trans_mat):
+        def viterbi_algo(current_word_scores, delta_tm1, tag_num, trans_mat):
 
-            all_prossible_path_score = path_score_tm1.dimshuffle('x',0).T.repeat(tag_num,axis=1) + trans_mat
+            delta = current_word_scores + T.max(T.sum(delta_tm1.dimshuffle('x',0).T.repeat(tag_num,axis=1) + trans_mat,axis=0 ), axis=0)
+            return delta
 
-            # previous tag that got largest score for tag k
-            path_score, track_back = T.max_and_argmax(all_prossible_path_score, axis=0)
-            path_score = path_score + current_word_scores
-            return [path_score, track_back]
-
-        path_score_1 = trans_mat[0, :] + pointwise_score[0,:]
-        ([path_score, track_back], updates) = theano.scan(fn = viterbi_algo,
+        delta1 = trans_mat[0, :] + pointwise_score[0,:]
+        (delta, updates) = theano.scan(fn = viterbi_algo,
                                 sequences = pointwise_score[1:,:],
                                 outputs_info= [
                                     dict(
-                                        initial = path_score_1,
+                                        initial = delta1,
                                         taps =[-1]
-                                    ),
-                                    None],
+                                    )],
                                 non_sequences=[tag_num, trans_mat[1:,:]]
         )
 
-        def back_track_algo(back_track, later_tag):
-            return back_track[later_tag]
-
-        last_answer = path_score[-1].argmax()
-        (answer, updates) = theano.scan(fn = back_track_algo,
-                                sequences = track_back[::-1],
-                                outputs_info= [
-                                    dict(
-                                        initial = last_answer,
-                                        taps =[-1]
-                                    )],
-
-        )
-
-        answer = T.concatenate([answer, last_answer.dimshuffle('x')])
-        return theano.printing.Print('Answer')(answer)
+        return T.argmax(T.concatenate([delta1.dimshuffle('x',0),delta]), axis= 1)
 
     def error(self, X, y):
         """Return a float representing the number of errors in the minibatch

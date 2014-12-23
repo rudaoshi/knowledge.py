@@ -5,7 +5,7 @@ import time
 import theano.tensor as T
 import theano
 
-from knowledge.language.neural_model.sentence_level_log_likelihood_layer import SentenceLevelLogLikelihoodLayer
+from knowledge.machine.neuralnetwork.layer.path_transition_layer import PathTransitionLayer
 from knowledge.machine.neuralnetwork.mlp import HiddenLayer
 from knowledge.machine.neuralnetwork.layer.conv_layer import Conv1DLayer
 from knowledge.machine.neuralnetwork.layer.lookup_table_layer import LookupTableLayer
@@ -109,7 +109,7 @@ class SentenceLevelNeuralModelCore(object):
                 activation=T.tanh)
 
         # TODO we use poitwise likelihood here
-        self.sentce_loglikelihood = SentenceLevelLogLikelihoodLayer(rng,self.hidden_layer.output,
+        self.sentce_loglikelihood = PathTransitionLayer(rng,self.hidden_layer.output,
                 self.y,self.masks,
                 self.max_term_per_sent,
                 self.hidden_layer_size,

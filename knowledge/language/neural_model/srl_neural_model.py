@@ -4,13 +4,12 @@ import time
 
 import theano.tensor as T
 import theano
-from sklearn.metrics import f1_score
 
 from knowledge.machine.neuralnetwork.layer.perception import PerceptionLayer
 from knowledge.machine.neuralnetwork.layer.conv1d_layer import Conv1DLayer
 from knowledge.machine.neuralnetwork.layer.lookup_table_layer import LookupTableLayer
 from knowledge.machine.neuralnetwork.layer.softmax import SoftMaxLayer
-from knowledge.language.neural_model.sentence_level_log_likelihood_layer import SentenceLevelLogLikelihoodLayer
+from knowledge.machine.neuralnetwork.layer.path_transition_layer import PathTransitionLayer
 class SRLNetowrkArchitecture(object):
 
     def __init__(self):
@@ -38,7 +37,7 @@ class SRLNeuralLanguageModel(object):
             word_num = problem_character['word_num']
             POS_type_num = problem_character['POS_type_num']
             SRL_type_num = problem_character['SRL_type_num']
-            loc_type_num = problem_character['loc_type_num']
+#            loc_type_num = problem_character['loc_type_num']
 
             dist_to_verb_num = problem_character['dist_to_verb_num']
             dist_to_word_num = problem_character['dist_to_word_num']
@@ -57,10 +56,10 @@ class SRLNeuralLanguageModel(object):
                 feature_num = nn_architecture.pos_feature_dim,
             )
 
-            self.loc_embedding_layer = LookupTableLayer(
-                table_size = loc_type_num,
-                feature_num = nn_architecture.dist_feature_dim,
-            )
+#            self.loc_embedding_layer = LookupTableLayer(
+#                table_size = loc_type_num,
+#                feature_num = nn_architecture.dist_feature_dim,
+#            )
 
 
             # 5,distance tag vector
@@ -89,7 +88,7 @@ class SRLNeuralLanguageModel(object):
 
             input_dim = nn_architecture.word_feature_dim * 2 + \
                 nn_architecture.pos_feature_dim * 2 + \
-                nn_architecture.dist_feature_dim * 4 + \
+                nn_architecture.dist_feature_dim * 2 + \
                 nn_architecture.conv_output_dim * 4
 
             self.hidden_layers = []
@@ -103,14 +102,15 @@ class SRLNeuralLanguageModel(object):
                 self.hidden_layers.append(hidden_layer)
                 input_dim = output_dim
 
-            last_hidden_layer = SoftMaxLayer(
+            last_hidden_layer = PerceptionLayer(
                     n_in = nn_architecture.hidden_layer_output_dims[-1],
-                    n_out = SRL_type_num)
+                    n_out = SRL_type_num,
+                    activation=T.nnet.sigmoid)
             self.hidden_layers.append(last_hidden_layer)
 
-            self.output_layer = SentenceLevelLogLikelihoodLayer(
-                                        n_in=nn_architecture.hidden_layer_output_dims[-1],
-                                        n_out=SRL_type_num)
+            self.output_layer = PathTransitionLayer(
+                                        class_num=SRL_type_num)
+#            self.output_layer = last_hidden_layer
 
     def __hidden_output(self, X):
 
@@ -160,13 +160,13 @@ class SRLNeuralLanguageModel(object):
             inputs = verb_pos_input
         )
 
-        wordlocvec = self.loc_embedding_layer.output(
-            inputs = word_loc_input,
-        )
+#        wordlocvec = self.loc_embedding_layer.output(
+#            inputs = word_loc_input,
+#        )
 
-        verblocvec = self.loc_embedding_layer.output(
-            inputs = verb_loc_input,
-        )
+#        verblocvec = self.loc_embedding_layer.output(
+#            inputs = verb_loc_input,
+#        )
 
 
         locdiff_verb2word_vec = self.locdiff_word_embedding_layer.output(
@@ -205,11 +205,11 @@ class SRLNeuralLanguageModel(object):
         #                            height = sentence_len, width = feature_dim
         sentence_word_conv = self.word_conv_layer.output(sentence_word_vec.dimshuffle("x","x",0,1))
         sentence_word_conv_max = T.max(sentence_word_conv, axis=2)
-        sentence_word_feature = sentence_word_conv_max.reshape((1, sentence_word_conv_max.shape[1] * sentence_word_conv_max.shape[2])).repeat(batch_size,axis=0)
+        sentence_word_conv_feature = sentence_word_conv_max.reshape((1, sentence_word_conv_max.shape[1] * sentence_word_conv_max.shape[2])).repeat(batch_size,axis=0)
 
         sentence_pos_conv = self.pos_conv_layer.output(sentence_pos_vec.dimshuffle("x","x",0,1))
         sentence_pos_conv_max = T.max(sentence_pos_conv, axis=2)
-        sentence_pos_feature = sentence_pos_conv_max.reshape((1, sentence_pos_conv_max.shape[1] * sentence_pos_conv_max.shape[2])).repeat(batch_size,axis=0)
+        sentence_pos_conv_feature = sentence_pos_conv_max.reshape((1, sentence_pos_conv_max.shape[1] * sentence_pos_conv_max.shape[2])).repeat(batch_size,axis=0)
 
 
 
@@ -217,11 +217,11 @@ class SRLNeuralLanguageModel(object):
         #                        height = sentence_len, width = feature_dim
         other_loc2word_cov = self.locdiff_word_conv_layer.output(other_loc2word_vec.dimshuffle(0,"x", 1, 2))
         other_loc2word_conv_max =  T.max(other_loc2word_cov, axis=2)
-        other_loc2word_feature = other_loc2word_conv_max.reshape((batch_size, other_loc2word_conv_max.shape[1] * other_loc2word_conv_max.shape[2]))
+        other_loc2word_conv_feature = other_loc2word_conv_max.reshape((batch_size, other_loc2word_conv_max.shape[1] * other_loc2word_conv_max.shape[2]))
 
         other_loc2verb_cov = self.locdiff_word_conv_layer.output(other_loc2verb_vec.dimshuffle(0,"x", 1, 2))
         other_loc2verb_conv_max =  T.max(other_loc2verb_cov, axis=2)
-        other_loc2verb_feature = other_loc2verb_conv_max.reshape((batch_size,  other_loc2verb_conv_max.shape[1] * other_loc2verb_conv_max.shape[2]))
+        other_loc2verb_conv_feature = other_loc2verb_conv_max.reshape((batch_size,  other_loc2verb_conv_max.shape[1] * other_loc2verb_conv_max.shape[2]))
 
         hidden_input_feature = T.concatenate(
             (
@@ -229,14 +229,14 @@ class SRLNeuralLanguageModel(object):
                 verbvec,
                 wordPOSvec,
                 verbPOSvec,
-                wordlocvec,
-                verblocvec,
+#                wordlocvec,
+#                verblocvec,
                 locdiff_verb2word_vec,
                 locdiff_word2verb_vec,
-                sentence_word_feature,
-                sentence_pos_feature,
-                other_loc2word_feature,
-                other_loc2verb_feature
+                sentence_word_conv_feature,
+                sentence_pos_conv_feature,
+                other_loc2word_conv_feature,
+                other_loc2verb_conv_feature
             ),
             axis = 1
         )
@@ -271,12 +271,11 @@ class SRLNeuralLanguageModel(object):
                 + self.word_conv_layer.params() \
                 + self.pos_embedding_layer.params() \
                 + self.pos_conv_layer.params() \
-                + self.loc_embedding_layer.params() \
                 + self.locdiff_word_embedding_layer.params() \
                 + self.locdiff_word_conv_layer.params() \
                 + self.locdiff_verb_embedding_layer.params() \
                 + self.locdiff_verb_conv_layer.params()
-
+#                + self.loc_embedding_layer.params() \
 
         for hidden_layer in self.hidden_layers:
             params.extend(hidden_layer.params())

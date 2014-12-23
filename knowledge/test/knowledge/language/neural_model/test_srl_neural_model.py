@@ -10,14 +10,9 @@ from knowledge.language.problem.srl_problem import SRLProblem
 from knowledge.language.neural_model.srl_neural_model import SRLNetowrkArchitecture, NeuralModelHyperParameter, train_srl_neural_model
 from knowledge.machine.neuralnetwork.random import init_rng
 
-def test_srl_neural_model():
+def test_srl_neural_model(DATA_FOLDER):
 
-    if len(sys.argv) > 1:
-        DATA_FOLDER = sys.arv[1]
-    elif sys.platform[:3] == 'win':
-        DATA_FOLDER = "D:\\Experiment\\Projects\\nn_language\\data"  # os.path.expanduser('~')
-    else:
-        DATA_FOLDER = os.path.join(os.path.expanduser('~'),'Data')
+
 
     train_file_path = os.path.join(DATA_FOLDER,'conll05/training-set')
     valid_file_path = os.path.join(DATA_FOLDER,'conll05/dev-set')
@@ -35,27 +30,35 @@ def test_srl_neural_model():
 
     nn_architecture =  SRLNetowrkArchitecture()
 
-    nn_architecture.word_feature_dim = 50
-    nn_architecture.pos_feature_dim = 50
+    nn_architecture.word_feature_dim = 500
+    nn_architecture.pos_feature_dim = 500
     nn_architecture.dist_feature_dim = 50
 
     nn_architecture.conv_window_height = 3
     nn_architecture.conv_output_dim = 50
 
-    nn_architecture.hidden_layer_output_dims = [100,100]
+    nn_architecture.hidden_layer_output_dims = [500,500]
 
 
     hyper_param = NeuralModelHyperParameter()
 
     hyper_param.n_epochs = 1000
-    hyper_param.learning_rate = 0.1
+    hyper_param.learning_rate = 0.1 #1
     hyper_param.learning_rate_decay_ratio = 0.8
-    hyper_param.learning_rate_lowerbound = 0.0001
+    hyper_param.learning_rate_lowerbound = 0.0000
     hyper_param.l1_reg = 0
-    hyper_param.l2_reg = 0.00001
+    hyper_param.l2_reg = 0 #.00001
 
     train_srl_neural_model(train_problem,valid_problem, nn_architecture,hyper_param)
 
 
 if __name__ == "__main__":
-    test_srl_neural_model()
+
+    if len(sys.argv) > 1:
+        DATA_FOLDER = sys.arv[1]
+    elif sys.platform[:3] == 'win':
+        DATA_FOLDER = "D:\\Experiment\\Projects\\nn_language\\data"  # os.path.expanduser('~')
+    else:
+        DATA_FOLDER = os.path.join(os.path.expanduser('~'),'Data')
+
+    test_srl_neural_model(DATA_FOLDER)

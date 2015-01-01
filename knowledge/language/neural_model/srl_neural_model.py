@@ -10,6 +10,9 @@ from knowledge.machine.neuralnetwork.layer.conv1d_layer import Conv1DLayer
 from knowledge.machine.neuralnetwork.layer.lookup_table_layer import LookupTableLayer
 from knowledge.machine.neuralnetwork.layer.softmax import SoftMaxLayer
 from knowledge.machine.neuralnetwork.layer.path_transition_layer import PathTransitionLayer
+
+import numpy
+numpy.set_printoptions(threshold='nan')
 class SRLNetowrkArchitecture(object):
 
     def __init__(self):
@@ -104,10 +107,10 @@ class SRLNeuralLanguageModel(object):
 
 #            last_hidden_layer = SoftMaxLayer(n_in= nn_architecture.hidden_layer_output_dims[-1],
 #                    n_out = SRL_type_num,)
-            # last_hidden_layer = PerceptionLayer(
-            #         n_in = nn_architecture.hidden_layer_output_dims[-1],
-            #         n_out = SRL_type_num,
-            #         activation=T.nnet.sigmoid)
+#            last_hidden_layer = PerceptionLayer(
+#                     n_in = nn_architecture.hidden_layer_output_dims[-1],
+#                     n_out = SRL_type_num,
+#                     activation=T.nnet.sigmoid)
 #            self.hidden_layers.append(last_hidden_layer)
 
 #            self.output_layer = PathTransitionLayer(
@@ -266,9 +269,9 @@ class SRLNeuralLanguageModel(object):
     def predict(self, X):
 
         hidden_output = self.__hidden_output(X)
-        pred_val = theano.printing.Print("pred_y")( self.output_layer.predict(hidden_output))
+        p_y_given_x = self.output_layer.output(hidden_output)
 
-        return pred_val
+        return T.argmax(p_y_given_x, axis=1)
 
     def params(self):
 
@@ -389,6 +392,23 @@ def get_test_func(srl_nn):
     return test_func
 
 
+from theano.compile.ops import as_op
+
+
+@as_op(itypes=[theano.tensor.imatrix],
+       otypes=[theano.tensor.imatrix])
+def numpy_unique(a):
+    return np.unique(a)
+
+def get_pred_stat_func(srl_nn):
+
+    X = T.matrix("X")
+
+    pred = numpy_unique(srl_nn.predict(X))
+
+    return T.eq(T.prod(pred.shape), T.as_tensor_variable(1))
+
+
 import numpy as np
 
 
@@ -459,6 +479,12 @@ def train_srl_neural_model(train_problem, valid_problem, nn_architecture,  hyper
                 str = 'epoch {0}.{1}, cost = {2}, time = {3}'.format(epoch,minibatch,minibatch_avg_cost,end_time - start_time)
                 print str
 
+                param = [x.eval() for x in srl_nn.params()]
+                with open(str(minibatch/100) + ".param.txt" , 'w') as f :
+                    for x in param:
+                        f.write(x)
+
+
             if total_minibatch  % validation_frequency == 0:
 
                 # compute zero-one loss on validation set
@@ -467,10 +493,13 @@ def train_srl_neural_model(train_problem, valid_problem, nn_architecture,  hyper
                 validation_pred = []
                 validation_label = []
                 test_num = 0
+                all_diff = 0
                 for valid_X, valid_y, in valid_problem.get_data_batch():
                     test_num += 1
 
                     error = valid_func(valid_X.astype("float32") ,valid_y.astype('int32'))
+                    diff_predict = get_pred_stat_func(valid_X.astype("float32") ,valid_y.astype('int32'))
+                    all_diff += diff_predict
                     validation_losses += error * valid_X.shape[0]
                     sample_num += valid_X.shape[0]
 
@@ -481,11 +510,13 @@ def train_srl_neural_model(train_problem, valid_problem, nn_architecture,  hyper
                     #    break
                 if sample_num > 0:
                     validation_losses /= sample_num
+                    diff_rate = all_diff/sample_num
 #                this_validation_loss = np.mean(validation_losses)
 #                f1 = f1_score(np.asarray(validation_label),np.asarray(validation_pred),average='weighted')
 
 
-                str = 'minibatch {0}, validation error {1} %%'.format(total_minibatch, validation_losses * 100)
+                str = 'minibatch {0}, validation error {1}% with {2}% diff predicts '.format(
+                    total_minibatch, validation_losses * 100, diff_rate * 100)
                 print str
 
 

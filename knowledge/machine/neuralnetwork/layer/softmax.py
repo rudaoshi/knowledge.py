@@ -121,7 +121,7 @@ class SoftMaxLayer(object):
     def predict(self, X):
         p_y_given_x = self.output(X)
 
-        return theano.printing.Print('Pred')(T.argmax(p_y_given_x, axis=1))
+        return T.argmax(p_y_given_x, axis=1)
 
 
     def cost(self, X, y):

@@ -186,7 +186,7 @@ class PathTransitionLayer(object):
         )
 
         answer = T.concatenate([answer[::-1], last_answer.dimshuffle('x')])
-        return theano.printing.Print('Answer')(answer)
+        return answer
 
     def error(self, X, y):
         """Return a float representing the number of errors in the minibatch

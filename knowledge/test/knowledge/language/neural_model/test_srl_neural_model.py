@@ -47,7 +47,7 @@ def test_srl_neural_model(DATA_FOLDER):
     hyper_param.learning_rate_decay_ratio = 0.8
     hyper_param.learning_rate_lowerbound = 0.0000
     hyper_param.l1_reg = 0
-    hyper_param.l2_reg = 0.0001
+    hyper_param.l2_reg = 0.01
 
     train_srl_neural_model(train_problem,valid_problem, nn_architecture,hyper_param)
 

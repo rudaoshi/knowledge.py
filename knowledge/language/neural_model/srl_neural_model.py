@@ -102,18 +102,18 @@ class SRLNeuralLanguageModel(object):
                 self.hidden_layers.append(hidden_layer)
                 input_dim = output_dim
 
-            last_hidden_layer = SoftMaxLayer(n_in= nn_architecture.hidden_layer_output_dims[-1],
-                    n_out = SRL_type_num,)
+#            last_hidden_layer = SoftMaxLayer(n_in= nn_architecture.hidden_layer_output_dims[-1],
+#                    n_out = SRL_type_num,)
             # last_hidden_layer = PerceptionLayer(
             #         n_in = nn_architecture.hidden_layer_output_dims[-1],
             #         n_out = SRL_type_num,
             #         activation=T.nnet.sigmoid)
-            self.hidden_layers.append(last_hidden_layer)
+#            self.hidden_layers.append(last_hidden_layer)
 
-            self.output_layer = PathTransitionLayer(
-                                        class_num=SRL_type_num)
-#            self.output_layer = SoftMaxLayer(n_in= nn_architecture.hidden_layer_output_dims[-1],
-#                    n_out = SRL_type_num,)
+#            self.output_layer = PathTransitionLayer(
+#                                        class_num=SRL_type_num)
+            self.output_layer = SoftMaxLayer(n_in= nn_architecture.hidden_layer_output_dims[-1],
+                    n_out = SRL_type_num,)
 
     def __hidden_output(self, X):
 

@@ -65,8 +65,8 @@ class PathTransitionLayer(object):
     def cost(self, X, y):
 
         # pointwise_score shape (batch_size,max_term_per_sent,n_out)
-        pointwise_score = theano.printing.Print("X")(X) #T.dot(X, self.W) + self.b
-        y = theano.printing.Print("Y")(y)
+        pointwise_score = X #T.dot(X, self.W) + self.b
+        y = y
 
         # y_pred_pointwise shape (batch_size,max_term_per_sent)
         # y_pred_pointwise = T.argmax(pointwise_score, axis=2)
@@ -124,11 +124,11 @@ class PathTransitionLayer(object):
 
         #result = theano.printing.Print('select_path_score_result')(result)
 
-        selected_path_score = theano.printing.Print("y_score")(result[-1])
+        selected_path_score = result[-1]
 
         max_delta = T.max(delta)
 
-        logadd = theano.printing.Print("logadd")(max_delta + T.log(T.sum(T.exp(delta - max_delta),axis=0)))
+        logadd = max_delta + T.log(T.sum(T.exp(delta - max_delta),axis=0))
 
         return logadd - selected_path_score
 
@@ -198,7 +198,7 @@ class PathTransitionLayer(object):
                   correct label
         """
 
-        y_pred = theano.printing.Print('y_pred')(self.predict(X))
+        y_pred = self.predict(X)
         # check if y has same dimension of y_pred
         assert  y.ndim == y_pred.ndim
 

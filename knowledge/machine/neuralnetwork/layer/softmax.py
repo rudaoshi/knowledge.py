@@ -41,7 +41,7 @@ import numpy
 import theano
 import theano.tensor as T
 
-
+from knowledge.machine.neuralnetwork.random import get_numpy_rng
 class SoftMaxLayer(object):
     """Multi-class Logistic Regression Class
 
@@ -76,8 +76,12 @@ class SoftMaxLayer(object):
                                 name='W', borrow=True)
         elif (n_in is not None and n_out is not None) :
             # initialize with 0 the weights W as a matrix of shape (n_in, n_out)
-            self.W = theano.shared(value=numpy.zeros((n_in, n_out),
-                                                     dtype=theano.config.floatX),
+            rng = get_numpy_rng()
+            W_values = numpy.asarray(rng.uniform(
+                    low=-numpy.sqrt(6. / (n_in + n_out)),
+                    high=numpy.sqrt(6. / (n_in + n_out)),
+                    size=(n_in, n_out)), dtype=theano.config.floatX)
+            self.W = theano.shared(value=W_values,
                                     name='W', borrow=True)
 
         if b:

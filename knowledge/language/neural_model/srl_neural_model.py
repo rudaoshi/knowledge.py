@@ -102,15 +102,18 @@ class SRLNeuralLanguageModel(object):
                 self.hidden_layers.append(hidden_layer)
                 input_dim = output_dim
 
-            last_hidden_layer = PerceptionLayer(
-                    n_in = nn_architecture.hidden_layer_output_dims[-1],
-                    n_out = SRL_type_num,
-                    activation=T.nnet.sigmoid)
+            last_hidden_layer = SoftMaxLayer(n_in= nn_architecture.hidden_layer_output_dims[-1],
+                    n_out = SRL_type_num,)
+            # last_hidden_layer = PerceptionLayer(
+            #         n_in = nn_architecture.hidden_layer_output_dims[-1],
+            #         n_out = SRL_type_num,
+            #         activation=T.nnet.sigmoid)
             self.hidden_layers.append(last_hidden_layer)
 
             self.output_layer = PathTransitionLayer(
                                         class_num=SRL_type_num)
-#            self.output_layer = last_hidden_layer
+#            self.output_layer = SoftMaxLayer(n_in= nn_architecture.hidden_layer_output_dims[-1],
+#                    n_out = SRL_type_num,)
 
     def __hidden_output(self, X):
 
@@ -263,7 +266,9 @@ class SRLNeuralLanguageModel(object):
     def predict(self, X):
 
         hidden_output = self.__hidden_output(X)
-        return self.output_layer.predict(hidden_output)
+        pred_val = theano.printing.Print("pred_y")( self.output_layer.predict(hidden_output))
+
+        return pred_val
 
     def params(self):
 
@@ -443,6 +448,7 @@ def train_srl_neural_model(train_problem, valid_problem, nn_architecture,  hyper
 
             start_time = time.clock()
 
+
             minibatch_avg_cost= train_func(X.astype("float32"), y.astype('int32'))
 
             end_time = time.clock()
@@ -463,6 +469,7 @@ def train_srl_neural_model(train_problem, valid_problem, nn_architecture,  hyper
                 test_num = 0
                 for valid_X, valid_y, in valid_problem.get_data_batch():
                     test_num += 1
+
                     error = valid_func(valid_X.astype("float32") ,valid_y.astype('int32'))
                     validation_losses += error * valid_X.shape[0]
                     sample_num += valid_X.shape[0]

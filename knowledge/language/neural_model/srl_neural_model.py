@@ -107,18 +107,18 @@ class SRLNeuralLanguageModel(object):
 
 #            last_hidden_layer = SoftMaxLayer(n_in= nn_architecture.hidden_layer_output_dims[-1],
 #                    n_out = SRL_type_num,)
-#            last_hidden_layer = PerceptionLayer(
-#                     n_in = nn_architecture.hidden_layer_output_dims[-1],
-#                     n_out = SRL_type_num,
-#                     activation=T.nnet.sigmoid)
-#            self.hidden_layers.append(last_hidden_layer)
+            last_hidden_layer = PerceptionLayer(
+                     n_in = nn_architecture.hidden_layer_output_dims[-1],
+                     n_out = SRL_type_num,
+                     activation=T.nnet.sigmoid)
+            self.hidden_layers.append(last_hidden_layer)
 
-#            self.output_layer = PathTransitionLayer(
-#                                        class_num=SRL_type_num)
-            self.output_layer = SoftMaxLayer(n_in= nn_architecture.hidden_layer_output_dims[-1],
-                    n_out = SRL_type_num,)
+            self.output_layer = PathTransitionLayer(
+                                        class_num=SRL_type_num)
+#            self.output_layer = SoftMaxLayer(n_in= nn_architecture.hidden_layer_output_dims[-1],
+#                    n_out = SRL_type_num,)
 
-    def __hidden_output(self, X):
+    def hidden_output(self, X):
 
 
 
@@ -255,23 +255,21 @@ class SRLNeuralLanguageModel(object):
 
     def output(self, X):
 
-        hidden_output = self.__hidden_output(X)
+        hidden_output = self.hidden_output(X)
         return self.output_layer.output(hidden_output)
 
     def cost(self, X, y):
-        hidden_output = self.__hidden_output(X)
+        hidden_output = self.hidden_output(X)
         return self.output_layer.cost(hidden_output, y)
 
     def error(self, X,y ):
-        hidden_output = self.__hidden_output(X)
+        hidden_output = self.hidden_output(X)
         return self.output_layer.error(hidden_output, y)
 
     def predict(self, X):
 
-        hidden_output = self.__hidden_output(X)
-        p_y_given_x = self.output_layer.output(hidden_output)
-
-        return T.argmax(p_y_given_x, axis=1)
+        hidden_output = self.hidden_output(X)
+        return self.output_layer.predict(hidden_output)
 
     def params(self):
 
@@ -395,10 +393,10 @@ def get_test_func(srl_nn):
 from theano.compile.ops import as_op
 
 
-@as_op(itypes=[theano.tensor.imatrix],
-       otypes=[theano.tensor.imatrix])
+@as_op(itypes=[theano.tensor.lvector],
+       otypes=[theano.tensor.lvector])
 def numpy_unique(a):
-    return np.unique(a)
+    return numpy.unique(a)
 
 def get_pred_stat_func(srl_nn):
 
@@ -406,8 +404,13 @@ def get_pred_stat_func(srl_nn):
 
     pred = numpy_unique(srl_nn.predict(X))
 
-    return T.eq(T.prod(pred.shape), T.as_tensor_variable(1))
+    all_same = T.eq(T.prod(pred.shape), T.as_tensor_variable(1))
 
+    test_func = theano.function(
+            inputs=[X],
+            outputs=all_same)
+
+    return test_func
 
 import numpy as np
 
@@ -457,6 +460,8 @@ def train_srl_neural_model(train_problem, valid_problem, nn_architecture,  hyper
 
     valid_func = get_test_func(srl_nn)
 
+    stat_func = get_pred_stat_func(srl_nn)
+
     while (epoch < hyper_param.n_epochs) and (not done_looping):
         epoch = epoch + 1
 
@@ -476,16 +481,20 @@ def train_srl_neural_model(train_problem, valid_problem, nn_architecture,  hyper
             minibatch += 1
             total_minibatch += 1
             if minibatch % 100 == 0:
-                str = 'epoch {0}.{1}, cost = {2}, time = {3}'.format(epoch,minibatch,minibatch_avg_cost,end_time - start_time)
-                print str
 
-                param = [x.eval() for x in srl_nn.params()]
-                with open(str(minibatch/100) + ".param.txt" , 'w') as f :
-                    for x in param:
-                        f.write(x)
+                debug_info = 'epoch {0}.{1}, cost = {2}, time = {3}'.format(epoch,minibatch,minibatch_avg_cost,end_time - start_time)
+                print debug_info
+                numpy.savetxt(str(minibatch) +  ".X.txt",
+                              numpy.asarray(srl_nn.hidden_output(T.shared(X)).eval()))
+                numpy.savetxt(str(minibatch) +  ".y.txt",
+                              y)
 
 
             if total_minibatch  % validation_frequency == 0:
+
+                for idx, x in enumerate(srl_nn.params()):
+                    numpy.savetxt(str(total_minibatch/validation_frequency) + "." + str(idx) + ".param.txt",
+                                numpy.asarray(x.eval()).flatten())
 
                 # compute zero-one loss on validation set
                 validation_losses = 0
@@ -493,13 +502,15 @@ def train_srl_neural_model(train_problem, valid_problem, nn_architecture,  hyper
                 validation_pred = []
                 validation_label = []
                 test_num = 0
-                all_diff = 0
+                all_same = 0
+
+                same_rate = 0
                 for valid_X, valid_y, in valid_problem.get_data_batch():
                     test_num += 1
 
                     error = valid_func(valid_X.astype("float32") ,valid_y.astype('int32'))
-                    diff_predict = get_pred_stat_func(valid_X.astype("float32") ,valid_y.astype('int32'))
-                    all_diff += diff_predict
+                    same_predict = stat_func(valid_X.astype("float32"))
+                    all_same += same_predict
                     validation_losses += error * valid_X.shape[0]
                     sample_num += valid_X.shape[0]
 
@@ -510,14 +521,14 @@ def train_srl_neural_model(train_problem, valid_problem, nn_architecture,  hyper
                     #    break
                 if sample_num > 0:
                     validation_losses /= sample_num
-                    diff_rate = all_diff/sample_num
+                    same_rate = all_same/float(test_num)
 #                this_validation_loss = np.mean(validation_losses)
 #                f1 = f1_score(np.asarray(validation_label),np.asarray(validation_pred),average='weighted')
 
 
-                str = 'minibatch {0}, validation error {1}% with {2}% diff predicts '.format(
-                    total_minibatch, validation_losses * 100, diff_rate * 100)
-                print str
+                valid_info = 'minibatch {0}, validation error {1}% with {2}% same predicts '.format(
+                    total_minibatch, validation_losses * 100, same_rate * 100)
+                print valid_info
 
 
                 # if we got the best validation score until now

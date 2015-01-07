@@ -16,7 +16,7 @@ import theano.tensor as T
 from knowledge.machine.neuralnetwork.random import get_numpy_rng
 
 
-class PathTransitionLayer(object):
+class BatchPathTransitionLayer(object):
     """Multi-class Logistic Regression Class
 
     The logistic regression is fully described by a weight matrix :math:`W`
@@ -64,6 +64,10 @@ class PathTransitionLayer(object):
 
     def cost(self, X, y):
 
+        sentence_len = X[0,0].astype("int32")
+
+        # X and y are {sentence_len} group of paths
+
         # pointwise_score shape (batch_size,max_term_per_sent,n_out)
         pointwise_score = X #T.dot(X, self.W) + self.b
 
@@ -83,54 +87,60 @@ class PathTransitionLayer(object):
         # we are calculating delta_t(k) for t=1:T+1 and k = 1:TagNum+1
 
         trans_mat = self.tag_trans_matrix # T.nnet.softmax(self.tag_trans_matrix)
-        def calculate_delta(i, delta_tm1, pointwise_score, tag_num, trans_mat):
+        def calculate_delta(i, delta_tm1, score_mat, sentence_len, tag_num, trans_mat_):
 
-            sum_mat = delta_tm1.dimshuffle('x',0).T.repeat(tag_num,axis=1) + trans_mat
+            if i % sentence_len == 0:
+                return trans_mat[0,:] + score_mat[i,:]
+            else:
+                sum_mat = delta_tm1.dimshuffle('x',0).T.repeat(tag_num,axis=1) + trans_mat_[1:,:]
 
-            max_sum_mat = T.mean(sum_mat)
+                max_sum_mat = T.mean(sum_mat)
 
-            delta = pointwise_score[i,:] + max_sum_mat + T.log(
-                T.sum(T.exp(sum_mat - max_sum_mat), axis=0)
-            )
+                delta = score_mat[i,:] + max_sum_mat + T.log(
+                    T.sum(T.exp(sum_mat - max_sum_mat), axis=0)
+                )
 
-            return delta
+                return delta
 
         result, updates = theano.scan(fn = calculate_delta,
-                                sequences = T.arange(1, pointwise_score.shape[0]),
+                                sequences = T.arange(0, pointwise_score.shape[0]),
                                 outputs_info= [
                                     dict(
-                                        initial = trans_mat[0, :] + pointwise_score[0,:],
+                                        initial = np.zeros((tag_num,)),
                                         taps=[-1]
                                     )],
-                                non_sequences=[pointwise_score, tag_num, trans_mat[1:,:]]
+                                non_sequences=[pointwise_score, sentence_len, tag_num, trans_mat]
         )
         # theano.printing.Print('Trans')(
-        delta = result[-1]
+        delta = result[range(0,pointwise_score.shape[0],step=sentence_len)]
 
-        def calculate_score_given_path(i, select_score, score_mat, trans_mat_, y):
-            return select_score + score_mat[i, y[i]] + trans_mat_[y[i-1] ,y[i]]
+        def calculate_score_given_path(i, score_tm1, score_mat, trans_mat_, y):
+            if i % sentence_len == 0:
+                return trans_mat[0,:] + score_mat[i,:]
+            else:
+                return score_tm1 + score_mat[i, y[i]] + trans_mat_[y[i-1]+1 ,y[i]]
 
 
         results, updates = theano.scan(fn = calculate_score_given_path,
-                                     sequences = T.arange(1,pointwise_score.shape[0]),
+                                     sequences = T.arange(0,pointwise_score.shape[0]),
                                      outputs_info = [
                                          dict(
-                                             initial = trans_mat[0, y[0]] + pointwise_score[0, y[0]],
+                                             initial = 0,
                                              taps=[-1]
                                          ),
                                         ],
-                                     non_sequences=[pointwise_score, trans_mat[1:,:], y])
+                                     non_sequences=[pointwise_score, trans_mat, y])
 
         #result = theano.printing.Print('select_path_score_result')(result)
 
 
-        selected_path_score = results[-1]
+        selected_path_score = results[range(0,pointwise_score.shape[0],step=sentence_len)]
 
-        max_delta = T.mean(delta)
+        max_delta = T.mean(delta, axis=1)
 
-        logadd = max_delta + T.log(T.sum(T.exp(delta - max_delta),axis=0))
+        logadd = max_delta + T.log(T.sum(T.exp(delta - max_delta),axis=1))
 
-        return  logadd- T.sum(pointwise_score[T.arange(0,pointwise_score.shape[0]), y])
+        return T.mean(logadd - selected_path_score)
 
     def params(self):
         # parameters of the model

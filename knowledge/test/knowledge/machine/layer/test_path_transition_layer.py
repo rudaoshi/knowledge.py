@@ -60,10 +60,47 @@ def test_path_transition_layer():
 
     assert not np.any(y_pred - bruteforce_y_pred)
 
+def test_path_transition_layer2():
+
+    init_rng()
+    sample_num = 5
+    class_num = 10
+
+    y1 = (9,9,9,9,9)
+    X1 = np.zeros((sample_num, class_num))
+    X1[range(sample_num),y1] = 1
+
+    y2 = (0,1,2,3,4)
+    X2 = np.zeros((sample_num, class_num))
+    X2[range(sample_num),y2] = 1
+
+    layer = PathTransitionLayer(class_num)
+    cost1 = layer.cost(X1,y1).eval()
+    cost2 = layer.cost(X2,y2).eval()
+
+    cost1_2 = layer.cost(X1,y2).eval()
+    cost2_1 = layer.cost(X2,y1).eval()
+
+    y_pred1 = layer.predict(X1).eval()
+    y_pred2 = layer.predict(X2).eval()
+
+    print "X1 = ", X1
+    print "X2 = ", X2
+
+    print "y1 = ", y1
+    print "y2 = ", y2
+
+    print "cost1 = ", cost1
+    print "cost2 = ", cost2
+    print "cost1_2 = ", cost1_2
+    print "cost2_1 = ", cost2_1
+    print "y_pred1 = ", y_pred1
+    print "y_pred2 = ", y_pred2
+
 
 if __name__ == "__main__":
 
-    test_path_transition_layer()
+    test_path_transition_layer2()
 
 
 

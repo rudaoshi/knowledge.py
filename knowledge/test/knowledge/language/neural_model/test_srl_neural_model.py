@@ -35,7 +35,7 @@ def test_srl_neural_model(DATA_FOLDER):
     nn_architecture.dist_feature_dim = 50
 
     nn_architecture.conv_window_height = 3
-    nn_architecture.conv_output_dim = 50
+    nn_architecture.conv_output_dim = 5
 
     nn_architecture.hidden_layer_output_dims = [100,100]
 
@@ -43,11 +43,11 @@ def test_srl_neural_model(DATA_FOLDER):
     hyper_param = NeuralModelHyperParameter()
 
     hyper_param.n_epochs = 1000
-    hyper_param.learning_rate = 0.01 #1
+    hyper_param.learning_rate = 0.001 #1
     hyper_param.learning_rate_decay_ratio = 0.8
     hyper_param.learning_rate_lowerbound = 0.0000
     hyper_param.l1_reg = 0
-    hyper_param.l2_reg = 0.01
+    hyper_param.l2_reg = 0
 
     train_srl_neural_model(train_problem,valid_problem, nn_architecture,hyper_param)
 

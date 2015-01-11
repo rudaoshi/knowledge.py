@@ -130,7 +130,7 @@ class PathTransitionLayer(object):
 
         logadd = max_delta + T.log(T.sum(T.exp(delta - max_delta),axis=0))
 
-        return  logadd- T.sum(pointwise_score[T.arange(0,pointwise_score.shape[0]), y])
+        return  logadd - selected_path_score # T.sum(pointwise_score[T.arange(0,pointwise_score.shape[0]), y])
 
     def params(self):
         # parameters of the model

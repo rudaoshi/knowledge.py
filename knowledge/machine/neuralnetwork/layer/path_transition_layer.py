@@ -135,7 +135,8 @@ class PathTransitionLayer(object):
     def params(self):
         # parameters of the model
         #self.params = [self.W, self.b, self.tag_trans_matrix]
-        return []#[ self.tag_trans_matrix]
+        #return []
+        return [ self.tag_trans_matrix]
 
 
     def predict(self, X):

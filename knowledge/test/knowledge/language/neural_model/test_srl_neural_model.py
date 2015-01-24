@@ -13,8 +13,8 @@ from knowledge.machine.neuralnetwork.random import init_rng
 def test_srl_neural_model(DATA_FOLDER):
 
 
-
     train_file_path = os.path.join(DATA_FOLDER,'conll05/training-set')
+    #train_file_path = os.path.join(DATA_FOLDER,'conll05/dev-set')
     valid_file_path = os.path.join(DATA_FOLDER,'conll05/dev-set')
 
     train_corpora = Conll05Corpora()

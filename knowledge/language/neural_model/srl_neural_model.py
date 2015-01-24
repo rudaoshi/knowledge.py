@@ -452,7 +452,7 @@ def train_srl_neural_model(train_problem, valid_problem, nn_architecture,  hyper
     epoch = 0
     done_looping = False
 
-    validation_frequency = 1000
+    validation_frequency = 20000
 
     total_minibatch = 0
 
@@ -484,10 +484,12 @@ def train_srl_neural_model(train_problem, valid_problem, nn_architecture,  hyper
 
                 debug_info = 'epoch {0}.{1}, cost = {2}, time = {3}'.format(epoch,minibatch,minibatch_avg_cost,end_time - start_time)
                 print debug_info
+            '''
                 numpy.savetxt(str(minibatch) +  ".X.txt",
                               numpy.asarray(srl_nn.hidden_output(T.shared(X)).eval()))
                 numpy.savetxt(str(minibatch) +  ".y.txt",
                               y)
+            '''
 
 
             if total_minibatch  % validation_frequency == 0:
@@ -505,6 +507,8 @@ def train_srl_neural_model(train_problem, valid_problem, nn_architecture,  hyper
                 all_same = 0
 
                 same_rate = 0
+
+                start_time = time.clock()
                 for valid_X, valid_y, in valid_problem.get_data_batch():
                     test_num += 1
 
@@ -519,6 +523,10 @@ def train_srl_neural_model(train_problem, valid_problem, nn_architecture,  hyper
 
                     #if test_num >= 100:
                     #    break
+                end_time = time.clock()
+                debug_info = 'valid {0}.{1}, time = {2}'.format(epoch,minibatch,end_time - start_time)
+                print debug_info
+
                 if sample_num > 0:
                     validation_losses /= sample_num
                     same_rate = all_same/float(test_num)

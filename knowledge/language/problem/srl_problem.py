@@ -138,6 +138,7 @@ class SRLProblem(Problem):
                 for l1, l2 in zip(label, label[1:]):
                     trans_mat_prior[l1,l2] += 1
         mat_sum = np.sum(trans_mat_prior, axis=1).reshape((class_num + 1, 1))
+        mat_sum += .1
         mat_sum = np.repeat(mat_sum, class_num, axis=1)
         trans_mat_prior = trans_mat_prior / mat_sum
         return trans_mat_prior

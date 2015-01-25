@@ -28,7 +28,7 @@ def test_srl_neural_model(DATA_FOLDER):
 
     init_rng()
 
-    nn_architecture =  SRLNetowrkArchitecture()
+    nn_architecture = SRLNetowrkArchitecture()
 
     nn_architecture.word_feature_dim = 50
     nn_architecture.pos_feature_dim = 50

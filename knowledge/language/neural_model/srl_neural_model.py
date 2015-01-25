@@ -33,7 +33,7 @@ class SRLNeuralLanguageModel(object):
 
 
     def __init__(self, problem_character = None,
-                 nn_architecture = None):
+                 nn_architecture = None, trans_mat_prior = None):
         # x shape: [mini-batch size, feature-dim].
         # In this problem [mini-batch feature-dim]
 
@@ -116,7 +116,8 @@ class SRLNeuralLanguageModel(object):
             self.hidden_layers.append(last_hidden_layer)
 
             self.output_layer = PathTransitionLayer(
-                                        class_num=SRL_type_num)
+                                        class_num=SRL_type_num,
+                                        trans_mat_prior= trans_mat_prior)
 #            self.output_layer = SoftMaxLayer(n_in= nn_architecture.hidden_layer_output_dims[-1],
 #                    n_out = SRL_type_num,)
 
@@ -445,9 +446,9 @@ def train_srl_neural_model(train_problem, valid_problem, nn_architecture,  hyper
 
 
     problem_character = train_problem.get_problem_property()
+    trans_mat_prior = train_problem.get_trans_mat_prior()
 
-
-    srl_nn = SRLNeuralLanguageModel(problem_character, nn_architecture)
+    srl_nn = SRLNeuralLanguageModel(problem_character, nn_architecture, trans_mat_prior)
 
     patience = 10000  # look as this many examples regardless
     patience_increase = 2  # wait this much longer when a new best is

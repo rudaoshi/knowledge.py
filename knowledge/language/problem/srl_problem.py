@@ -124,6 +124,24 @@ class SRLProblem(Problem):
 
                 yield X, y
 
+    def get_trans_mat_prior(self):
+        class_num = len(srltypes.SrlTypes.SRLTYPE_ID_MAP)
+        trans_mat_prior = np.zeros((class_num + 1, class_num))
+        for sentence in self.__corpora.sentences():
+            label = [ SrlTypes.SRLTYPE_ID_MAP[SrlTypes.PADDING_SRL_TYPE] ] * sentence.word_num()
+            for srl in sentence.srl_structs():
+                for role in srl.roles():
+                    for pos in range(role.start_pos, role.end_pos + 1):
+                        label[pos] = SrlTypes.SRLTYPE_ID_MAP[role.type]
+                for l in label:
+                    trans_mat_prior[0,l] += 1
+                for l1, l2 in zip(label, label[1:]):
+                    trans_mat_prior[l1,l2] += 1
+        mat_sum = np.sum(trans_mat_prior, axis=1).reshape((class_num + 1))
+        mat_sum = np.repeat(mat_sum, class_num, axis=1)
+        trans_mat_prior = trans_mat_prior / mat_sum
+        return trans_mat_prior
+
 
 
 

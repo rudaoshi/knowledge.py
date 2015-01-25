@@ -8,19 +8,21 @@ import os
 
 class LookupTableLayer(object):
 
-    def __init__(self, embeddings = None, table_size = None, feature_num = None):
+    def __init__(self, name, embeddings = None, table_size = None, feature_num = None):
 
+        assert isinstance(name, str) and len(name) > 0
+        self.name = name
         self._table_size = table_size
         self._feature_num = feature_num
 
         if embeddings is not None :
 
             self._embeddings = theano.shared(embeddings.astype(theano.config.floatX),
-                                            name = 'embeddings',
+                                            name = 'embeddings_%s' % (self.name),
                                             borrow=True)
         elif  self._table_size is not None and self._feature_num is not None:
             self._embeddings = theano.shared(np.random.random((self._table_size, feature_num)).astype(theano.config.floatX),
-                                            name = 'embeddings',
+                                            name = 'embeddings_%s' % (self.name),
                                             borrow=True)
 
         else:

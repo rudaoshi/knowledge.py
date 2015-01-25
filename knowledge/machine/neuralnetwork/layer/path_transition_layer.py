@@ -25,7 +25,7 @@ class PathTransitionLayer(object):
     determine a class membership probability.
     """
 
-    def __init__(self, class_num, trans_mat_prior = None):
+    def __init__(self, name, class_num, trans_mat_prior = None):
         """ Initialize the parameters of the logistic regression
 
         :type input: theano.tensor.TensorType
@@ -42,7 +42,8 @@ class PathTransitionLayer(object):
 
         """
 
-
+        assert isinstance(name, str) and len(name) > 0
+        self.name = name
         rng = get_numpy_rng()
         # initialize with 0 the weights W as a matrix of shape (n_in, n_out)
 #        self.W = theano.shared(value=np.asarray(rng.uniform(low=-2.0, high=2.0, size=(n_in, n_out)),
@@ -61,10 +62,10 @@ class PathTransitionLayer(object):
 #                                              name='tag_trans', borrow = True)
         if trans_mat_prior == None:
             self.tag_trans_matrix = theano.shared(value = np.zeros((class_num + 1 ,class_num ), dtype=theano.config.floatX),
-                                                  name='tag_trans', borrow = True)
+                                                  name='path_layer_trans_%s' % (self.name), borrow = True)
         else:
             self.tag_trans_matrix = theano.shared(value = np.asarray(trans_mat_prior, dtype=theano.config.floatX),
-                                                  name='tag_trans', borrow = True)
+                                                  name='path_layer_trans_%s' % (self.name), borrow = True)
 
 
     def cost(self, X, y):

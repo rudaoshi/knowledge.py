@@ -9,8 +9,8 @@ import os
 def append_prop_text(fw_gold, fw_pred, X, y, pred):
     assert len(y) == len(pred)
     sentence_len = len(y)
-    for i in xrange(sentence_len):
-        if y[i] == 39: pred[i] = 39
+    # for i in xrange(sentence_len):
+    #     if y[i] == 39: pred[i] = 39
     def line(X, y):
         for i in xrange(sentence_len):
             if y[i] in [0, 1, 55]:

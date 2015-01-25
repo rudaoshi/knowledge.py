@@ -31,7 +31,7 @@ import theano.tensor as T
 from knowledge.machine.neuralnetwork.random import get_numpy_rng
 
 class PerceptionLayer(object):
-    def __init__(self, W=None, b=None, n_in = None, n_out = None,
+    def __init__(self, name, W=None, b=None, n_in = None, n_out = None,
                  activation=T.tanh):
         """
         Typical hidden layer of a MLP: units are fully-connected and have
@@ -72,6 +72,8 @@ class PerceptionLayer(object):
         #        We have no info for other function, so we use the same as
         #        tanh.
 
+        assert isinstance(name, str) and len(name) > 0
+        self.name = name
         if W is None and n_in is not None and n_out is not None :
             rng = get_numpy_rng()
             W_values = numpy.asarray(rng.uniform(
@@ -81,11 +83,11 @@ class PerceptionLayer(object):
             if activation == theano.tensor.nnet.sigmoid:
                 W_values *= 4
 
-            W = theano.shared(value=W_values, name='W', borrow=True)
+            W = theano.shared(value=W_values, name='perception_W_%s' % (self.name), borrow=True)
 
         if b is None and n_in is not None and n_out is not None :
             b_values = numpy.zeros((n_out,), dtype=theano.config.floatX)
-            b = theano.shared(value=b_values, name='b', borrow=True)
+            b = theano.shared(value=b_values, name='perception_b_%s' % (self.name), borrow=True)
 
         self.W = W
         self.b = b

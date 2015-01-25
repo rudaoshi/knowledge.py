@@ -13,8 +13,10 @@ class Conv1DLayer(object):
     Note : A faster version for GPU is avaliable at https://groups.google.com/forum/#!topic/theano-users/JJHZmuUDdPE
     '''
 
-    def __init__(self, init_W=None,init_b=None, tensor_shape = None):
+    def __init__(self, name, init_W=None,init_b=None, tensor_shape = None):
 
+        assert isinstance(name, str) and len(name) > 0
+        self.name = name
         if init_W is not None and tensor_shape is not None:
             assert init_W.shape == tensor_shape, "init tensor size is not equal to the given tensor shape"
 
@@ -26,26 +28,26 @@ class Conv1DLayer(object):
         if init_W is None and tensor_shape is None:
             self.W = None
         elif init_W is not None:
-            self.W = theano.shared(init_W.astype(theano.config.floatX) )
+            self.W = theano.shared(init_W.astype(theano.config.floatX), name="conv1d_w_%s" % (self.name), borrow=True)
         elif init_W is None:
             (output_feature_map_num, input_feature_map_num, conv_window , filter_width) = tensor_shape
             w_bound = np.sqrt(input_feature_map_num * filter_width)
             init_W = rng.uniform(low=-1.0 / w_bound, high=1.0 / w_bound, size=tensor_shape)
 
-            self.W = theano.shared(init_W.astype(theano.config.floatX) )
+            self.W = theano.shared(init_W.astype(theano.config.floatX), name="conv1d_w_%s" % (self.name), borrow=True)
 
 
 
         if init_b is None and tensor_shape is None:
             self.b = None
         elif init_b is not None:
-            self.b = theano.shared(init_b.astype(theano.config.floatX) )
+            self.b = theano.shared(init_b.astype(theano.config.floatX), name="conv1d_b_%s" % (self.name), borrow=True)
         elif init_b is None:
             (output_feature_map_num, input_feature_map_num, conv_window , filter_width) = tensor_shape
             b_shape = (output_feature_map_num,)
             init_b = rng.uniform(low=-.5, high=.5, size=b_shape)
 
-            self.b = theano.shared(init_b.astype(theano.config.floatX) )
+            self.b = theano.shared(init_b.astype(theano.config.floatX), name="conv1d_b_%s" % (self.name), borrow=True)
 
 
     def output(self, input):

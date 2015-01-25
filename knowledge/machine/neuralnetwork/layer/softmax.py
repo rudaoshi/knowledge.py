@@ -51,7 +51,7 @@ class SoftMaxLayer(object):
     determine a class membership probability.
     """
 
-    def __init__(self, W = None, b = None, n_in = None, n_out = None):
+    def __init__(self, name, W = None, b = None, n_in = None, n_out = None):
         """ Initialize the parameters of the logistic regression
 
         :type input: theano.tensor.TensorType
@@ -71,9 +71,11 @@ class SoftMaxLayer(object):
 
 #        assert param_valid, "The construction param is not valid"
 
+        assert isinstance(name, str) and len(name) > 0
+        self.name = name
         if W:
             self.W = theano.shared(value=W.astype(theano.config.floatX),
-                                name='W', borrow=True)
+                                name='softmax_W_%s' % (self.name), borrow=True)
         elif (n_in is not None and n_out is not None) :
             # initialize with 0 the weights W as a matrix of shape (n_in, n_out)
             rng = get_numpy_rng()
@@ -82,16 +84,16 @@ class SoftMaxLayer(object):
                     high=numpy.sqrt(6. / (n_in + n_out)),
                     size=(n_in, n_out)), dtype=theano.config.floatX)
             self.W = theano.shared(value=W_values,
-                                    name='W', borrow=True)
+                                    name='softmax_W_%s' % (self.name), borrow=True)
 
         if b:
             self.b = theano.shared(value=b.astype(theano.config.floatX),
-                                name='b', borrow=True)
+                                name='softmax_b_%s' % (self.name), borrow=True)
         elif (n_in is not None and n_out is not None) :
             # initialize the baises b as a vector of n_out 0s
             self.b = theano.shared(value=numpy.zeros((n_out,),
                                                  dtype=theano.config.floatX),
-                               name='b', borrow=True)
+                               name='softmax_b_%s' % (self.name), borrow=True)
 
 
     def __getstate__(self):

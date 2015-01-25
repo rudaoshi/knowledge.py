@@ -10,7 +10,7 @@ from knowledge.language.problem.srl_problem import SRLProblem
 from knowledge.language.neural_model.srl_neural_model import SRLNetowrkArchitecture, NeuralModelHyperParameter, train_srl_neural_model
 from knowledge.machine.neuralnetwork.random import init_rng
 
-def test_srl_neural_model(DATA_FOLDER):
+def test_srl_neural_model(DATA_FOLDER, model_path = None, model_tag = None):
 
 
     #train_file_path = os.path.join(DATA_FOLDER,'conll05/training-set')
@@ -49,16 +49,25 @@ def test_srl_neural_model(DATA_FOLDER):
     hyper_param.l1_reg = 0
     hyper_param.l2_reg = 0
 
-    train_srl_neural_model(train_problem,valid_problem, nn_architecture,hyper_param)
+    train_srl_neural_model(train_problem,valid_problem, nn_architecture,hyper_param, model_path, model_tag)
 
 
 if __name__ == "__main__":
 
     if len(sys.argv) > 1:
-        DATA_FOLDER = sys.arv[1]
+        DATA_FOLDER = sys.argv[1]
     elif sys.platform[:3] == 'win':
         DATA_FOLDER = "D:\\Experiment\\Projects\\nn_language\\data"  # os.path.expanduser('~')
     else:
         DATA_FOLDER = os.path.join(os.path.expanduser('~'),'Data')
 
-    test_srl_neural_model(DATA_FOLDER)
+    if len(sys.argv) > 2:
+        model_path = sys.argv[2]
+    else:
+        model_path = None
+    if len(sys.argv) > 3:
+        model_tag = sys.argv[3]
+    else:
+        model_tag = None
+
+    test_srl_neural_model(DATA_FOLDER, model_path, model_tag)

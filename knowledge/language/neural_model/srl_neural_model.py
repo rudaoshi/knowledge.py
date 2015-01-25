@@ -1,5 +1,6 @@
 __author__ = 'Huang'
 
+import os, sys
 import time
 
 import theano.tensor as T
@@ -49,14 +50,14 @@ class SRLNeuralLanguageModel(object):
 
             # 1,word vector
             #   output shape: (batch size,sentence_len, word_feature_num)
-            self.word_embedding_layer = LookupTableLayer(
+            self.word_embedding_layer = LookupTableLayer('word_embedding',
                 table_size = word_num,
                 feature_num = nn_architecture.word_feature_dim
             )
 
             # 3,word POS tag vector
             #   output shape: (batch size,sentence_len, POS_feature_num)
-            self.pos_embedding_layer = LookupTableLayer(
+            self.pos_embedding_layer = LookupTableLayer('pos_embedding',
                 table_size = POS_type_num,
                 feature_num = nn_architecture.pos_feature_dim,
             )
@@ -69,25 +70,25 @@ class SRLNeuralLanguageModel(object):
 
             # 5,distance tag vector
             #   output shape: (batch size,sentence_len, POS_feature_num)
-            self.locdiff_word_embedding_layer = LookupTableLayer(
+            self.locdiff_word_embedding_layer = LookupTableLayer('locdiff_word',
                 table_size = dist_to_word_num,
                 feature_num = nn_architecture.dist_feature_dim,
             )
 
-            self.locdiff_verb_embedding_layer = LookupTableLayer(
+            self.locdiff_verb_embedding_layer = LookupTableLayer('locdiff_verb',
                 table_size = dist_to_verb_num,
                 feature_num = nn_architecture.dist_feature_dim,
             )
 
             word_conv_shape = (nn_architecture.conv_output_dim, 1, nn_architecture.conv_window_height, nn_architecture.word_feature_dim)
-            self.word_conv_layer = Conv1DLayer(tensor_shape = word_conv_shape)
+            self.word_conv_layer = Conv1DLayer('word_conv', tensor_shape = word_conv_shape)
             pos_conv_shape = (nn_architecture.conv_output_dim, 1, nn_architecture.conv_window_height, nn_architecture.pos_feature_dim)
-            self.pos_conv_layer = Conv1DLayer(tensor_shape = pos_conv_shape)
+            self.pos_conv_layer = Conv1DLayer('pos_conv', tensor_shape = pos_conv_shape)
 
             locdiff_word_conv_shape = (nn_architecture.conv_output_dim, 1, nn_architecture.conv_window_height, nn_architecture.dist_feature_dim)
-            self.locdiff_word_conv_layer = Conv1DLayer(tensor_shape = locdiff_word_conv_shape)
+            self.locdiff_word_conv_layer = Conv1DLayer('locdiff_word_conv', tensor_shape = locdiff_word_conv_shape)
             locdiff_verb_conv_shape = (nn_architecture.conv_output_dim, 1, nn_architecture.conv_window_height, nn_architecture.dist_feature_dim)
-            self.locdiff_verb_conv_layer = Conv1DLayer(tensor_shape = locdiff_verb_conv_shape)
+            self.locdiff_verb_conv_layer = Conv1DLayer('locdiff_verb_conv', tensor_shape = locdiff_verb_conv_shape)
 
             # add max pool here
 
@@ -97,9 +98,9 @@ class SRLNeuralLanguageModel(object):
                 nn_architecture.conv_output_dim * 4
 
             self.hidden_layers = []
-            for output_dim in nn_architecture.hidden_layer_output_dims:
+            for idx, output_dim in enumerate(nn_architecture.hidden_layer_output_dims):
 
-                hidden_layer = PerceptionLayer(
+                hidden_layer = PerceptionLayer('hidden_%d' % (idx),
                     n_in = input_dim,
                     n_out = output_dim,
                     activation=T.tanh)
@@ -109,17 +110,41 @@ class SRLNeuralLanguageModel(object):
 
 #            last_hidden_layer = SoftMaxLayer(n_in= nn_architecture.hidden_layer_output_dims[-1],
 #                    n_out = SRL_type_num,)
-            last_hidden_layer = PerceptionLayer(
+            last_hidden_layer = PerceptionLayer('last_hidden',
                      n_in = nn_architecture.hidden_layer_output_dims[-1],
                      n_out = SRL_type_num,
                      activation=T.nnet.sigmoid)
             self.hidden_layers.append(last_hidden_layer)
 
-            self.output_layer = PathTransitionLayer(
+            self.output_layer = PathTransitionLayer('output',
                                         class_num=SRL_type_num,
                                         trans_mat_prior= trans_mat_prior)
 #            self.output_layer = SoftMaxLayer(n_in= nn_architecture.hidden_layer_output_dims[-1],
 #                    n_out = SRL_type_num,)
+
+    def dump_model(self, model_file_folder, tag=None):
+        assert isinstance(model_file_folder, str)
+        assert tag == None or isinstance(tag, str)
+        for idx, x in enumerate(self.params()):
+            if tag != None:
+                model_filename = os.path.join(model_file_folder,"%s_%s_param" % (tag, x.name))
+            else:
+                model_filename = os.path.join(model_file_folder,"%s_param" % (x.name))
+            value = x.get_value(borrow = True)
+            print type(value), value.shape
+            # numpy.savetxt(model_filename, value)
+            numpy.save(model_filename, value)
+
+    def load_model(self, model_file_folder, tag=None):
+        assert isinstance(model_file_folder, str)
+        assert tag == None or isinstance(tag, str)
+        for idx, x in enumerate(self.params()):
+            if tag != None:
+                model_filename = os.path.join(model_file_folder,"%s_%s_param.npy" % (tag, x.name))
+            else:
+                model_filename = os.path.join(model_file_folder,"%s_param.npy" % (x.name))
+            npdata = numpy.load(model_filename)
+            x.set_value(npdata, borrow=True)
 
     def hidden_output(self, X):
 
@@ -442,13 +467,16 @@ class NeuralModelHyperParameter(object):
 
 
 
-def train_srl_neural_model(train_problem, valid_problem, nn_architecture,  hyper_param):
+def train_srl_neural_model(train_problem, valid_problem, nn_architecture,  hyper_param, model_path=None, model_tag=None):
 
 
     problem_character = train_problem.get_problem_property()
     trans_mat_prior = train_problem.get_trans_mat_prior()
 
     srl_nn = SRLNeuralLanguageModel(problem_character, nn_architecture, trans_mat_prior)
+
+    if model_path != None:
+        srl_nn.load_model(model_path, model_tag)
 
     patience = 10000  # look as this many examples regardless
     patience_increase = 2  # wait this much longer when a new best is
@@ -511,9 +539,7 @@ def train_srl_neural_model(train_problem, valid_problem, nn_architecture,  hyper
                 f_golden = tmpfile('golden')
                 f_pred = tmpfile('pred')
 
-                for idx, x in enumerate(srl_nn.params()):
-                    numpy.savetxt(str(total_minibatch/validation_frequency) + "." + str(idx) + ".param.txt",
-                                numpy.asarray(x.eval()).flatten())
+                srl_nn.dump_model('./models/',str(total_minibatch/validation_frequency))
 
                 # compute zero-one loss on validation set
                 validation_losses = 0

@@ -10,6 +10,8 @@ from knowledge.machine.neuralnetwork.layer.conv1d_layer import Conv1DLayer
 from knowledge.machine.neuralnetwork.layer.lookup_table_layer import LookupTableLayer
 from knowledge.machine.neuralnetwork.layer.softmax import SoftMaxLayer
 from knowledge.machine.neuralnetwork.layer.path_transition_layer import PathTransitionLayer
+from knowledge.util.conlleval import append_prop_text, conlleval
+from knowledge.util.mis import tmpfile, cleantmp
 
 import numpy
 numpy.set_printoptions(threshold='nan')
@@ -389,6 +391,17 @@ def get_test_func(srl_nn):
 
     return test_func
 
+def get_pred_func(srl_nn):
+
+    X = T.matrix("X")
+
+    pred = srl_nn.predict(X)
+
+    test_func = theano.function(
+            inputs=[X],
+            outputs=pred)
+
+    return test_func
 
 from theano.compile.ops import as_op
 
@@ -460,7 +473,8 @@ def train_srl_neural_model(train_problem, valid_problem, nn_architecture,  hyper
 
     valid_func = get_test_func(srl_nn)
 
-    stat_func = get_pred_stat_func(srl_nn)
+    #stat_func = get_pred_stat_func(srl_nn)
+    pred_func = get_pred_func(srl_nn)
 
     while (epoch < hyper_param.n_epochs) and (not done_looping):
         epoch = epoch + 1
@@ -493,6 +507,8 @@ def train_srl_neural_model(train_problem, valid_problem, nn_architecture,  hyper
 
 
             if total_minibatch  % validation_frequency == 0:
+                f_golden = tmpfile('golden')
+                f_pred = tmpfile('pred')
 
                 for idx, x in enumerate(srl_nn.params()):
                     numpy.savetxt(str(total_minibatch/validation_frequency) + "." + str(idx) + ".param.txt",
@@ -513,8 +529,10 @@ def train_srl_neural_model(train_problem, valid_problem, nn_architecture,  hyper
                     test_num += 1
 
                     error = valid_func(valid_X.astype("float32") ,valid_y.astype('int32'))
-                    same_predict = stat_func(valid_X.astype("float32"))
-                    all_same += same_predict
+                    valid_pred = pred_func(valid_X.astype("float32"))
+                    append_prop_text(f_golden, f_pred, valid_X, valid_y, valid_pred)
+                    #same_predict = stat_func(valid_X.astype("float32"))
+                    #all_same += same_predict
                     validation_losses += error * valid_X.shape[0]
                     sample_num += valid_X.shape[0]
 
@@ -533,7 +551,7 @@ def train_srl_neural_model(train_problem, valid_problem, nn_architecture,  hyper
 #                this_validation_loss = np.mean(validation_losses)
 #                f1 = f1_score(np.asarray(validation_label),np.asarray(validation_pred),average='weighted')
 
-
+                conlleval(f_golden, f_pred)
                 valid_info = 'minibatch {0}, validation error {1}% with {2}% same predicts '.format(
                     total_minibatch, validation_losses * 100, same_rate * 100)
                 print valid_info

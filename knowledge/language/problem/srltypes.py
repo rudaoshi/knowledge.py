@@ -61,3 +61,5 @@ class SrlTypes(object):
         'C-AM-ADV',
         'AM-NEG',
         PADDING_SRL_TYPE]))
+
+    ID_SRLTYPE_MAP = dict([[v,k] for k,v in SRLTYPE_ID_MAP.items()])

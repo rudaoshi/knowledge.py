@@ -5,8 +5,10 @@ from knowledge.machine.neuralnetwork.layer.path_transition_layer import PathTran
 from knowledge.machine.neuralnetwork.random import init_rng
 import numpy as np
 import theano
+import theano.tensor as T
 import itertools
 import math
+from collections import Counter
 
 def test_path_transition_layer():
 
@@ -97,10 +99,67 @@ def test_path_transition_layer2():
     print "y_pred1 = ", y_pred1
     print "y_pred2 = ", y_pred2
 
+def test_path_layer_train():
+    init_rng()
+    class_num = 3
+    trans_mat = np.zeros((class_num,class_num))
+    trans_mat[0,0] = 0.8
+    trans_mat[0,1] = 0.1
+    trans_mat[0,2] = 0.1
+    trans_mat[1,0] = 0.1
+    trans_mat[1,1] = 0.1
+    trans_mat[1,2] = 0.8
+    trans_mat[2,0] = 0.1
+    trans_mat[2,1] = 0.1
+    trans_mat[2,2] = 0.8
+    def gen_train(trans_mat,sample_num,class_num):
+        X = []
+        Y = []
+        x = [1.0/class_num for i in xrange(class_num)]
+        pre_y = 0
+        for _i in xrange(sample_num):
+            X.append(x)
+            trans_prob = trans_mat[pre_y]
+            y = np.random.choice(class_num,1,p=trans_prob)[0]
+            Y.append(y)
+            pre_y = y
+        return np.asarray(X,dtype=np.float32),np.asarray(Y,dtype=np.int32)
+    X,Y = gen_train(trans_mat,100,class_num)
+    print Counter(Y)
+    trans_mat_prior = np.zeros((class_num + 1,class_num))
+    trans_mat_prior[0] = X[0]
+    trans_mat_prior[1:] = trans_mat
+    print 'init trains mat'
+    print trans_mat_prior
+    #layer = PathTransitionLayer(class_num,trans_mat_prior)
+    layer = PathTransitionLayer(class_num)
+    train_x = T.fmatrix("x")
+    train_y = T.ivector("y")
+    cost = layer.cost(train_x,train_y)
+
+    params = layer.params()
+    gparams = T.grad(cost,params)
+    updates = []
+    learning_rate = 0.01
+    for param, gparam in zip(params, gparams):
+        updates.append((param, param - learning_rate * gparam))
+
+    iternum = 10
+    for i in xrange(iternum):
+        X,Y = gen_train(trans_mat,100,class_num)
+        foo = theano.function(inputs=[train_x,train_y],outputs=[cost],updates=updates)
+        print '%d,cost=%f' %(i, foo(X,Y)[0])
+        trained_trans_mat = layer.params()[0].eval()
+        print trained_trans_mat
+    print 'training done.'
+
+
+
 
 if __name__ == "__main__":
 
     test_path_transition_layer2()
+    test_path_layer_train()
 
 
 

@@ -13,8 +13,8 @@ from knowledge.machine.neuralnetwork.random import init_rng
 def test_srl_neural_model(DATA_FOLDER, model_path = None, model_tag = None):
 
 
-    #train_file_path = os.path.join(DATA_FOLDER,'conll05/training-set')
-    train_file_path = os.path.join(DATA_FOLDER,'conll05/dev-set')
+    train_file_path = os.path.join(DATA_FOLDER,'conll05/training-set')
+    # train_file_path = os.path.join(DATA_FOLDER,'conll05/dev-set')
     valid_file_path = os.path.join(DATA_FOLDER,'conll05/dev-set')
 
     train_corpora = Conll05Corpora()
@@ -49,7 +49,8 @@ def test_srl_neural_model(DATA_FOLDER, model_path = None, model_tag = None):
     hyper_param.l1_reg = 0
     hyper_param.l2_reg = 0
 
-    train_srl_neural_model(train_problem,valid_problem, nn_architecture,hyper_param, model_path, model_tag)
+    train_srl_neural_model(train_problem,valid_problem, nn_architecture,hyper_param, model_path, model_tag,
+                           window_approach=True)
 
 
 if __name__ == "__main__":

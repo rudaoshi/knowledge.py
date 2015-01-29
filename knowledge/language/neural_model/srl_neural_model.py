@@ -34,7 +34,7 @@ class SRLNeuralLanguageModel(object):
 
 
     def __init__(self, problem_character = None,
-                 nn_architecture = None, trans_mat_prior = None):
+                 nn_architecture = None, trans_mat_prior = None, window_approach = False):
         # x shape: [mini-batch size, feature-dim].
         # In this problem [mini-batch feature-dim]
 
@@ -110,17 +110,19 @@ class SRLNeuralLanguageModel(object):
 
 #            last_hidden_layer = SoftMaxLayer(n_in= nn_architecture.hidden_layer_output_dims[-1],
 #                    n_out = SRL_type_num,)
-            last_hidden_layer = PerceptionLayer('last_hidden',
-                     n_in = nn_architecture.hidden_layer_output_dims[-1],
-                     n_out = SRL_type_num,
-                     activation=T.nnet.sigmoid)
-            self.hidden_layers.append(last_hidden_layer)
+            if not window_approach:
+                last_hidden_layer = PerceptionLayer('last_hidden',
+                         n_in = nn_architecture.hidden_layer_output_dims[-1],
+                         n_out = SRL_type_num,
+                         activation=T.nnet.sigmoid)
+                self.hidden_layers.append(last_hidden_layer)
 
-            self.output_layer = PathTransitionLayer('output',
-                                        class_num=SRL_type_num,
-                                        trans_mat_prior= trans_mat_prior)
-#            self.output_layer = SoftMaxLayer(n_in= nn_architecture.hidden_layer_output_dims[-1],
-#                    n_out = SRL_type_num,)
+                self.output_layer = PathTransitionLayer('output',
+                                            class_num=SRL_type_num,
+                                            trans_mat_prior= trans_mat_prior)
+            else:
+                self.output_layer = SoftMaxLayer('output', n_in= nn_architecture.hidden_layer_output_dims[-1],
+                       n_out = SRL_type_num,)
 
     def dump_model(self, model_file_folder, tag=None):
         assert isinstance(model_file_folder, str)
@@ -131,8 +133,6 @@ class SRLNeuralLanguageModel(object):
             else:
                 model_filename = os.path.join(model_file_folder,"%s_param" % (x.name))
             value = x.get_value(borrow = True)
-            print type(value), value.shape
-            # numpy.savetxt(model_filename, value)
             numpy.save(model_filename, value)
 
     def load_model(self, model_file_folder, tag=None):
@@ -467,13 +467,14 @@ class NeuralModelHyperParameter(object):
 
 
 
-def train_srl_neural_model(train_problem, valid_problem, nn_architecture,  hyper_param, model_path=None, model_tag=None):
+def train_srl_neural_model(train_problem, valid_problem, nn_architecture,  hyper_param,
+                           model_path = None, model_tag = None, window_approach = False):
 
 
     problem_character = train_problem.get_problem_property()
     trans_mat_prior = train_problem.get_trans_mat_prior()
 
-    srl_nn = SRLNeuralLanguageModel(problem_character, nn_architecture, trans_mat_prior)
+    srl_nn = SRLNeuralLanguageModel(problem_character, nn_architecture, trans_mat_prior, window_approach)
 
     if model_path != None:
         srl_nn.load_model(model_path, model_tag)
@@ -494,7 +495,7 @@ def train_srl_neural_model(train_problem, valid_problem, nn_architecture,  hyper
     epoch = 0
     done_looping = False
 
-    validation_frequency = 20000
+    validation_frequency = 50000
 
     total_minibatch = 0
 

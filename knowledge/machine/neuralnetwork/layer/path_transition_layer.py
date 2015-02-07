@@ -88,7 +88,7 @@ class PathTransitionLayer(object):
         # so, \delta_0(k) = logadd(A(0,k))
         # we are calculating delta_t(k) for t=1:T+1 and k = 1:TagNum+1
 
-        trans_mat = self.tag_trans_matrix # T.nnet.softmax(self.tag_trans_matrix)
+        trans_mat =  self.tag_trans_matrix #T.nnet.softmax(self.tag_trans_matrix) #
         def calculate_delta(i, delta_tm1, pointwise_score, tag_num, trans_mat):
 
             sum_mat = delta_tm1.dimshuffle('x',0).T.repeat(tag_num,axis=1) + trans_mat
@@ -155,7 +155,7 @@ class PathTransitionLayer(object):
         # so, \delta_0(k) = A(0,k)
         # we are calculating delta_t(k) for t=1:T+1 and k = 1:TagNum+1
         # m_t is the class that achieve max obj of the path end at i-th word
-        trans_mat = self.tag_trans_matrix # T.nnet.softmax(self.tag_trans_matrix)
+        trans_mat =   self.tag_trans_matrix #T.nnet.softmax(self.tag_trans_matrix) #
         def viterbi_algo(current_word_scores, path_score_tm1, tag_num, trans_mat):
 
             all_prossible_path_score = path_score_tm1.dimshuffle('x',0).T.repeat(tag_num,axis=1) + trans_mat

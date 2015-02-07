@@ -1,6 +1,7 @@
 __author__ = 'huang'
 
 import numpy as np
+import cStringIO
 
 from knowledge.language.problem.postags import PosTags
 from knowledge.language.problem.srltypes import SrlTypes
@@ -50,7 +51,13 @@ class SRLProblem(Problem):
 
         return character
 
-    def __get_dataset_for_sentence(self, sentence):
+    def sentences(self):
+
+        for sentence in self.__corpora.sentences():
+            yield sentence
+
+
+    def get_dataset_for_sentence(self, sentence):
         """
         Extract features for sentences. The extracted features are as follows:
         * word id: used in a lookup layer to find word embeddings
@@ -70,9 +77,6 @@ class SRLProblem(Problem):
                       for word_prop in sentence.word_properties()
                      ]
         '''
-
-
-
 
         sentence_len = sentence.word_num()
         for srl in sentence.srl_structs():
@@ -113,12 +117,67 @@ class SRLProblem(Problem):
 
             yield np.array(X), np.array(y)
 
+    def pretty_srl_label(self, sentence, labels):
+
+        word_column = [ "-" ] * sentence.word_num()
+        label_columns = []
+        for idx, srl in enumerate(sentence.srl_structs()):
+            word_column[srl.verb_loc] = sentence.get_word(srl.verb_loc).content
+
+            label = labels[idx]
+            label_column = [SrlTypes.ID_SRLTYPE_MAP[l] if l != 55 else "*" for l in label]
+
+            tag_sequence = []
+            tag = None
+            start = None
+            end = None
+            for idx2, label in enumerate(label_column):
+
+                if label == "*":
+                    continue
+
+                if ((idx2 > 0 and label != label_column[idx2-1]) or
+                    idx2 == 0):
+                    tag = label
+                    start = idx2
+
+                if ((idx2 < len(label_column) - 1 and label != label_column[idx2+1]) or
+                    idx2 == len(label_column) -1 ):
+                    end = idx2
+                    tag_sequence.append((tag, start, end))
+
+            for tag, start, end in tag_sequence:
+
+                label_column[start] = "(" + tag + "*"
+
+                for idx in range(start + 1, end +1):
+                    label_column[idx] = "*"
+
+                label_column[end] += ")"
+
+
+            label_columns.append(label_column)
+
+
+        s = cStringIO.StringIO()
+
+        for idx in range(len(word_column)):
+            s.write(word_column[idx] + "\t")
+            s.write("\t".join([column[idx] for column in label_columns]))
+            s.write("\n")
+
+        s.write("\n") # blank line after each sentence
+
+        return s.getvalue()
+
+
+
     def get_data_batch(self):
 
 
         for sentence in  self.__corpora.sentences():
 
-            for X, y in self.__get_dataset_for_sentence(sentence):
+            for X, y in self.get_dataset_for_sentence(sentence):
                 if len(y) == 0:
                     continue
 

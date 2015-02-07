@@ -429,27 +429,27 @@ def get_pred_func(srl_nn):
 
     return test_func
 
-from theano.compile.ops import as_op
+#from theano.compile.ops import as_op
 
-
-@as_op(itypes=[theano.tensor.lvector],
-       otypes=[theano.tensor.lvector])
-def numpy_unique(a):
-    return numpy.unique(a)
-
-def get_pred_stat_func(srl_nn):
-
-    X = T.matrix("X")
-
-    pred = numpy_unique(srl_nn.predict(X))
-
-    all_same = T.eq(T.prod(pred.shape), T.as_tensor_variable(1))
-
-    test_func = theano.function(
-            inputs=[X],
-            outputs=all_same)
-
-    return test_func
+#
+# @as_op(itypes=[theano.tensor.lvector],
+#        otypes=[theano.tensor.lvector])
+# def numpy_unique(a):
+#     return numpy.unique(a)
+#
+# def get_pred_stat_func(srl_nn):
+#
+#     X = T.matrix("X")
+#
+#     pred = numpy_unique(srl_nn.predict(X))
+#
+#     all_same = T.eq(T.prod(pred.shape), T.as_tensor_variable(1))
+#
+#     test_func = theano.function(
+#             inputs=[X],
+#             outputs=all_same)
+#
+#     return test_func
 
 import numpy as np
 
@@ -465,9 +465,11 @@ class NeuralModelHyperParameter(object):
         self.l1_reg = None
         self.l2_reg = None
 
+from knowledge.language.evaluation.srl_evaluate import eval_srl
 
-
-def train_srl_neural_model(train_problem, valid_problem, nn_architecture,  hyper_param, model_path=None, model_tag=None):
+def train_srl_neural_model(train_problem, valid_problem,
+                           nn_architecture,  hyper_param,
+                           model_path=None, model_tag=None):
 
 
     problem_character = train_problem.get_problem_property()
@@ -494,7 +496,7 @@ def train_srl_neural_model(train_problem, valid_problem, nn_architecture,  hyper
     epoch = 0
     done_looping = False
 
-    validation_frequency = 20000
+    validation_frequency = 10000
 
     total_minibatch = 0
 
@@ -536,10 +538,8 @@ def train_srl_neural_model(train_problem, valid_problem, nn_architecture,  hyper
 
 
             if total_minibatch  % validation_frequency == 0:
-                f_golden = tmpfile('golden')
-                f_pred = tmpfile('pred')
 
-                srl_nn.dump_model('./models/',str(total_minibatch/validation_frequency))
+#                srl_nn.dump_model('./models/',str(total_minibatch/validation_frequency))
 
                 # compute zero-one loss on validation set
                 validation_losses = 0
@@ -550,53 +550,48 @@ def train_srl_neural_model(train_problem, valid_problem, nn_architecture,  hyper
                 all_same = 0
 
                 same_rate = 0
+                test_label_file_path = "test_label_" + str(total_minibatch/validation_frequency) + ".txt"
+                pred_label_file_path = "pred_label_" + str(total_minibatch/validation_frequency) + ".txt"
 
+                test_label_file = open(test_label_file_path, "w")
+                pred_label_file = open(pred_label_file_path, "w")
                 start_time = time.clock()
-                for valid_X, valid_y, in valid_problem.get_data_batch():
-                    test_num += 1
+                for sentence in valid_problem.sentences():
+                    test_labels = []
+                    pred_labels = []
+                    for srl_x, srl_y in valid_problem.get_dataset_for_sentence(sentence):
+                        test_labels.append(srl_y)
+                        pred_labels.append(pred_func(srl_x.astype("float32")))
 
-                    error = valid_func(valid_X.astype("float32") ,valid_y.astype('int32'))
-                    valid_pred = pred_func(valid_X.astype("float32"))
-                    append_prop_text(f_golden, f_pred, valid_X, valid_y, valid_pred)
-                    #same_predict = stat_func(valid_X.astype("float32"))
-                    #all_same += same_predict
-                    validation_losses += error * valid_X.shape[0]
-                    sample_num += valid_X.shape[0]
+                    test_label_str = valid_problem.pretty_srl_label(sentence, test_labels)
+                    pred_label_str = valid_problem.pretty_srl_label(sentence, pred_labels)
 
-#                    validation_pred += pred.tolist()
-#                    validation_label += valid_y.tolist()
+                    test_label_file.write(test_label_str)
+                    pred_label_file.write(pred_label_str)
 
-                    #if test_num >= 100:
-                    #    break
-                end_time = time.clock()
-                debug_info = 'valid {0}.{1}, time = {2}'.format(epoch,minibatch,end_time - start_time)
-                print debug_info
+                test_label_file.close()
+                pred_label_file.close()
 
-                if sample_num > 0:
-                    validation_losses /= sample_num
-                    same_rate = all_same/float(test_num)
-#                this_validation_loss = np.mean(validation_losses)
-#                f1 = f1_score(np.asarray(validation_label),np.asarray(validation_pred),average='weighted')
 
-                conlleval(f_golden, f_pred)
-                valid_info = 'minibatch {0}, validation error {1}% with {2}% same predicts '.format(
-                    total_minibatch, validation_losses * 100, same_rate * 100)
+                valid_result = eval_srl(test_label_file_path, pred_label_file_path)
+                valid_info = 'minibatch {0}, validation info {1}% '.format(
+                    total_minibatch, valid_result)
                 print valid_info
 
 
-                # if we got the best validation score until now
-                if validation_losses < best_validation_loss:
-                    #improve patience if loss improvement is good enough
-                    if validation_losses < best_validation_loss *  \
-                           improvement_threshold:
-                        patience = max(patience, epoch * patience_increase)
-
-                    best_validation_loss = validation_losses
-                    best_iter = epoch
-
-                if patience <= epoch:
-                    done_looping = True
-                    break
+                # # if we got the best validation score until now
+                # if validation_losses < best_validation_loss:
+                #     #improve patience if loss improvement is good enough
+                #     if validation_losses < best_validation_loss *  \
+                #            improvement_threshold:
+                #         patience = max(patience, epoch * patience_increase)
+                #
+                #     best_validation_loss = validation_losses
+                #     best_iter = epoch
+                #
+                # if patience <= epoch:
+                #     done_looping = True
+                #     break
 
         hyper_param.learning_rate *= hyper_param.learning_rate_decay_ratio
         if hyper_param.learning_rate <= hyper_param.learning_rate_lowerbound:

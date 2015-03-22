@@ -29,35 +29,14 @@ import theano
 import theano.tensor as T
 
 from knowledge.machine.neuralnetwork.random import get_numpy_rng
+from knowledge.machine.neuralnetwork.layer.layer import Layer
+from knowledge.machine.neuralnetwork.activation.activation_factory import get_activation
 
-class PerceptionLayer(object):
-    def __init__(self, name, W=None, b=None, n_in = None, n_out = None,
-                 activation=T.tanh):
-        """
-        Typical hidden layer of a MLP: units are fully-connected and have
-        sigmoidal activation function. Weight matrix W is of shape (n_in,n_out)
-        and the bias vector b is of shape (n_out,).
-
-        NOTE : The nonlinearity used here is tanh
-
-        Hidden unit activation is given by: tanh(dot(input,W) + b)
-
-        :type rng: numpy.random.RandomState
-        :param rng: a random number generator used to initialize weights
-
-        :type input: theano.tensor.dmatrix
-        :param input: a symbolic tensor of shape (n_examples, n_in)
-
-        :type n_in: int
-        :param n_in: dimensionality of input
-
-        :type n_out: int
-        :param n_out: number of hidden units
-
-        :type activation: theano.Op or function
-        :param activation: Non linearity to be applied in the hidden
-                           layer
-        """
+class PerceptionLayer(Layer):
+    def __init__(self, activator_type="linear",
+                 input_dim = None, output_dim = None,
+                 W=None, b=None,
+                 ):
 
         # `W` is initialized with `W_values` which is uniformely sampled
         # from sqrt(-6./(n_in+n_hidden)) and sqrt(6./(n_in+n_hidden))
@@ -72,32 +51,51 @@ class PerceptionLayer(object):
         #        We have no info for other function, so we use the same as
         #        tanh.
 
-        assert isinstance(name, str) and len(name) > 0
-        self.name = name
-        if W is None and n_in is not None and n_out is not None :
-            rng = get_numpy_rng()
-            W_values = numpy.asarray(rng.uniform(
-                    low=-numpy.sqrt(6. / (n_in + n_out)),
-                    high=numpy.sqrt(6. / (n_in + n_out)),
-                    size=(n_in, n_out)), dtype=theano.config.floatX)
-            if activation == theano.tensor.nnet.sigmoid:
-                W_values *= 4
+        assert activator_type is not None, "Activation must be provided"
+        self.activator_type = activator_type
+        self.activator = get_activation(self.activator_type)
 
-            W = theano.shared(value=W_values, name='perception_W_%s' % (self.name), borrow=True)
+        if input_dim is not None and output_dim is not None:
 
-        if b is None and n_in is not None and n_out is not None :
-            b_values = numpy.zeros((n_out,), dtype=theano.config.floatX)
-            b = theano.shared(value=b_values, name='perception_b_%s' % (self.name), borrow=True)
+            if W is None:
+                rng = get_numpy_rng()
+                W = numpy.asarray(rng.uniform(
+                        low=-numpy.sqrt(6. / (input_dim + output_dim)),
+                        high=numpy.sqrt(6. / (input_dim + output_dim)),
+                        size=(input_dim, output_dim)), dtype=theano.config.floatX)
+                if self.activator == theano.tensor.nnet.sigmoid:
+                    W *= 4
+            else:
+                assert input_dim == W.shape[0] and input_dim == W.shape[1]
 
-        self.W = W
-        self.b = b
-        self.activation = activation
+            if b is None:
+                b = numpy.zeros((output_dim,), dtype=theano.config.floatX)
+            else:
+                assert output_dim == b.shape[0]
+
+            self.W = theano.shared(value=W, borrow=True)
+            self.b = theano.shared(value=b, borrow=True)
+            self.input_dim, self.output_dim = W.shape
+        elif W is not None and b is not None:
+            self.W = theano.shared(value=W, borrow=True)
+            self.b = theano.shared(value=b, borrow=True)
+            self.input_dim, self.output_dim = W.shape
+
+        else:
+            raise Exception("Perception Layer needs parameter "
+                            "in pair of (W,b) or (n_in, n_out) besides activation")
+
+
+    def input_dim(self):
+        return self.input_dim
+
+
+    def output_dim(self):
+        return self.output_dim
 
     def output(self, X):
 
-        lin_output = T.dot(X, self.W) + self.b
-        return (lin_output if self.activation is None
-                       else self.activation(lin_output))
+        return self.activator(T.dot(X, self.W) + self.b)
 
     def params(self):
         # parameters of the model
@@ -106,31 +104,25 @@ class PerceptionLayer(object):
     def __getstate__(self):
 
         state = dict()
-        state['name'] = "perception"
+        state['type'] = "perception"
         state['W'] = self.W.get_value()
         state['b'] = self.b.get_value()
-
-        if self.activation is None :
-            state['activation'] = "linear"
-        elif self.activation == T.tanh:
-            state['activation'] = "tanh"
-        elif self.activation == T.nnet.sigmoid:
-            state['activation'] = "sigmoid"
+        state['input_dim'] = self.input_dim
+        state['output_dim'] = self.output_dim
+        state['activator_type'] = self.activator_type
 
         return state
 
     def __setstate__(self, state):
+
+        assert state['type'] == "perception", "The layer type is not match"
 
         self.W = theano.shared(value=state['W'].astype(theano.config.floatX),
                                 name='W', borrow=True)
         self.b = theano.shared(value=state['b'].astype(theano.config.floatX),
                                 name='b', borrow=True)
 
-        if state['activation'] == "linear":
-            self.activation = None
-        elif state['activation'] == "tanh":
-            self.activation = T.tanh
-        elif state['activation'] == "sigmoid":
-            self.activation = T.nnet.sigmoid
-        else:
-            raise Exception("Unknown activation type")
+        self.input_dim = state['input_dim']
+        self.output_dim = state['output_dim']
+        self.activator_type = state['activator_type']
+        self.activator = get_activation(self.activator_type)

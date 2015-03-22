@@ -51,7 +51,7 @@ class Conv1DLayer(object):
 
 
     def output(self, input):
-        return conv.conv2d(input,self.W, border_mode='valid') + self.b.dimshuffle('x', 0, 'x', 'x')
+        return conv.conv2d(input, self.W, border_mode='valid') + self.b.dimshuffle('x', 0, 'x', 'x')
 
     def params(self):
         return [self.W,self.b]

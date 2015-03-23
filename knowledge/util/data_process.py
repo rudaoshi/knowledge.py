@@ -21,3 +21,9 @@ def moving_window(seq, window_size):
     for elem in it:
         result = result[1:] + (elem,)
         yield result
+
+def chunks(l, n):
+    """ Yield successive n-sized chunks from l.
+    """
+    for i in xrange(0, len(l), n):
+        yield l[i:i+n]

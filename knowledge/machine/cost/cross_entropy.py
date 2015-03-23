@@ -21,7 +21,7 @@ class CrossEntropyCost(Cost):
             # standard multi-class problem
             return -T.mean(T.log(X)[T.arange(y.shape[0]), y])
         elif y.shape[1] == 1:
-            pass
+            raise Exception("Not Implemented")
 
     def __getstate__(self):
         return {"type": "cross_entropy"}

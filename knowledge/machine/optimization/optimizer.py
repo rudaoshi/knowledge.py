@@ -8,5 +8,5 @@ class Optimizer(object):
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def optimize(self, machine):
+    def optimize(self, machine, param, X, y = None):
         pass

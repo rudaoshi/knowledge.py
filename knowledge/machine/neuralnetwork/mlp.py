@@ -17,7 +17,7 @@ from knowledge.machine.cost.cost_factory import create_cost
 from knowledge.util.data_process import chunks
 class MultiLayerPerception(GradientOptimizable):
 
-    def __init__(self, layer_params, cost):
+    def __init__(self, layer_params, cost_param):
 
         self.layers = []
 
@@ -29,7 +29,7 @@ class MultiLayerPerception(GradientOptimizable):
                 assert layer.input_dim() == self.layers[idx-1].output_dim(), \
                     "The layer chain is broken at %d-th layer"%idx
 
-        self.cost = cost
+        self.cost = create_cost(cost_param)
 
     def params(self):
 
@@ -97,7 +97,7 @@ class MultiLayerPerception(GradientOptimizable):
 
         param = self.params()
 
-        grad = T.grad(self.cost(X, y), param)
+        grad = T.grad(self.object(X, y), param)
 
         gradient_vec = []
         for gW, gb in chunks(grad,2):
@@ -437,8 +437,8 @@ def train_dnn_ctr_model(
                           os.path.split(__file__)[1] +
                           ' ran for %.2fm' % ((end_time - start_time) / 60.))
 
-from recsys.toolchain.mlbase.data.supervised_dataset import SupervisedDataSet
-from recsys.toolchain.mlbase.model.neuralnetwork.random import init_rng
+#from recsys.toolchain.mlbase.data.supervised_dataset import SupervisedDataSet
+#from recsys.toolchain.mlbase.model.neuralnetwork.random import init_rng
 if __name__ == '__main__':
 
     train_dataset = SupervisedDataSet(sys.argv[1])

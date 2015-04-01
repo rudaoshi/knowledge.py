@@ -5,7 +5,7 @@ import numpy.random
 import time
 
 
-random_generator = None
+random_generator = numpy.random.RandomState()
 
 
 def init_rng(random_seed = None):

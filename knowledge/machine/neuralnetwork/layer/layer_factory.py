@@ -21,7 +21,7 @@ def create_layer(layer_param):
     if layer_type not in __layer_creator:
         raise Exception("Unknown layer type")
 
-    return __layer_creator[layer_type](**layer_param)
+    return __layer_creator[layer_type](layer_param)
 
 from knowledge.machine.neuralnetwork.layer.perception import PerceptionLayer
 

@@ -75,11 +75,11 @@ class PerceptionLayer(Layer):
 
             self.W = theano.shared(value=W, borrow=True)
             self.b = theano.shared(value=b, borrow=True)
-            self.input_dim, self.output_dim = W.shape
+            self.input_dim_, self.output_dim_ = W.shape
         elif W is not None and b is not None:
             self.W = theano.shared(value=W, borrow=True)
             self.b = theano.shared(value=b, borrow=True)
-            self.input_dim, self.output_dim = W.shape
+            self.input_dim_, self.output_dim_ = W.shape
 
         else:
             raise Exception("Perception Layer needs parameter "
@@ -87,11 +87,11 @@ class PerceptionLayer(Layer):
 
 
     def input_dim(self):
-        return self.input_dim
+        return self.input_dim_
 
 
     def output_dim(self):
-        return self.output_dim
+        return self.output_dim_
 
     def output(self, X):
 

@@ -21,9 +21,11 @@ def create_cost(cost_param):
     if cost_type not in __cost_creator:
         raise Exception("Unknown layer type")
 
-    return __cost_creator[cost_type](**cost_param)
+    return __cost_creator[cost_type](cost_param)
 
 from knowledge.machine.cost.cross_entropy import CrossEntropyCost
+from knowledge.machine.cost.mse import MSECost
 
 register_creator("cross_entropy", lambda param: CrossEntropyCost(**param))
+register_creator("mse", lambda param: MSECost(**param))
 

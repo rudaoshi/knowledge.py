@@ -17,7 +17,7 @@ class SGDOptimizer(Optimizer):
 
         for i in range(self.max_epoches):
 
-            for batch_id in range(0, X.shape[0], step = self.batch_size):
+            for batch_id in range(0, X.shape[0], self.batch_size):
 
                 end_idx = min(batch_id + self.batch_size, X.shape[0])
                 X_batch = X[batch_id: end_idx]

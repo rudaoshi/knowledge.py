@@ -15,6 +15,7 @@ from knowledge.machine.optimization.gradient_optimizable import GradientOptimiza
 from knowledge.machine.neuralnetwork.layer.layer_factory import create_layer
 from knowledge.machine.cost.cost_factory import create_cost
 from knowledge.util.data_process import chunks
+
 class MultiLayerPerception(GradientOptimizable):
 
     def __init__(self, layer_params, cost_param):
@@ -30,6 +31,35 @@ class MultiLayerPerception(GradientOptimizable):
                     "The layer chain is broken at %d-th layer"%idx
 
         self.cost = create_cost(cost_param)
+
+        self.__make_behaviors()
+
+
+    def __make_behaviors(self):
+
+        X = theano.tensor.matrix()
+        y = theano.tensor.matrix()
+
+        layer_out = X
+        for layer in self.layers:
+            layer_out = layer.output(layer_out)
+
+        self.__object_expr = self.cost.cost(layer_out, y)
+        self.__object_func = theano.function([X,y], outputs=self.__object_expr)
+
+        param = self.params()
+
+        grad = T.grad(self.__object_expr, param)
+
+        gradient_vec = []
+        for gW, gb in chunks(grad,2):
+            gradient_vec.append(gW.reshape((-1,)))
+            gradient_vec.append(gb.reshape((-1,)))
+
+        self.__gradient_expr = theano.tensor.concatenate(gradient_vec)
+        self.__gradient_func = theano.function([X,y], outputs=self.__gradient_expr)
+
+
 
     def params(self):
 
@@ -68,43 +98,42 @@ class MultiLayerPerception(GradientOptimizable):
         for layer in self.layers:
             W, b = layer.params()
 
-            param_vec.append(W.reshape((-1,)))
-            param_vec.append(b.reshape((-1,)))
+            param_vec.append(W.get_value(borrow=True).reshape((-1,)))
+            param_vec.append(b.get_value(borrow=True).reshape((-1,)))
 
-        return theano.tensor.concatenate(param_vec)
+        return numpy.concatenate(param_vec)
 
     def set_parameter(self, param_vec):
 
         start_idx = 0
 
         for layer in self.layers:
-            W, b = layer.params()
 
-            layer.W = param_vec[start_idx : start_idx + W.size].reshape(W.shape)
-            start_idx += W.size
-            layer.b = param_vec[start_idx : start_idx + b.size].reshape(b.shape)
-            start_idx += b.size
+            W_size = layer.input_dim()*layer.output_dim()
+            W_shape = (layer.input_dim(), layer.output_dim())
+
+            layer.W.set_value(param_vec[start_idx : start_idx + W_size].reshape(W_shape),
+                              borrow = True)
+            start_idx += W_size
+
+            b_size = layer.output_dim()
+            b_shape = (layer.output_dim(),)
+
+            layer.b.set_value(param_vec[start_idx : start_idx + b_size].reshape(b_shape),
+                              borrow = True)
+            start_idx += b_size
+
 
 
     def object(self, X, y = None):
 
-        for layer in self.layers:
-            X = layer.output(X)
+        return self.__object_func(X, y)
 
-        return self.cost.cost(X, y)
+    def gradient(self, X, y = None):
 
-    def gradient(self, X, y=None):
+        return self.__gradient_func(X, y)
 
-        param = self.params()
 
-        grad = T.grad(self.object(X, y), param)
-
-        gradient_vec = []
-        for gW, gb in chunks(grad,2):
-            gradient_vec.append(gW.reshape((-1,)))
-            gradient_vec.append(gb.reshape((-1,)))
-
-        return theano.tensor.concatenate(gradient_vec)
 
 def build_train_function(ctr_model, datasets, batch_size, learning_rate):
     '''Generates a function `train` that implements one step of

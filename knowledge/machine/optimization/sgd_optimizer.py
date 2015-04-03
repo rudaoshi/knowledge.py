@@ -1,6 +1,7 @@
 __author__ = 'Sun'
 
 from knowledge.machine.optimization.optimizer import Optimizer
+import theano
 
 class SGDOptimizer(Optimizer):
 
@@ -14,7 +15,6 @@ class SGDOptimizer(Optimizer):
 
         cur_learning_rate = self.learning_rate
 
-
         for i in range(self.max_epoches):
 
             for batch_id in range(0, X.shape[0], self.batch_size):
@@ -24,7 +24,9 @@ class SGDOptimizer(Optimizer):
                 y_batch = y[batch_id: end_idx] if y is not None else None
 
                 machine.set_parameter(param)
-                param = param - cur_learning_rate * machine.gradient(X_batch, y_batch)
+                gradient = machine.gradient(X_batch, y_batch)
+
+                param = param - cur_learning_rate * gradient
 
 
             cur_learning_rate *= self.decay_rate

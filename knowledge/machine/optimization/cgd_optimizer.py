@@ -6,7 +6,7 @@ from scipy.optimize import fmin_cg
 from knowledge.machine.optimization.optimizer import Optimizer
 
 
-class SGDOptimizer(Optimizer):
+class CGDOptimizer(Optimizer):
 
     def __init__(self):
         self.max_epoches = 10
@@ -17,7 +17,7 @@ class SGDOptimizer(Optimizer):
 
         for i in range(self.max_epoches):
 
-            for batch_id in range(0, X.shape[0], step = self.batch_size):
+            for batch_id in range(0, X.shape[0], self.batch_size):
 
                 end_idx = min(batch_id + self.batch_size, X.shape[0])
                 X_batch = X[batch_id: end_idx]
@@ -40,7 +40,7 @@ class SGDOptimizer(Optimizer):
                     maxiter=self.batch_optim_step
                 )
 
-                param = best_param.xopt
+                param = best_param
 
         return param
 

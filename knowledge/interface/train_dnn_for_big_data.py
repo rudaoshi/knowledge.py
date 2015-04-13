@@ -25,7 +25,11 @@ def train_dnn_for_big_data(config_file):
 
     output_model_file = config.get("output", 'output_model_file')
 
-    network_arch = json.loads(config.get("network","architecture"))
+    try:
+        network_arch = json.loads(config.get("network","architecture"))
+    except:
+        print config.get("network","architecture")
+        raise
 
     chunk_size = int(config.get("train", 'chunk_size'))
     optim_settings = json.loads(config.get("train", 'optim_settings'))

@@ -15,7 +15,7 @@ class CrossEntropyCost(Cost):
         :return: the cross entropy between the predicted likely-hood and the real label
         """
 
-        assert X.shape == y.shape, "The size of the likely-hood is not equal to that of the label"
+#        assert X.shape == y.shape, "The size of the likely-hood is not equal to that of the label"
 
         if y.shape[1] >= 2:
             # standard multi-class problem

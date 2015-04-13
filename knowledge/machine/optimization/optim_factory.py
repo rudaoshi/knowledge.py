@@ -19,7 +19,7 @@ def create_optimizer(optimizer_param):
     del optimizer_param["type"]
 
     if optimizer_type not in __optimizer_creator:
-        raise Exception("Unknown layer type")
+        raise Exception("Unknown optimizer type")
 
     return __optimizer_creator[optimizer_type](optimizer_param)
 

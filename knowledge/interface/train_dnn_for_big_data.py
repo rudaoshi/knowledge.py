@@ -50,3 +50,6 @@ def train_dnn_for_big_data(config_file):
         cPickle.dump(content, f, protocol=cPickle.HIGHEST_PROTOCOL)
 
 
+if __name__ == "__main__":
+
+    train_dnn_for_big_data()

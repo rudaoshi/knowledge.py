@@ -35,12 +35,6 @@ class CGDOptimizer(BatchOptimizer):
                     machine.set_parameter(p)
                     return machine.gradient(batch_id)
 
-                print machine.predict(batch_id)
-                print machine.chunk_y.get_value()
-
-                print train_func(param)
-                print train_grad_func(param)
-
                 best_param = fmin_cg(
                     f = train_func,
                     x0=param,
@@ -48,6 +42,8 @@ class CGDOptimizer(BatchOptimizer):
                     disp=0,
                     maxiter=self.batch_optim_step
                 )
+
+                print "current cost:", train_func(param)
 
                 param = best_param
 

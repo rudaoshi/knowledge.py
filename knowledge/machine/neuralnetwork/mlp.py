@@ -37,7 +37,7 @@ class MultiLayerPerception(BatchStocasticGradientOptimizable):
         self.learning_batch_size = batch_size
 
         X = theano.tensor.matrix("X")
-        y = theano.tensor.matrix("y")
+        y = theano.tensor.vector("y")
 
         batch_id = theano.tensor.iscalar('i')
 

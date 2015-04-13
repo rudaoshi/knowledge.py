@@ -35,8 +35,8 @@ class CGDOptimizer(BatchOptimizer):
                     machine.set_parameter(p)
                     return machine.gradient(batch_id)
 
-                print machine.output_expr.eval()
-                print machine.chunk_y.eval()
+                print machine.predict()
+                print machine.chunk_y.get_value()
 
                 print train_func(param)
                 print train_grad_func(param)

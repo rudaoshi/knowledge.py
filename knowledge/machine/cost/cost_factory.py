@@ -23,9 +23,11 @@ def create_cost(cost_param):
 
     return __cost_creator[cost_type](cost_param)
 
+from knowledge.machine.cost.binary_cross_entropy import BinaryCrossEntropyCost
 from knowledge.machine.cost.cross_entropy import CrossEntropyCost
 from knowledge.machine.cost.mse import MSECost
 
+register_creator("binary_cross_entropy", lambda param: BinaryCrossEntropyCost(**param))
 register_creator("cross_entropy", lambda param: CrossEntropyCost(**param))
 register_creator("mse", lambda param: MSECost(**param))
 

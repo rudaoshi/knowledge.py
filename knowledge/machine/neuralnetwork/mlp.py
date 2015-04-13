@@ -37,12 +37,12 @@ class MultiLayerPerception(BatchStocasticGradientOptimizable):
         self.learning_batch_size = batch_size
 
         X = theano.tensor.matrix("X")
-        y = theano.tensor.vector("y")
+        y = theano.tensor.matrix("y")
 
         batch_id = theano.tensor.iscalar('i')
 
         self.chunk_X = theano.shared(numpy.zeros((batch_size, self.layers[0].input_dim()), dtype = theano.config.floatX))
-        self.chunk_y = theano.shared(numpy.zeros((batch_size, ), dtype = theano.config.floatX), )
+        self.chunk_y = theano.shared(numpy.zeros((batch_size, 1), dtype = theano.config.floatX), )
 
 
         layer_out = X
@@ -56,7 +56,7 @@ class MultiLayerPerception(BatchStocasticGradientOptimizable):
         self.__object_expr = self.cost.cost(layer_out, y)
         self.__object_func = theano.function([batch_id],
                                              givens =[(X, self.chunk_X[batch_id*batch_size:(batch_id+1)*batch_size,:]),
-                                                 (y, self.chunk_y[batch_id*batch_size:(batch_id+1)*batch_size])],
+                                                 (y, self.chunk_y[batch_id*batch_size:(batch_id+1)*batch_size,:])],
                                              outputs=self.__object_expr)
 
         param = self.params()
@@ -71,7 +71,7 @@ class MultiLayerPerception(BatchStocasticGradientOptimizable):
         self.__gradient_expr = theano.tensor.concatenate(gradient_vec)
         self.__gradient_func = theano.function([batch_id],
                                              givens =[(X, self.chunk_X[batch_id*batch_size:(batch_id+1)*batch_size,:]),
-                                                 (y, self.chunk_y[batch_id*batch_size:(batch_id+1)*batch_size])],
+                                                 (y, self.chunk_y[batch_id*batch_size:(batch_id+1)*batch_size,:])],
                                              outputs=self.__gradient_expr)
 
 

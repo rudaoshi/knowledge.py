@@ -43,6 +43,7 @@ def train_dnn_for_big_data(config_file):
 
     for train_X, train_y in train_data_set.sample_batches(batch_size=chunk_size):
 
+        train_y.resize((train_y.shape[0], 1))
         neuralnet.update_chunk(train_X, train_y)
 
         new_param = optimizer.optimize(neuralnet, neuralnet.get_parameter())

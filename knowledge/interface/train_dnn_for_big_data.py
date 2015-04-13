@@ -10,7 +10,7 @@ from knowledge.machine.optimization.optim_factory import create_optimizer
 from knowledge.util.theano_util import shared_dataset
 
 from knowledge.data.supervised_dataset import SupervisedDataSet
-
+import numpy
 import cPickle
 
 @click.command()
@@ -41,9 +41,10 @@ def train_dnn_for_big_data(config_file):
 
     train_data_set = SupervisedDataSet(input_sample_file,frame_name=frame_name)
 
-    for train_X, train_y in train_data_set.sample_batches(batch_size=chunk_size):
+    for train_X, train_y_ in train_data_set.sample_batches(batch_size=chunk_size):
 
-        train_y.resize((train_y.shape[0], 1))
+        train_y = numpy.zeros((train_y_.shape[0], 1))
+        train_y[:,0] = train_y_
         neuralnet.update_chunk(train_X, train_y)
 
         new_param = optimizer.optimize(neuralnet, neuralnet.get_parameter())

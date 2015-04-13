@@ -21,9 +21,9 @@ class CGDOptimizer(Optimizer):
 
         for i in range(self.max_epoches):
 
-            for batch_id in range(0, X.__raw_shape[0], self.batch_size):
+            for batch_id in range(0, X.raw_shape[0], self.batch_size):
 
-                end_idx = min(batch_id + self.batch_size, X.__raw_shape[0])
+                end_idx = min(batch_id + self.batch_size, X.raw_shape[0])
                 X_batch = X[batch_id: end_idx]
                 y_batch = y[batch_id: end_idx] if y is not None else None
 

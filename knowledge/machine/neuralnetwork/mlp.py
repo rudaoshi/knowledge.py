@@ -51,7 +51,7 @@ class MultiLayerPerception(BatchStocasticGradientOptimizable):
 
         self.output_expr = layer_out
 
-        self.__object_expr = self.cost.cost(self.__output_expr, y)
+        self.__object_expr = self.cost.cost(layer_out, y)
         self.__object_func = theano.function([batch_id],
                                              givens =[(X, self.chunk_X[batch_id*batch_size:(batch_id+1)*batch_size,:]),
                                                  (y, self.chunk_y[batch_id*batch_size:(batch_id+1)*batch_size])],

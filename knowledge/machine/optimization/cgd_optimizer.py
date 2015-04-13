@@ -29,11 +29,14 @@ class CGDOptimizer(BatchOptimizer):
                 def train_func(p):
 
                     machine.set_parameter(p)
-                    return machine.object(i)
+                    return machine.object(batch_id)
 
                 def train_grad_func(p):
                     machine.set_parameter(p)
-                    return machine.gradient(i)
+                    return machine.gradient(batch_id)
+
+                print train_func(param)
+                print train_grad_func(param)
 
                 best_param = fmin_cg(
                     f = train_func,

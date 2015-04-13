@@ -31,6 +31,7 @@ def train_dnn_for_big_data(config_file):
         print config.get("network","architecture")
         raise
 
+    max_epoches = int(config.get("train", 'max_epoches'))
     chunk_size = int(config.get("train", 'chunk_size'))
     optim_settings = json.loads(config.get("train", 'optim_settings'))
 
@@ -41,15 +42,16 @@ def train_dnn_for_big_data(config_file):
 
     train_data_set = SupervisedDataSet(input_sample_file,frame_name=frame_name)
 
-    for train_X, train_y_ in train_data_set.sample_batches(batch_size=chunk_size):
+    for i in range(max_epoches):
+        for train_X, train_y_ in train_data_set.sample_batches(batch_size=chunk_size):
 
-        train_y = numpy.zeros((train_y_.shape[0], 1))
-        train_y[:,0] = train_y_
-        neuralnet.update_chunk(train_X, train_y)
+            train_y = numpy.zeros((train_y_.shape[0], 1))
+            train_y[:,0] = train_y_
+            neuralnet.update_chunk(train_X, train_y)
 
-        new_param = optimizer.optimize(neuralnet, neuralnet.get_parameter())
+            new_param = optimizer.optimize(neuralnet, neuralnet.get_parameter())
 
-        neuralnet.set_parameter(new_param)
+            neuralnet.set_parameter(new_param)
 
 
     with open(output_model_file, 'w') as f:

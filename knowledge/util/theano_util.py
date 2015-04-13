@@ -17,9 +17,12 @@ def shared_dataset(data_xy, borrow=True):
         shared_x = theano.shared(numpy.asarray(data_x,
                                                dtype=theano.config.floatX),
                                  borrow=borrow)
+        shared_x.__raw_shape = data_x.shape
         shared_y = theano.shared(numpy.asarray(data_y,
                                                dtype=theano.config.floatX),
                                  borrow=borrow)
+        shared_y = T.cast(shared_y, 'int32')
+        shared_y.__raw_shape = data_y.shape
         # When storing data on the GPU it has to be stored as floats
         # therefore we will store the labels as ``floatX`` as well
         # (``shared_y`` does exactly that). But during our computations

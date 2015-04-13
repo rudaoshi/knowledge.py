@@ -19,9 +19,9 @@ class CrossEntropyCost(Cost):
 
         if y.shape[1] >= 2:
             # standard multi-class problem
-            return -T.mean(T.log(X)[T.arange(y.shape[0]), y])
+            return T.nnet.categorical_crossentropy(X, y)
         elif y.shape[1] == 1:
-            raise Exception("Not Implemented")
+            return T.nnet.binary_crossentropy(X, y).mean()
 
     def __getstate__(self):
         return {"type": "cross_entropy"}

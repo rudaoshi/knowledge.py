@@ -1,9 +1,9 @@
 __author__ = 'Sun'
 
-from knowledge.machine.optimization.optimizer import Optimizer
+from knowledge.machine.optimization.batchoptimizer import BatchOptimizer
 import theano
 
-class SGDOptimizer(Optimizer):
+class SGDOptimizer(BatchOptimizer):
 
     def __init__(self,
                  max_epoches = 10,
@@ -16,7 +16,10 @@ class SGDOptimizer(Optimizer):
         self.decay_rate = decay_rate
         self.batch_size = batch_size
 
-    def optimize(self, machine, param, X, y = None):
+    def get_batch_size(self):
+        return self.batch_size
+
+    def optimize(self, machine, param):
 
         cur_learning_rate = self.learning_rate
 

@@ -37,13 +37,15 @@ def train_dnn_for_big_data(config_file):
     neuralnet = create_neuralnet(network_arch)
     optimizer = create_optimizer(optim_settings)
 
+    neuralnet.prepare_learning(optimizer.get_batch_size())
+
     train_data_set = SupervisedDataSet(input_sample_file,frame_name=frame_name)
 
     for train_X, train_y in train_data_set.sample_batches(batch_size=chunk_size):
 
-        shared_train_X, shared_train_y = shared_dataset((train_X, train_y))
+        neuralnet.update_chunk(train_X, train_y)
 
-        new_param = optimizer.optimize(neuralnet, neuralnet.get_parameter(), shared_train_X, shared_train_y)
+        new_param = optimizer.optimize(neuralnet, neuralnet.get_parameter())
 
         neuralnet.set_parameter(new_param)
 

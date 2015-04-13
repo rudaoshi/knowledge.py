@@ -3,10 +3,10 @@ __author__ = 'Sun'
 from scipy.optimize import fmin_cg
 
 
-from knowledge.machine.optimization.optimizer import Optimizer
+from knowledge.machine.optimization.batchoptimizer import BatchOptimizer
 
 
-class CGDOptimizer(Optimizer):
+class CGDOptimizer(BatchOptimizer):
 
     def __init__(self,
                  max_epoches = 10,
@@ -17,24 +17,23 @@ class CGDOptimizer(Optimizer):
         self.batch_size = batch_size
         self.batch_optim_step = batch_optim_step
 
-    def optimize(self, machine, param, X, y = None):
+    def get_batch_size(self):
+        return self.batch_size
+
+    def optimize(self, machine, param):
 
         for i in range(self.max_epoches):
 
-            for batch_id in range(0, X.raw_shape[0], self.batch_size):
-
-                end_idx = min(batch_id + self.batch_size, X.raw_shape[0])
-                X_batch = X[batch_id: end_idx]
-                y_batch = y[batch_id: end_idx] if y is not None else None
+            for batch_id in range(machine.get_batch_num()):
 
                 def train_func(p):
 
                     machine.set_parameter(p)
-                    return machine.object(X_batch, y_batch)
+                    return machine.object(i)
 
                 def train_grad_func(p):
                     machine.set_parameter(p)
-                    return machine.gradient(X_batch, y_batch)
+                    return machine.gradient(i)
 
                 best_param = fmin_cg(
                     f = train_func,

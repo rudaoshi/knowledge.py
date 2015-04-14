@@ -27,8 +27,6 @@ class FrameStore(object):
         else:
             self.store = pd.HDFStore(self.file_path)
 
-        self.frame = self.store.get(self.frame_name)
-
     def __enter__(self):
 
         return self
@@ -37,8 +35,9 @@ class FrameStore(object):
 
         self.store.close()
 
-    def __getattr__(self, attrname):
-        return getattr(self.frame, attrname)
+    def append(self, chunk):
+
+        self.store.append(self.frame_name, chunk)
 
     def close(self):
 
@@ -59,12 +58,6 @@ class HugeFrame(object):
             self.chunk_size = 50000
 
         self.compress = compress
-
-
-
-    def open_storer(self):
-
-        return FrameStore(self.__file_path,self.__frame_name,self.compress)
 
 
     def append_data_from_txt(self, txt_feature_file_path, feature_dim,

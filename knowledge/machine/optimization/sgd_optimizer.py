@@ -25,14 +25,10 @@ class SGDOptimizer(BatchOptimizer):
 
         for i in range(self.max_epoches):
 
-            for batch_id in range(0, X.shape[0], self.batch_size):
-
-                end_idx = min(batch_id + self.batch_size, X.shape[0])
-                X_batch = X[batch_id: end_idx]
-                y_batch = y[batch_id: end_idx] if y is not None else None
+            for batch_id in range(machine.get_batch_num()):
 
                 machine.set_parameter(param)
-                gradient = machine.gradient(X_batch, y_batch)
+                gradient = machine.gradient(batch_id)
 
                 param = param - cur_learning_rate * gradient
 

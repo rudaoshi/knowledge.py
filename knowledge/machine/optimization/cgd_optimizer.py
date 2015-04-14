@@ -43,7 +43,7 @@ class CGDOptimizer(BatchOptimizer):
                     maxiter=self.batch_optim_step
                 )
 
-                print "current cost:", train_func(param)
+                print "current cost:", train_func(best_param)
 
                 param = best_param
 

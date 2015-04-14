@@ -28,10 +28,13 @@ class SGDOptimizer(BatchOptimizer):
             for batch_id in range(machine.get_batch_num()):
 
                 machine.set_parameter(param)
+                print "cost before opt:", machine.object(batch_id)
                 gradient = machine.gradient(batch_id)
 
                 param = param - cur_learning_rate * gradient
 
+                machine.set_parameter(param)
+                print "cost after opt:", machine.object(batch_id)
 
             cur_learning_rate *= self.decay_rate
 

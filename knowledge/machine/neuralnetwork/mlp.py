@@ -65,8 +65,8 @@ class MultiLayerPerception(BatchStocasticGradientOptimizable):
 
         gradient_vec = []
         for gW, gb in chunks(grad, 2):
-            gradient_vec.append(gW.reshape((-1,)))
-            gradient_vec.append(gb.reshape((-1,)))
+            gradient_vec.append(gW.flatten())
+            gradient_vec.append(gb.flatten())
 
         self.__gradient_expr = theano.tensor.concatenate(gradient_vec)
         self.__gradient_func = theano.function([batch_id],

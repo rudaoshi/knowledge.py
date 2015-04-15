@@ -56,7 +56,7 @@ def train_dnn_for_big_data(config_file):
 
 
     for i in range(max_epoches):
-
+        print time.ctime() + ":\tbegin epoche :", i
         shuffle(sample_file_paths)
         for remote_file_path in sample_file_paths:
 
@@ -66,17 +66,22 @@ def train_dnn_for_big_data(config_file):
 
             print time.ctime() + ":\tbegin training with sample : " + remote_file_path
 
-            print time.ctime() + ":\tbegin epoche :", i
-            for idx, (train_X, train_y_) in enumerate(train_data_set.sample_batches(batch_size=chunk_size)):
+            try:
 
-                print time.ctime() + ":\tbegin new chunk : ", idx, "@epoch : ", i
-                train_y = numpy.zeros((train_y_.shape[0], 1))
-                train_y[:,0] = train_y_
-                neuralnet.update_chunk(train_X, train_y)
+                for idx, (train_X, train_y_) in enumerate(train_data_set.sample_batches(batch_size=chunk_size)):
 
-                new_param = optimizer.optimize(neuralnet, neuralnet.get_parameter())
+                    print time.ctime() + ":\tbegin new chunk : ", idx, "@epoch : ", i
+                    train_y = numpy.zeros((train_y_.shape[0], 1))
+                    train_y[:,0] = train_y_
+                    neuralnet.update_chunk(train_X, train_y)
 
-                neuralnet.set_parameter(new_param)
+                    new_param = optimizer.optimize(neuralnet, neuralnet.get_parameter())
+
+                    neuralnet.set_parameter(new_param)
+            except Exception as e:
+
+                print e.message
+
 
             os.system('rm ' + local_file_path)
 

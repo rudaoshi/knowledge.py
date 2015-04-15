@@ -81,11 +81,10 @@ def train_dnn_for_big_data(config_file):
             os.system('rm ' + local_file_path)
 
 
-            with open(output_model_prefix + "_"  + str(i) + "_" +
-                                   os.path.basename(local_file_path), 'w') as f:
-                content = network_arch
-                content["parameter"] = neuralnet.get_parameter()
-                cPickle.dump(content, f, protocol=cPickle.HIGHEST_PROTOCOL)
+        with open(output_model_prefix + "_"  + str(i) + ".dat", 'w') as f:
+            content = network_arch
+            content["parameter"] = neuralnet.get_parameter()
+            cPickle.dump(content, f, protocol=cPickle.HIGHEST_PROTOCOL)
 
 
 if __name__ == "__main__":

@@ -10,13 +10,13 @@ import theano.tensor as T
 from theano.tensor.shared_randomstreams import RandomStreams
 
 from knowledge.machine.neuralnetwork.layer.perception import PerceptionLayer
-from knowledge.machine.optimization.gradient_optimizable import GradientOptimizable
+from knowledge.machine.optimization.gradient_optimizable import BatchStocasticGradientOptimizable
 
 from knowledge.machine.neuralnetwork.layer.layer_factory import create_layer
 from knowledge.machine.cost.cost_factory import create_cost
 from knowledge.util.data_process import chunks
 
-class MultiLayerPerception(GradientOptimizable):
+class MultiLayerPerception(BatchStocasticGradientOptimizable):
 
     def __init__(self, layer_params, cost_param):
 
@@ -32,35 +32,59 @@ class MultiLayerPerception(GradientOptimizable):
 
         self.cost = create_cost(cost_param)
 
-        self.__make_behaviors()
+    def prepare_learning(self, batch_size):
 
+        self.learning_batch_size = batch_size
 
-    def __make_behaviors(self):
+        X = theano.tensor.matrix("X")
+        y = theano.tensor.matrix("y")
 
-        X = theano.tensor.matrix()
-        y = theano.tensor.matrix()
+        batch_id = theano.tensor.iscalar('i')
+
+        self.chunk_X = theano.shared(numpy.zeros((batch_size, self.layers[0].input_dim()), dtype = theano.config.floatX))
+        self.chunk_y = theano.shared(numpy.zeros((batch_size, 1), dtype = theano.config.floatX), )
+
 
         layer_out = X
         for layer in self.layers:
             layer_out = layer.output(layer_out)
 
-        self.__output_expr = layer_out
+        self.__predict_func = theano.function([batch_id],
+                                             givens =[(X, self.chunk_X[batch_id*batch_size:(batch_id+1)*batch_size,:])],
+                                             outputs=layer_out)
 
         self.__object_expr = self.cost.cost(layer_out, y)
-        self.__object_func = theano.function([X,y], outputs=self.__object_expr)
+        self.__object_func = theano.function([batch_id],
+                                             givens =[(X, self.chunk_X[batch_id*batch_size:(batch_id+1)*batch_size,:]),
+                                                 (y, self.chunk_y[batch_id*batch_size:(batch_id+1)*batch_size,:])],
+                                             outputs=self.__object_expr)
 
         param = self.params()
 
         grad = T.grad(self.__object_expr, param)
 
         gradient_vec = []
-        for gW, gb in chunks(grad,2):
-            gradient_vec.append(gW.reshape((-1,)))
-            gradient_vec.append(gb.reshape((-1,)))
+        for gW, gb in chunks(grad, 2):
+            gradient_vec.append(gW.flatten())
+            gradient_vec.append(gb.flatten())
 
         self.__gradient_expr = theano.tensor.concatenate(gradient_vec)
-        self.__gradient_func = theano.function([X,y], outputs=self.__gradient_expr)
+        self.__gradient_func = theano.function([batch_id],
+                                             givens =[(X, self.chunk_X[batch_id*batch_size:(batch_id+1)*batch_size,:]),
+                                                 (y, self.chunk_y[batch_id*batch_size:(batch_id+1)*batch_size,:])],
+                                             outputs=self.__gradient_expr)
 
+
+    def update_chunk(self, X, y):
+
+        self.learning_batch_num = (X.shape[0]+ self.learning_batch_size - 1)/self.learning_batch_size
+
+        self.chunk_X.set_value(X.astype(theano.config.floatX))
+        self.chunk_y.set_value(y.astype(theano.config.floatX))
+
+    def get_batch_num(self):
+
+        return self.learning_batch_num
 
 
     def params(self):
@@ -126,14 +150,16 @@ class MultiLayerPerception(GradientOptimizable):
             start_idx += b_size
 
 
+    def predict(self, batch_id):
+        return self.__predict_func(batch_id)
 
-    def object(self, X, y = None):
+    def object(self, batch_id):
 
-        return self.__object_func(X, y)
+        return self.__object_func(batch_id)
 
-    def gradient(self, X, y = None):
+    def gradient(self, batch_id):
 
-        return self.__gradient_func(X, y)
+        return self.__gradient_func(batch_id)
 
 
 

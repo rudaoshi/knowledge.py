@@ -1,11 +1,12 @@
 __author__ = 'Sun'
 
+
 __neuralnet_creator = dict()
 
 
-def register_creator(nn_type, creator):
+def register_creator(neuralnet_type, creator):
 
-    __neuralnet_creator[nn_type] = creator
+    __neuralnet_creator[neuralnet_type] = creator
 
 
 def create_neuralnet(neuralnet_param):
@@ -25,5 +26,4 @@ def create_neuralnet(neuralnet_param):
 from knowledge.machine.neuralnetwork.mlp import MultiLayerPerception
 
 register_creator("mlp", lambda param: MultiLayerPerception(**param))
-
 

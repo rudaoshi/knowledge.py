@@ -4,13 +4,18 @@ __author__ = 'Sun'
 import ConfigParser
 import click
 import simplejson as json
-import cPickle
 
-from knowledge.data.supervised_dataset import SupervisedDataSet
-from knowledge.machine.optimization.optim_factory import create_optimizer
 from knowledge.machine.neuralnetwork.neuralnet_factory import create_neuralnet
+from knowledge.machine.optimization.optim_factory import create_optimizer
+from knowledge.util.hadoop import download_file
+from knowledge.data.supervised_dataset import SupervisedDataSet
+import numpy
+import cPickle
+import time
+import os
+from random import shuffle
 
-from knowledge.util.theano_util import shared_dataset
+
 @click.command()
 @click.argument('config_file', type=click.Path(exists=True))
 def train_dnn_for_big_data(config_file):
@@ -18,42 +23,63 @@ def train_dnn_for_big_data(config_file):
     config = ConfigParser.ConfigParser()
     config.read(config_file)
 
+    hadoop_bin = config.get("hadoop", 'bin')
 
-    input_sample_file = config.get("input", 'input_sample_file')
-    data_group_name = config.get("input", 'data_group_name')
+    temp_dir = config.get('temp','temp_dir')
 
-    output_model_file = config.get("output", 'output_model_file')
+    sample_list = config.get("input", 'sample_file_list')
+    frame_name = config.get("input", 'data_frame_name')
 
-    network_setting = json.loads(config.get("network","architecture"))
+    output_model_prefix = config.get("output", 'output_model_file')
 
+    try:
+        network_arch = json.loads(config.get("network","architecture"))
+    except:
+        print config.get("network","architecture")
+        raise
+
+    max_epoches = int(config.get("train", 'max_epoches'))
     chunk_size = int(config.get("train", 'chunk_size'))
     optim_settings = json.loads(config.get("train", 'optim_settings'))
 
-    train_data_set = SupervisedDataSet(input_sample_file,
-                                       frame_name = data_group_name,
-                                       chunk_size=chunk_size)
+    neuralnet = create_neuralnet(network_arch)
+    optimizer = create_optimizer(optim_settings)
 
-    optim_alog = create_optimizer(optim_settings)
+    neuralnet.prepare_learning(optimizer.get_batch_size())
 
-    neural_net = create_neuralnet(network_setting)
+    for i in range(max_epoches):
 
-    for (train_batch_x, train_batch_y) in train_data_set.sample_batches():
-        shared_train_x, shared_train_y = shared_dataset((train_batch_x, train_batch_y))
+        shuffle(sample_list)
+        for remote_file_path in sample_list:
 
-        param = optim_alog.optimize(neural_net,
-                                    neural_net.get_parameter(),
-                                    shared_train_x,
-                                    shared_train_y)
+            local_file_path = download_file(hadoop_bin, remote_file_path, temp_dir)
 
-        neural_net.set_parameter(param)
+            train_data_set = SupervisedDataSet(local_file_path, frame_name=frame_name)
 
-    with open(output_model_file,'w') as output_file:
+            print time.ctime() + ":\tbegin training with sample : " + remote_file_path
 
-        cPickle.dump(neural_net.__get_states(),
-            output_file,
-            protocol=cPickle.HIGHEST_PROTOCOL)
+            print time.ctime() + ":\tbegin epoche :", i
+            for idx, (train_X, train_y_) in enumerate(train_data_set.sample_batches(batch_size=chunk_size)):
+
+                print time.ctime() + ":\tbegin new chunk : ", idx, "@epoch : ", i
+                train_y = numpy.zeros((train_y_.shape[0], 1))
+                train_y[:,0] = train_y_
+                neuralnet.update_chunk(train_X, train_y)
+
+                new_param = optimizer.optimize(neuralnet, neuralnet.get_parameter())
+
+                neuralnet.set_parameter(new_param)
+
+            os.system('rm ' + local_file_path)
 
 
+            with open(output_model_prefix + "_"  + str(i) + "_" +
+                                   os.path.basename(local_file_path), 'w') as f:
+                content = network_arch
+                content["parameter"] = neuralnet.get_parameter()
+                cPickle.dump(content, f, protocol=cPickle.HIGHEST_PROTOCOL)
 
 
+if __name__ == "__main__":
 
+    train_dnn_for_big_data()

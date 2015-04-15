@@ -11,6 +11,7 @@ from knowledge.machine.optimization.optim_factory import create_optimizer
 from knowledge.data.supervised_dataset import SupervisedDataSet
 import numpy
 import cPickle
+import time
 
 @click.command()
 @click.argument('config_file', type=click.Path(exists=True))
@@ -42,10 +43,10 @@ def train_dnn_for_big_data(config_file):
     train_data_set = SupervisedDataSet(input_sample_file,frame_name=frame_name)
 
     for i in range(max_epoches):
-        print "begin epoche :", i
+        print time.ctime() + ":\tbegin epoche :", i
         for idx, (train_X, train_y_) in enumerate(train_data_set.sample_batches(batch_size=chunk_size)):
 
-            print "begin new chunk : ", idx
+            print time.ctime() + ":\tbegin new chunk : ", idx, "@epoch : ", i
             train_y = numpy.zeros((train_y_.shape[0], 1))
             train_y[:,0] = train_y_
             neuralnet.update_chunk(train_X, train_y)

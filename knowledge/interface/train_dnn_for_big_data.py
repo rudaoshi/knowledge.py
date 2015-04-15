@@ -42,8 +42,10 @@ def train_dnn_for_big_data(config_file):
     train_data_set = SupervisedDataSet(input_sample_file,frame_name=frame_name)
 
     for i in range(max_epoches):
-        for train_X, train_y_ in train_data_set.sample_batches(batch_size=chunk_size):
+        print "begin epoche :", i
+        for idx, (train_X, train_y_) in enumerate(train_data_set.sample_batches(batch_size=chunk_size)):
 
+            print "begin new chunk : ", idx
             train_y = numpy.zeros((train_y_.shape[0], 1))
             train_y[:,0] = train_y_
             neuralnet.update_chunk(train_X, train_y)

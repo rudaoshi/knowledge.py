@@ -27,7 +27,7 @@ def train_dnn_for_big_data(config_file):
 
     temp_dir = config.get('temp','temp_dir')
 
-    sample_list = config.get("input", 'sample_file_list')
+    sample_file_list = config.get("input", 'sample_file_list')
     frame_name = config.get("input", 'data_frame_name')
 
     output_model_prefix = config.get("output", 'output_model_prefix')
@@ -47,10 +47,18 @@ def train_dnn_for_big_data(config_file):
 
     neuralnet.prepare_learning(optimizer.get_batch_size())
 
+    sample_file_paths = []
+    with open(sample_file_list,'r') as f:
+        for line in f:
+            line = line.strip()
+            if line:
+                sample_file_paths.append(line)
+
+
     for i in range(max_epoches):
 
-        shuffle(sample_list)
-        for remote_file_path in sample_list:
+        shuffle(sample_file_paths)
+        for remote_file_path in sample_file_paths:
 
             local_file_path = download_file(hadoop_bin, remote_file_path, temp_dir)
 

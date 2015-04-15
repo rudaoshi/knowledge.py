@@ -30,7 +30,7 @@ def train_dnn_for_big_data(config_file):
     sample_list = config.get("input", 'sample_file_list')
     frame_name = config.get("input", 'data_frame_name')
 
-    output_model_prefix = config.get("output", 'output_model_file')
+    output_model_prefix = config.get("output", 'output_model_prefix')
 
     try:
         network_arch = json.loads(config.get("network","architecture"))

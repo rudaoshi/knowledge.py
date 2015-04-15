@@ -7,7 +7,7 @@ import theano
 
 from knowledge.machine.neuralnetwork.layer.path_transition_layer import PathTransitionLayer
 from knowledge.machine.neuralnetwork.mlp import HiddenLayer
-from knowledge.machine.neuralnetwork.layer.conv_layer import Conv1DLayer
+from knowledge.machine.neuralnetwork.layer.__deprecated.conv_layer import Conv1DLayer
 from knowledge.machine.neuralnetwork.layer.lookup_table_layer import LookupTableLayer
 
 

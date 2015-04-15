@@ -1,7 +1,7 @@
 __author__ = 'huang'
 
 from knowledge.machine.neuralnetwork.layer.lookup_table_layer import LookupTableLayer
-from knowledge.machine.neuralnetwork.layer.conv1d_layer import Conv1DLayer
+from knowledge.machine.neuralnetwork.layer.conv1d_maxpool_layer import Conv1DLayer
 
 
 import theano.tensor as T

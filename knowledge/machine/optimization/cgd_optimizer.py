@@ -8,10 +8,14 @@ from knowledge.machine.optimization.optimizer import Optimizer
 
 class CGDOptimizer(Optimizer):
 
-    def __init__(self):
-        self.max_epoches = 10
-        self.batch_size = 10000
-        self.batch_optim_step = 3
+    def __init__(self,
+                 max_epoches = 10,
+                 batch_size = 10000,
+                 batch_optim_step = 3
+                 ):
+        self.max_epoches = max_epoches
+        self.batch_size = batch_size
+        self.batch_optim_step = batch_optim_step
 
     def optimize(self, machine, param, X, y = None):
 

@@ -42,7 +42,8 @@ import theano
 import theano.tensor as T
 
 from knowledge.machine.neuralnetwork.random import get_numpy_rng
-class SoftMaxLayer(object):
+from knowledge.machine.neuralnetwork.layer.layer import Layer
+class SoftMaxLayer(Layer):
     """Multi-class Logistic Regression Class
 
     The logistic regression is fully described by a weight matrix :math:`W`
@@ -51,7 +52,9 @@ class SoftMaxLayer(object):
     determine a class membership probability.
     """
 
-    def __init__(self, name, W = None, b = None, n_in = None, n_out = None):
+    def __init__(self,
+                 input_dim = None, output_dim = None,
+                 W = None, b = None):
         """ Initialize the parameters of the logistic regression
 
         :type input: theano.tensor.TensorType
@@ -71,8 +74,37 @@ class SoftMaxLayer(object):
 
 #        assert param_valid, "The construction param is not valid"
 
-        assert isinstance(name, str) and len(name) > 0
-        self.name = name
+        if input_dim is not None and output_dim is not None:
+
+            if W is None:
+                rng = get_numpy_rng()
+                W = numpy.asarray(rng.uniform(
+                        low=-numpy.sqrt(6. / (input_dim + output_dim)),
+                        high=numpy.sqrt(6. / (input_dim + output_dim)),
+                        size=(input_dim, output_dim)), dtype=theano.config.floatX)
+                if self.activator == theano.tensor.nnet.sigmoid:
+                    W *= 4
+            else:
+                assert input_dim == W.shape[0] and input_dim == W.shape[1]
+
+            if b is None:
+                b = numpy.zeros((output_dim,), dtype=theano.config.floatX)
+            else:
+                assert output_dim == b.shape[0]
+
+            self.W = theano.shared(value=W, borrow=True)
+            self.b = theano.shared(value=b, borrow=True)
+            self.input_dim_, self.output_dim_ = W.shape
+        elif W is not None and b is not None:
+            self.W = theano.shared(value=W, borrow=True)
+            self.b = theano.shared(value=b, borrow=True)
+            self.input_dim_, self.output_dim_ = W.shape
+
+        else:
+            raise Exception("Perception Layer needs parameter "
+                            "in pair of (W,b) or (n_in, n_out) besides activation")
+
+
         if W:
             self.W = theano.shared(value=W.astype(theano.config.floatX),
                                 name='softmax_W_%s' % (self.name), borrow=True)
@@ -99,7 +131,7 @@ class SoftMaxLayer(object):
     def __getstate__(self):
 
         state = dict()
-        state['name'] = "soft-max"
+        state['type'] = "soft-max"
         state['W'] = self.W.get_value()
         state['b'] = self.b.get_value()
 

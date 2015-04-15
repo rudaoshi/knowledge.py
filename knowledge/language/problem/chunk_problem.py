@@ -31,7 +31,7 @@ class ChunkProblem(Problem):
         character['POS_type_num'] = len(postags.PosTags.POSTAG_ID_MAP)
         character['NER_type_num'] = len(NERTypes.NERTYPE_ID_MAP)
         character['CHUNKING_type_num'] = len(ChunkTypes.CHUNKTYPE_ID_MAP)
-        character['SRL_type_num'] = len(srltypes.SrlTypes.SRLTYPE_ID_MAP)
+        character['SRL_type_num'] = len(srltypes.SrlTypes.SRLTYPE_LABEL_MAP)
         character['dist_to_verb_num'] = len(locdifftypes.LocDiffToVerbTypes.DIFF_ID_MAP)
         character['dist_to_word_num'] = len(locdifftypes.LocDiffToWordTypes.DIFF_ID_MAP)
 

@@ -7,8 +7,14 @@ import numpy as np
 
 from knowledge.language.corpora.conll05 import Conll05Corpora
 from knowledge.language.problem.srl_problem import SRLProblem
-from knowledge.language.neural_model.srl_neural_model import SRLNetowrkArchitecture, NeuralModelHyperParameter, train_srl_neural_model
+from knowledge.language.neural_model.srl_network import SRLNetowrkArchitecture, NeuralModelHyperParameter, SRLNetwork
 from knowledge.machine.neuralnetwork.random import init_rng
+
+from knowledge.machine.optimization.sgd_optimizer import SGDOptimizer
+from knowledge.machine.optimization.cgd_optimizer import CGDOptimizer
+import numpy
+import theano
+
 
 def test_srl_neural_model(DATA_FOLDER, model_path = None, model_tag = None):
 
@@ -49,7 +55,22 @@ def test_srl_neural_model(DATA_FOLDER, model_path = None, model_tag = None):
     hyper_param.l1_reg = 0
     hyper_param.l2_reg = 0
 
-    train_srl_neural_model(train_problem,valid_problem, nn_architecture,hyper_param, model_path, model_tag)
+    m = SRLNetwork(train_problem, nn_architecture)
+
+    optimizer = SGDOptimizer()
+    optimizer.batch_size = 100
+
+    X = numpy.random.random((1000, 50))
+    y = numpy.random.random((1000, 1))
+
+    old_cost = m.object(X,y)
+
+    param = optimizer.optimize(m, m.get_parameter(), X, y)
+
+    m.set_parameter(param)
+    new_cost = m.object(X, y)
+
+    print old_cost, new_cost
 
 
 if __name__ == "__main__":

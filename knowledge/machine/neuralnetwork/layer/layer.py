@@ -7,11 +7,15 @@ class Layer(object):
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def input_dim(self):
+    def get_parameter_size(self):
         pass
 
     @abstractmethod
-    def output_dim(self):
+    def get_parameter(self):
+        pass
+
+    @abstractmethod
+    def set_parameter(self, parameter_vec):
         pass
 
     @abstractmethod
@@ -19,7 +23,7 @@ class Layer(object):
         pass
 
     @abstractmethod
-    def output(self, X):
+    def output(self, X, **kwargs):
         pass
 
     @abstractmethod

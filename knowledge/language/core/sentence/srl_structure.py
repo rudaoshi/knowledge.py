@@ -19,6 +19,10 @@ class Role(object):
         return self.__start_pos
 
     @property
+    def length(self):
+        return self.__end_pos - self.start_pos + 1
+
+    @property
     def end_pos(self):
         return self.__end_pos
 

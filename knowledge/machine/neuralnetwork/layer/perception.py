@@ -93,13 +93,37 @@ class PerceptionLayer(Layer):
     def output_dim(self):
         return self.output_dim_
 
-    def output(self, X):
+    def output(self, X, **kwargs):
 
         return self.activator(T.dot(X, self.W) + self.b)
 
     def params(self):
         # parameters of the model
         return [self.W, self.b]
+
+    def get_parameter_size(self):
+
+
+        return self.input_dim_* self.output_dim_ + self.output_dim_
+
+    def get_parameter(self):
+        param_vec = []
+        param_vec.append(self.W.get_value(borrow=True).reshape((-1,)))
+        param_vec.append(self.b.get_value(borrow=True).reshape((-1,)))
+
+        return numpy.concatenate(param_vec)
+
+    def set_parameter(self, parameter_vec):
+        W_size = self.input_dim_ * self.output_dim_
+        W_shape = (self.input_dim_ , self.output_dim_)
+        self.W.set_value(parameter_vec[0 :  W_size].reshape(W_shape),
+                              borrow = True)
+
+        b_size = self.output_dim_
+        b_shape = (self.output_dim_,)
+        self.b.set_value(parameter_vec[W_size : W_size + b_size].reshape(b_shape),
+                              borrow = True)
+
 
     def __getstate__(self):
 

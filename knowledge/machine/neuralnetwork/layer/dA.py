@@ -38,9 +38,9 @@ import numpy
 import theano
 import theano.tensor as T
 from theano.tensor.shared_randomstreams import RandomStreams
-import PIL.Image
 
-from knowledge.machine.neuralnetwork.layer.softmax import load_data
+import PIL.Image
+from knowledge.machine.neuralnetwork.layer.__deprecated.softmax import load_data
 from utils import tile_raster_images
 
 

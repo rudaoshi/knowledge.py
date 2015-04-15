@@ -31,7 +31,7 @@ import theano.tensor as T
 from theano.tensor.signal import downsample
 from theano.tensor.nnet import conv
 
-from knowledge.machine.neuralnetwork.layer.softmax import SoftMaxLayer, load_data
+from knowledge.machine.neuralnetwork.layer.__deprecated.softmax import SoftMaxLayer, load_data
 from machine.neuralnetwork.layer.mlp import HiddenLayer
 
 

@@ -5,11 +5,14 @@ import theano
 
 class SGDOptimizer(Optimizer):
 
-    def __init__(self):
-        self.max_epoches = 10
-        self.learning_rate = 0.01
-        self.decay_rate = 0.9
-        self.batch_size = 10000
+    def __init__(self, max_epoches = 10,
+                 learning_rate = 0.01,
+                 decay_rate = 0.9,
+                 batch_size = 10000):
+        self.max_epoches = max_epoches
+        self.learning_rate = learning_rate
+        self.decay_rate = decay_rate
+        self.batch_size = batch_size
 
     def optimize(self, machine, param, X, y = None):
 

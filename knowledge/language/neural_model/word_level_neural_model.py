@@ -7,10 +7,10 @@ import os
 import theano
 import theano.tensor as T
 import numpy as np
-from sklearn.metrics import f1_score
 
+from sklearn.metrics import f1_score
 from knowledge.machine.neuralnetwork.mlp import HiddenLayer
-from knowledge.machine.neuralnetwork.layer.softmax import SoftMaxLayer
+from knowledge.machine.neuralnetwork.layer.__deprecated.softmax import SoftMaxLayer
 from knowledge.machine.neuralnetwork.layer.lookup_table_layer import LookupTableLayer
 from knowledge.machine.neuralnetwork.layer.base import BaseModel
 

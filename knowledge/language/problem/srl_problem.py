@@ -1,3 +1,4 @@
+#coding=utf8
 __author__ = 'huang'
 
 import numpy as np
@@ -15,15 +16,36 @@ from knowledge.language.problem import postags, srltypes, locdifftypes
 class SRLFeatureBatch(object):
 
     def __init__(self):
-        self.word_id = []
-        self.pos_id = []
-        self.other_feature = []
+        self.sentence_len = 0
+        self.verb_num = 0
+
+        #
+        self.sentence_word_id = [] #当前句子的全局word id 列表
+        self.sentence_pos_id = [] #当前句子的全局词性 id 列表
+
+        #每个<word, verb> pair 一条记录
+        self.cur_word_id = []  # 当前word 的词id
+        self.cur_verb_id = []  # 当前verb 的词id
+        self.cur_word_pos_id = []  # 当前word的词性 id
+        self.cur_verb_pos_id = []  # 当前verb的词性 id
+        self.cur_word_loc_id = []  # 当前word的位置 id
+        self.cur_verb_loc_id = []  # 当前verb的位置 id
+        self.cur_word2verb_dist_id = []  # 当前word 到 当前verb的位置距离 id
+        self.cur_verb2word_dist_id = []  # 当前verb 到 当前word的位置距离 id
+        self.other_word2verb_dist_id = []  # 其他word 到当前verb的位置距离 id
+        self.other_word2word_dist_id = []  # 其他word 到当前word的位置距离 id
+
 
     def finsh_batch(self):
+        attrs = dir(self)
 
-        self.word_id = np.array(self.word_id)
-        self.pos_id = np.array(self.pos_id)
-        self.other_feature = np.array(self.other_feature)
+        for attr_name in attrs:
+            attr_val = getattr(self.attr)
+            if isinstance(attr_val, list):
+                setattr(self, attr_name, np.array(attr_val))
+
+
+
 
 
 class SRLProblem(Problem):
@@ -43,7 +65,7 @@ class SRLProblem(Problem):
         character = dict()
         character['word_num'] = word_repo.get_word_num()
         character['POS_type_num'] = len(postags.PosTags.POSTAG_ID_MAP)
-        character['SRL_type_num'] = len(srltypes.SrlTypes.SRLTYPE_ID_MAP)
+        character['SRL_type_num'] = len(srltypes.SrlTypes.SRLTYPE_LABEL_MAP)
         character['loc_type_num'] = len(locdifftypes.LocTypes.LOC_ID_MAP)
         character['dist_to_verb_num'] = len(locdifftypes.LocDiffToVerbTypes.DIFF_ID_MAP)
         character['dist_to_word_num'] = len(locdifftypes.LocDiffToWordTypes.DIFF_ID_MAP)
@@ -78,92 +100,98 @@ class SRLProblem(Problem):
                      ]
         '''
 
-        sentence_len = sentence.word_num()
+        X = SRLFeatureBatch()
+        y = []
+
+        X.sentence_len =  sentence.word_num()
+        X.sentence_word_id = [word.id for word in sentence.words()]
+        X.sentence_pos_id = [PosTags.POSTAG_ID_MAP[prop.pos] for prop in sentence.word_properties()]
+
         for srl in sentence.srl_structs():
-            X = [] #SRLFeatureBatch()
-            y = []
+
+            label = [ SrlTypes.OTHERTYPE_LABEL]  * sentence.word_num()
+
+            for role in srl.roles():
+                if role.length == 1:
+                    label[role.start_pos] = SrlTypes.SRLTYPE_LABEL_MAP["S_" + role.type]
+                else:
+                    label[role.start_pos] = SrlTypes.SRLTYPE_LABEL_MAP["B_" + role.type]
+                    for pos in range(role.start_pos+1, role.end_pos ):
+                        label[pos] = SrlTypes.SRLTYPE_LABEL_MAP["I_" + role.type]
+                    label[role.end_pos] = SrlTypes.SRLTYPE_LABEL_MAP["E_" + role.type]
+
+
 
             verb = srl.verb_infinitive
-            verb_loc = srl.verb_loc  #given a verb 
+            verb_loc = srl.verb_loc  #given a verb
 
             loc_to_verb = [LocDiffToVerbTypes.get_locdiff_id(word_loc - verb_loc)
                     for word_loc in range(sentence.word_num())]
 
-            label = [ SrlTypes.SRLTYPE_ID_MAP[SrlTypes.PADDING_SRL_TYPE] ] * sentence.word_num()
-
-            for role in srl.roles():
-                for pos in range(role.start_pos, role.end_pos + 1):
-                    label[pos] = SrlTypes.SRLTYPE_ID_MAP[role.type]
 
             for word_loc, wd in enumerate(sentence.words()): # for each word
 
                 loc_to_word = [LocDiffToWordTypes.get_locdiff_id(idx - word_loc)
                         for idx in range(sentence.word_num())]
 
-
-                X.append(
-                         [sentence_len, wd.id, verb.id,
-                          PosTags.POSTAG_ID_MAP[sentence.get_word_property(verb_loc).pos],
-                          PosTags.POSTAG_ID_MAP[sentence.get_word_property(word_loc).pos],
-                          LocTypes.get_loc_id(word_loc),
-                          LocTypes.get_loc_id(verb_loc),
-                          LocDiffToWordTypes.get_locdiff_id(verb_loc - word_loc),
-                          LocDiffToVerbTypes.get_locdiff_id(word_loc - verb_loc )
-                         ] +  loc_to_word + loc_to_verb
-                         )
-
+                X.cur_word_id.append(wd.id)
+                X.cur_verb_id.append(verb.id)
+                X.cur_word_pos_id.append(PosTags.POSTAG_ID_MAP[sentence.get_word_property(word_loc).pos])
+                X.cur_verb_pos_id.append(PosTags.POSTAG_ID_MAP[sentence.get_word_property(verb_loc).pos])
+                X.cur_word_loc_id.append(LocTypes.get_loc_id(word_loc))
+                X.cur_verb_loc_id.append(LocTypes.get_loc_id(verb_loc))
+                X.cur_word2verb_dist_id.append(LocDiffToVerbTypes.get_locdiff_id(word_loc - verb_loc ))
+                X.cur_verb2word_dist_id.append(LocDiffToWordTypes.get_locdiff_id(verb_loc - word_loc))
+                X.other_word2word_dist_id.append(loc_to_word)
+                X.other_word2verb_dist_id.append(loc_to_verb)
 
                 y.append(label[word_loc])
 
-            yield np.array(X), np.array(y)
+        X.finsh_batch()
+        yield X, np.array(y)
+
+
 
     def pretty_srl_label(self, sentence, labels):
+        """
+        将句子与预测结果以Conll05可读形式输出出来
+        :param sentence:
+        :param labels:
+        :return:
+        """
 
         word_column = [ "-" ] * sentence.word_num()
-        label_columns = []
+        readable_type_columns = []
         for idx, srl in enumerate(sentence.srl_structs()):
             word_column[srl.verb_loc] = sentence.get_word(srl.verb_loc).content
 
             label = labels[idx]
-            label_column = [SrlTypes.ID_SRLTYPE_MAP[l] if l != 55 else "*" for l in label]
+            type_column = [SrlTypes.LABEL_SRLTYPE_MAP[l] for l in label]
 
-            tag_sequence = []
-            tag = None
-            start = None
-            end = None
-            for idx2, label in enumerate(label_column):
+            readable_type_column = ["*"] * len(type_column)
 
-                if label == "*":
-                    continue
+            for idx, type in enumerate(type_column):
 
-                if ((idx2 > 0 and label != label_column[idx2-1]) or
-                    idx2 == 0):
-                    tag = label
-                    start = idx2
-
-                if ((idx2 < len(label_column) - 1 and label != label_column[idx2+1]) or
-                    idx2 == len(label_column) -1 ):
-                    end = idx2
-                    tag_sequence.append((tag, start, end))
-
-            for tag, start, end in tag_sequence:
-
-                label_column[start] = "(" + tag + "*"
-
-                for idx in range(start + 1, end +1):
-                    label_column[idx] = "*"
-
-                label_column[end] += ")"
+                if type.startswith("S_"):
+                    readable_type_column[idx] = "(" + type[2:] + "*)"
+                elif type.startswith("B_"):
+                    readable_type_column[idx] = "(" + type[2:]
+                elif type.startswith("I_"):
+                    readable_type_column[idx] = "*"
+                elif type.startswith("E_"):
+                    readable_type_column[idx] = "*)"
+                else:
+                    readable_type_column[idx] = "*"
 
 
-            label_columns.append(label_column)
+            readable_type_columns.append(readable_type_column)
 
 
         s = cStringIO.StringIO()
 
         for idx in range(len(word_column)):
             s.write(word_column[idx] + "\t")
-            s.write("\t".join([column[idx] for column in label_columns]))
+            s.write("\t".join([column[idx] for column in readable_type_columns]))
             s.write("\n")
 
         s.write("\n") # blank line after each sentence
@@ -177,21 +205,21 @@ class SRLProblem(Problem):
 
         for sentence in  self.__corpora.sentences():
 
-            for X, y in self.get_dataset_for_sentence(sentence):
-                if len(y) == 0:
-                    continue
+            X, y = self.get_dataset_for_sentence(sentence)
+            if len(y) == 0:
+                continue
 
-                yield X, y
+            yield X, y
 
     def get_trans_mat_prior(self):
-        class_num = len(srltypes.SrlTypes.SRLTYPE_ID_MAP)
+        class_num = len(srltypes.SrlTypes.SRLTYPE_LABEL_MAP)
         trans_mat_prior = np.zeros((class_num + 1, class_num))
         for sentence in self.__corpora.sentences():
-            label = [ SrlTypes.SRLTYPE_ID_MAP[SrlTypes.PADDING_SRL_TYPE] ] * sentence.word_num()
+            label = [ SrlTypes.OTHERTYPE_LABEL ] * sentence.word_num()
             for srl in sentence.srl_structs():
                 for role in srl.roles():
                     for pos in range(role.start_pos, role.end_pos + 1):
-                        label[pos] = SrlTypes.SRLTYPE_ID_MAP[role.type]
+                        label[pos] = SrlTypes.SRLTYPE_LABEL_MAP[role.type]
                 for l in label:
                     trans_mat_prior[0,l] += 1
                 for l1, l2 in zip(label, label[1:]):
@@ -325,7 +353,7 @@ class SrlProblem2(object):
 
             sent_len.append(len(sentence[1]))
             masks.append([1] * len(sentence[1]) + [0] * (max_term_per_sent - len(sentence[1])))
-            one_y = [SrlTypes.SRLTYPE_ID_MAP[t] for t in one_y]
+            one_y = [SrlTypes.SRLTYPE_LABEL_MAP[t] for t in one_y]
             y.append(one_y)
             x.append(one_x)
             cnt += max_term_per_sent

@@ -39,7 +39,7 @@ import theano.tensor as T
 from theano.tensor.shared_randomstreams import RandomStreams
 
 from machine.neuralnetwork.layer import dA
-from knowledge.machine.neuralnetwork.layer.softmax import SoftMaxLayer, load_data
+from knowledge.machine.neuralnetwork.layer.__deprecated.softmax import SoftMaxLayer, load_data
 from machine.neuralnetwork.layer.mlp import HiddenLayer
 
 

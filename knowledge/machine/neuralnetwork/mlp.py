@@ -44,6 +44,8 @@ class MultiLayerPerception(GradientOptimizable):
         for layer in self.layers:
             layer_out = layer.output(layer_out)
 
+        self.__output_expr = layer_out
+
         self.__object_expr = self.cost.cost(layer_out, y)
         self.__object_func = theano.function([X,y], outputs=self.__object_expr)
 

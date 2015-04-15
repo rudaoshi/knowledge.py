@@ -7,14 +7,14 @@ to those without visible-visible and hidden-hidden connections.
 import time
 import os
 
-import PIL.Image
 import numpy
 import theano
 import theano.tensor as T
 from theano.tensor.shared_randomstreams import RandomStreams
 
+import PIL.Image
 from utils import tile_raster_images
-from knowledge.machine.neuralnetwork.layer.softmax import load_data
+from knowledge.machine.neuralnetwork.layer.__deprecated.softmax import load_data
 
 
 class RBM(object):

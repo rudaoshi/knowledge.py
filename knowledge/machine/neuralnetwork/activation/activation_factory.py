@@ -22,5 +22,6 @@ register_activation("linear", lambda x: x)
 register_activation("tanh", T.tanh)
 register_activation("sigmoid", T.nnet.sigmoid)
 register_activation("relu", lambda x: x * (x > 0.))
+register_activation("softmax", T.nnet.softmax)
 
 

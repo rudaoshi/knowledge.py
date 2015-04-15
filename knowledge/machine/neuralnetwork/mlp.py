@@ -79,8 +79,8 @@ class MultiLayerPerception(BatchStocasticGradientOptimizable):
 
         self.learning_batch_num = (X.shape[0]+ self.learning_batch_size - 1)/self.learning_batch_size
 
-        self.chunk_X.set_value(X)
-        self.chunk_y.set_value(y)
+        self.chunk_X.set_value(X.astype(theano.config.floatX))
+        self.chunk_y.set_value(y.astype(theano.config.floatX))
 
     def get_batch_num(self):
 

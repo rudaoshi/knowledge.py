@@ -7,7 +7,6 @@ import simplejson as json
 
 from knowledge.machine.neuralnetwork.neuralnet_factory import create_neuralnet
 from knowledge.machine.optimization.optim_factory import create_optimizer
-from knowledge.util.theano_util import shared_dataset
 
 from knowledge.data.supervised_dataset import SupervisedDataSet
 import numpy

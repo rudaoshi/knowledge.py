@@ -16,6 +16,8 @@ import numpy
 import theano
 import time
 
+from knowledge.language.problem.srltypes import SrlTypes
+
 
 from knowledge.language.evaluation.srl_evaluate import eval_srl
 
@@ -23,15 +25,30 @@ from knowledge.language.evaluation.srl_evaluate import eval_srl
 def evaluate(machine, valid_problem, info_suffix):
     test_label_file_path = "test_label_" + str(info_suffix) + ".txt"
     pred_label_file_path = "pred_label_" + str(info_suffix) + ".txt"
+    test_raw_label_file_path = "test_raw_label_" + str(info_suffix) + ".txt"
+    pred_raw_label_file_path = "pred_raw_label_" + str(info_suffix) + ".txt"
 
     test_label_file = open(test_label_file_path, "w")
     pred_label_file = open(pred_label_file_path, "w")
 
+    test_raw_label_file = open(test_raw_label_file_path, "w")
+    pred_raw_label_file = open(pred_raw_label_file_path, "w")
+
+    test_types = []
+    pred_types = []
     for valid_sentence in valid_problem.sentences():
         test_labels = []
         pred_labels = []
+
+        sentence_str = " ".join([word.content for word in valid_sentence.words()])
         for srl_x, srl_y in valid_problem.get_dataset_for_sentence(valid_sentence):
             pred_y = machine.predict(srl_x.astype(theano.config.floatX))
+
+            test_types.append(sentence_str)
+            test_types.append("\t".join([SrlTypes.LABEL_SRLTYPE_MAP[l] for l in srl_y]))
+            pred_types.append(sentence_str)
+            pred_types.append("\t".join([SrlTypes.LABEL_SRLTYPE_MAP[l] for l in pred_y]))
+
             test_labels.append(srl_y)
             pred_labels.append(pred_y)
 
@@ -41,11 +58,14 @@ def evaluate(machine, valid_problem, info_suffix):
         test_label_file.write(test_label_str)
         pred_label_file.write(pred_label_str)
 
-
+        test_raw_label_file.write("\n".join(test_types))
+        pred_raw_label_file.write("\n".join(pred_types))
 
     test_label_file.close()
     pred_label_file.close()
 
+    test_raw_label_file.close()
+    pred_raw_label_file.close()
 
     valid_result = eval_srl(test_label_file_path, pred_label_file_path)
     valid_info = 'validation info {0}% '.format(

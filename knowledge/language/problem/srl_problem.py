@@ -213,13 +213,13 @@ class SRLProblem(Problem):
                 end_idx = start_idx + len(group)
                 if tag == "*":
                     start_idx = end_idx
-                    continue
-                else:
-                    for i in range(1,len(group)-1):
-                        if group[i].startswith("E_") and group[i+1].startswith("B_"):
 
-                            unique_groups.append([start_idx, i, tag])
-                            start_idx = i + 1
+                else:
+                    # for i in range(1, len(group)-1):
+                    #     if group[i].startswith("E_") and group[i+1].startswith("B_"):
+                    #
+                    #         unique_groups.append([start_idx, start_idx + i + 1, tag])
+                    #         start_idx += i + 1
 
                     unique_groups.append([start_idx, end_idx, tag])
                     start_idx = end_idx

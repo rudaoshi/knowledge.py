@@ -41,6 +41,8 @@ def evaluate(machine, valid_problem, info_suffix):
         test_label_file.write(test_label_str)
         pred_label_file.write(pred_label_str)
 
+
+
     test_label_file.close()
     pred_label_file.close()
 
@@ -70,7 +72,7 @@ def test_srl_neural_model(train_file_path, valid_file_path):
     nn_architecture.dist_feature_dim = 50
 
     nn_architecture.conv_window_height = 3
-    nn_architecture.conv_output_dim = 5
+    nn_architecture.conv_output_dim = 500
 
     nn_architecture.hidden_layer_output_dims = [500,500]
 
@@ -88,26 +90,28 @@ def test_srl_neural_model(train_file_path, valid_file_path):
 
     m = SRLNetwork(problem_character, nn_architecture)
 
-    optimizer = SGDOptimizer()
+    optimizer = CGDOptimizer()
 
     trained_batch_num = 0
     valid_freq = 10
-    for sentence in train_problem.sentences():
 
-        for X, y in train_problem.get_dataset_for_sentence(sentence):
+    for iter in range(1000):
+        for sentence in train_problem.sentences():
 
-            if trained_batch_num % valid_freq == 0:
-                evaluate(m, valid_problem, trained_batch_num/valid_freq)
+            for X, y in train_problem.get_dataset_for_sentence(sentence):
+
+                if trained_batch_num % valid_freq == 0:
+                    evaluate(m, valid_problem, trained_batch_num/valid_freq)
 
 
-            optimizer.batch_size = X.shape[0]
-            optimizer.update_chunk(X, y)
+                optimizer.batch_size = X.shape[0]
+                optimizer.update_chunk(X, y)
 
-            param = optimizer.optimize(m, m.get_parameter())
+                param = optimizer.optimize(m, m.get_parameter())
 
-            m.set_parameter(param)
+                m.set_parameter(param)
 
-            trained_batch_num += 1
+                trained_batch_num += 1
 
 
 if __name__ == "__main__":

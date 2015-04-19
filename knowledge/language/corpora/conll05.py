@@ -145,7 +145,21 @@ class Conll05Corpora(Corpora):
             yield sentence
 
 
+    def __get_sentence_block(self, file_path):
+        sentence_block = []
+        with open(file_path,'r') as data_file:
+            for line in data_file:
+                if line.strip():
+                    cols = line.split()
+                    sentence_block.append(cols)
+                else:
+                    if sentence_block:
+                        yield sentence_block
 
+                        sentence_block = []
+
+        if sentence_block:
+            yield sentence_block
 
     def load(self, file_path, type=1):
         '''
@@ -155,63 +169,59 @@ class Conll05Corpora(Corpora):
         :return:
         '''
 
-        with open(file_path,'r') as data_file:
 
-            sentence_info = []
-            for line in data_file:
+        for sentence_info in self.__get_sentence_block(file_path):
 
-                if line.strip():
-                    cols = line.split()
-                    sentence_info.append(cols)
 
+            sentence = Sentence()
+
+            sentence_array = np.array(sentence_info)
+
+
+            for loc, word_info in enumerate(sentence_array):
+                word_name, pos = word_info[:2]
+
+                cur_word = word_repo.get_word(word_name)
+
+                word_property = WordProperty()
+                word_property.pos = pos
+
+
+                if word_info[4] != "-":
+
+                    srl = SRLStructure(cur_word, loc)
+                    srl.verb_sense = word_info[4]
+                    srl.verb_infinitive = word_repo.get_word(word_info[5])
+                    sentence.add_srl_struct(srl)
+                    sentence.add_word(srl.verb_infinitive, word_property)
                 else:
+                    sentence.add_word(cur_word, word_property)
 
-                    sentence = Sentence()
-
-                    sentence_array = np.array(sentence_info)
-                    sentence_info = []
-
-                    for loc, word_info in enumerate(sentence_array):
-                        word_name, pos = word_info[:2]
-
-                        cur_word = word_repo.get_word(word_name)
-
-                        word_property = WordProperty()
-                        word_property.pos = pos
-
-                        sentence.add_word(cur_word, word_property)
-                        if  word_info[4] != "-":
-
-                            srl = SRLStructure(word_name, loc)
-                            srl.verb_sense = word_info[4]
-                            srl.verb_infinitive = word_repo.get_word(word_info[5])
-                            sentence.add_srl_struct(srl)
-
-                    # parse ne
-                    for ne_type, (start_pos, end_pos) in parse_start_end_components(sentence_array[:,3]):
-                        ner = Ner(ne_type, start_pos, end_pos)
-                        sentence.add_ne(ner)
-                    if type == 2:
-                        # parse chunk
-                        for chunk_type, (start_pos, end_pos) in parse_start_end_components(sentence_array[:,-2]):
-                            chunk = Chunk(chunk_type, start_pos, end_pos)
-                            sentence.add_chunk(chunk)
-                    if type == 1:
-                        props = sentence_array[:,6:]
-                    else:
-                        props = sentence_array[:,6:-3]
+            # parse ne
+            for ne_type, (start_pos, end_pos) in parse_start_end_components(sentence_array[:,3]):
+                ner = Ner(ne_type, start_pos, end_pos)
+                sentence.add_ne(ner)
+            if type == 2:
+                # parse chunk
+                for chunk_type, (start_pos, end_pos) in parse_start_end_components(sentence_array[:,-2]):
+                    chunk = Chunk(chunk_type, start_pos, end_pos)
+                    sentence.add_chunk(chunk)
+            if type == 1:
+                props = sentence_array[:,6:]
+            else:
+                props = sentence_array[:,6:-3]
 
 
-                    for verb_idx, srl in enumerate(sentence.srl_structs()):
-                        cur_prop = props[:,verb_idx]
+            for verb_idx, srl in enumerate(sentence.srl_structs()):
+                cur_prop = props[:,verb_idx]
 
-                        for role_type, (start_pos, end_pos) in parse_start_end_components(cur_prop):
-                            role = Role(role_type, start_pos, end_pos)
-                            srl.add_role(role)
+                for role_type, (start_pos, end_pos) in parse_start_end_components(cur_prop):
+                    role = Role(role_type, start_pos, end_pos)
+                    srl.add_role(role)
 
 
 
 
-                    self.__sentences.append(sentence)
+            self.__sentences.append(sentence)
 
 

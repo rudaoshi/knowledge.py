@@ -128,6 +128,8 @@ class SRLNetwork(GradientOptimizable):
 
         X = theano.tensor.matrix("X")
 
+        self.__output_func = theano.function([X],
+                                              outputs = self.__output(X))
         self.__predict_expr = theano.tensor.argmax(self.__output(X), axis = 1)
         self.__predict_func = theano.function([X],
                                               outputs = self.__predict_expr)
@@ -257,6 +259,8 @@ class SRLNetwork(GradientOptimizable):
     def predict(self, X):
         return self.__predict_func(X)
 
+    def predict_prob(self,X):
+        return self.__output_func(X)
 
     def object_gradient(self, X, y):
 

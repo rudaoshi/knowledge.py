@@ -5,26 +5,30 @@ from knowledge.language.problem.srl_problem import SRLProblem
 
 
 
-def test_srl_problem():
-
-    home = os.path.expanduser('~')
-    print 'begin'
-    filename = os.path.join(home,'Data/conll05/training-set')
+def test_srl_problem(data_file_path):
 
     conll05corpora = Conll05Corpora()
-    conll05corpora.load(filename)
+    conll05corpora.load(data_file_path)
     print 'load done'
 
     srl_problem = SRLProblem(conll05corpora)
 
-    for X, y, z in srl_problem.get_data_batch():
-        print X.shape,y.shape, z.shape
-        assert X.shape , "Bad shape {0}".format(X.shape)
-        assert X.shape[0] == y.shape[0], "Feature num is not equal to label num."
-        assert (X.shape[1] - 6) % 4 == 0, \
-            "Feature structure is not right: shape = {0}".format(X.shape)
+    for sentence in srl_problem.sentences():
+        for X, y in srl_problem.get_dataset_for_sentence(sentence):
+            word_id = [word.id for word in sentence.words()]
+            print "word_id = ", word_id
+            print "X = ", X[0]
 
+            break
+
+
+        for srl in sentence.srl_structs():
+            print "verb = ", srl.verb.id
+
+        break
+
+import sys
 
 if __name__ == "__main__":
-
-    test_srl_problem()
+    data_file_path = sys.argv[1]
+    test_srl_problem(data_file_path)

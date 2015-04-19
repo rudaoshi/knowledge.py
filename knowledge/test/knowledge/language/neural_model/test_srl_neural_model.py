@@ -41,16 +41,16 @@ def evaluate(machine, valid_problem, info_suffix):
         pred_labels = []
 
         sentence_str = " ".join([word.content for word in valid_sentence.words()])
-        for srl_x, srl_y in valid_problem.get_dataset_for_sentence(valid_sentence):
-            pred_y = machine.predict(srl_x.astype(theano.config.floatX))
+        srl_x, srl_y = valid_problem.get_dataset_for_sentence(valid_sentence)
+        pred_y = machine.predict(srl_x.astype(theano.config.floatX))
 
-            test_types.append(sentence_str)
-            test_types.append("\t".join([SrlTypes.LABEL_SRLTYPE_MAP[l] for l in srl_y]))
-            pred_types.append(sentence_str)
-            pred_types.append("\t".join([SrlTypes.LABEL_SRLTYPE_MAP[l] for l in pred_y]))
+        test_types.append(sentence_str)
+        test_types.append("\t".join([SrlTypes.LABEL_SRLTYPE_MAP[l] for l in srl_y]))
+        pred_types.append(sentence_str)
+        pred_types.append("\t".join([SrlTypes.LABEL_SRLTYPE_MAP[l] for l in pred_y]))
 
-            test_labels.append(srl_y)
-            pred_labels.append(pred_y)
+        test_labels.append(srl_y)
+        pred_labels.append(pred_y)
 
         test_label_str = valid_problem.pretty_srl_test_label(valid_sentence, test_labels)
         pred_label_str = valid_problem.pretty_srl_predict_label(valid_sentence, pred_labels)

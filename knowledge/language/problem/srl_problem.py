@@ -135,6 +135,9 @@ class SRLProblem(Problem):
         '''
 
 
+        all_X = []
+        all_y = []
+
         for srl in sentence.srl_structs():
             X = SRLFeatureBatch()
             y = []
@@ -182,7 +185,10 @@ class SRLProblem(Problem):
 
                 y.append(label[word_loc])
 
-            yield X.get_sample(), np.array(y)
+            all_X.append(X.get_sample())
+            all_y.extend(y)
+
+        return np.concatenate(all_X), np.array(y)
 
 
     def pretty_srl_predict_label(self, sentence, labels):

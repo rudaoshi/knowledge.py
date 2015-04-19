@@ -14,22 +14,51 @@ from knowledge.machine.optimization.sgd_optimizer import SGDOptimizer
 from knowledge.machine.optimization.cgd_optimizer import CGDOptimizer
 import numpy
 import theano
+import time
 
 
-def test_srl_neural_model(DATA_FOLDER, model_path = None, model_tag = None):
+from knowledge.language.evaluation.srl_evaluate import eval_srl
 
 
-    train_file_path = os.path.join(DATA_FOLDER,'conll05/training-set')
-    #train_file_path = os.path.join(DATA_FOLDER,'conll05/dev-set')
-    valid_file_path = os.path.join(DATA_FOLDER,'conll05/dev-set')
+def evaluate(machine, valid_problem, info_suffix):
+    test_label_file_path = "test_label_" + str(info_suffix) + ".txt"
+    pred_label_file_path = "pred_label_" + str(info_suffix) + ".txt"
+
+    test_label_file = open(test_label_file_path, "w")
+    pred_label_file = open(pred_label_file_path, "w")
+
+    for valid_sentence in valid_problem.sentences():
+        test_labels = []
+        pred_labels = []
+        for srl_x, srl_y in valid_problem.get_dataset_for_sentence(valid_sentence):
+            pred_y = machine.predict(srl_x.astype(theano.config.floatX))
+            test_labels.append(srl_y)
+            pred_labels.append(pred_y)
+
+        test_label_str = valid_problem.pretty_srl_test_label(valid_sentence, test_labels)
+        pred_label_str = valid_problem.pretty_srl_predict_label(valid_sentence, pred_labels)
+
+        test_label_file.write(test_label_str)
+        pred_label_file.write(pred_label_str)
+
+    test_label_file.close()
+    pred_label_file.close()
+
+
+    valid_result = eval_srl(test_label_file_path, pred_label_file_path)
+    valid_info = 'validation info {0}% '.format(
+                                    valid_result)
+    print valid_info
+
+
+def test_srl_neural_model(train_file_path, valid_file_path):
 
     train_corpora = Conll05Corpora()
     train_corpora.load(train_file_path)
+    train_problem = SRLProblem(train_corpora)
 
     valid_corpora = Conll05Corpora()
     valid_corpora.load(valid_file_path)
-
-    train_problem = SRLProblem(train_corpora)
     valid_problem = SRLProblem(valid_corpora)
 
     init_rng()
@@ -43,7 +72,7 @@ def test_srl_neural_model(DATA_FOLDER, model_path = None, model_tag = None):
     nn_architecture.conv_window_height = 3
     nn_architecture.conv_output_dim = 5
 
-    nn_architecture.hidden_layer_output_dims = [100,100]
+    nn_architecture.hidden_layer_output_dims = [500,500]
 
 
     hyper_param = NeuralModelHyperParameter()
@@ -55,40 +84,35 @@ def test_srl_neural_model(DATA_FOLDER, model_path = None, model_tag = None):
     hyper_param.l1_reg = 0
     hyper_param.l2_reg = 0
 
-    m = SRLNetwork(train_problem, nn_architecture)
+    problem_character = train_problem.get_problem_property()
+
+    m = SRLNetwork(problem_character, nn_architecture)
 
     optimizer = SGDOptimizer()
-    optimizer.batch_size = 100
 
-    X = numpy.random.random((1000, 50))
-    y = numpy.random.random((1000, 1))
+    trained_batch_num = 0
+    valid_freq = 10
+    for sentence in train_problem.sentences():
 
-    old_cost = m.object(X,y)
+        for X, y in train_problem.get_dataset_for_sentence(sentence):
 
-    param = optimizer.optimize(m, m.get_parameter(), X, y)
+            if trained_batch_num % valid_freq == 0:
+                evaluate(m, valid_problem, trained_batch_num/valid_freq)
 
-    m.set_parameter(param)
-    new_cost = m.object(X, y)
 
-    print old_cost, new_cost
+            optimizer.batch_size = X.shape[0]
+            optimizer.update_chunk(X, y)
+
+            param = optimizer.optimize(m, m.get_parameter())
+
+            m.set_parameter(param)
+
+            trained_batch_num += 1
 
 
 if __name__ == "__main__":
 
-    if len(sys.argv) > 1:
-        DATA_FOLDER = sys.argv[1]
-    elif sys.platform[:3] == 'win':
-        DATA_FOLDER = "D:\\Experiment\\Projects\\nn_language\\data"  # os.path.expanduser('~')
-    else:
-        DATA_FOLDER = os.path.join(os.path.expanduser('~'),'Data')
+    train_file_path = sys.argv[1]
+    valid_file_path = sys.argv[2]
 
-    if len(sys.argv) > 2:
-        model_path = sys.argv[2]
-    else:
-        model_path = None
-    if len(sys.argv) > 3:
-        model_tag = sys.argv[3]
-    else:
-        model_tag = None
-
-    test_srl_neural_model(DATA_FOLDER, model_path, model_tag)
+    test_srl_neural_model(train_file_path, valid_file_path)

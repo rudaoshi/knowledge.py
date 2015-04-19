@@ -3,51 +3,34 @@ __author__ = 'Sun'
 from scipy.optimize import fmin_cg
 
 
-from knowledge.machine.optimization.batchoptimizer import BatchOptimizer
+from knowledge.machine.optimization.batch_gradient_optimizer import BatchGradientOptimizer
 
 
-class CGDOptimizer(BatchOptimizer):
+class CGDOptimizer(BatchGradientOptimizer):
 
-    def __init__(self,
-                 max_epoches = 10,
-                 batch_size = 10000,
-                 batch_optim_step = 3):
+    def __init__(self, max_epoches=10, batch_size=10000):
 
-        self.max_epoches = max_epoches
-        self.batch_size = batch_size
-        self.batch_optim_step = batch_optim_step
+        super(CGDOptimizer, self).__init__(batch_size=batch_size,
+                                           max_epoches=max_epoches)
 
-    def get_batch_size(self):
-        return self.batch_size
 
-    def optimize(self, machine, param):
+    def optimize_internal(self, object_func, grad_func, param):
 
-        for i in range(self.max_epoches):
+        for batch_id in range(self.batch_num):
 
-            for batch_id in range(machine.get_batch_num()):
+            print "cost before opt:", object_func(batch_id, param)
 
-                def train_func(p):
+            best_param = fmin_cg(
+                f = lambda p: object_func(batch_id, p),
+                x0=param,
+                fprime=lambda p: grad_func(batch_id, p),
+                disp=0,
+                maxiter=self.max_epoches
+            )
 
-                    machine.set_parameter(p)
-                    return machine.object(batch_id)
+            print "cost after opt:", object_func(batch_id, best_param)
 
-                def train_grad_func(p):
-                    machine.set_parameter(p)
-                    return machine.gradient(batch_id)
-
-                print "cost before opt:", train_func(param)
-
-                best_param = fmin_cg(
-                    f = train_func,
-                    x0=param,
-                    fprime=train_grad_func,
-                    disp=0,
-                    maxiter=self.batch_optim_step
-                )
-
-                print "cost after opt:", train_func(best_param)
-
-                param = best_param
+            param = best_param
 
         return param
 

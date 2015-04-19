@@ -14,6 +14,9 @@ from knowledge.language.core.word import word_repo
 from knowledge.language.problem import postags, srltypes, locdifftypes
 
 class SRLFeatureBatch(object):
+    """
+    对每个verb，所有word与该verb的关系特征
+    """
 
     def __init__(self):
         self.sentence_len = 0
@@ -36,17 +39,48 @@ class SRLFeatureBatch(object):
         self.other_word2word_dist_id = []  # 其他word 到当前word的位置距离 id
 
 
-    def finsh_batch(self):
-        attrs = dir(self)
+    def get_sample(self):
 
-        for attr_name in attrs:
-            attr_val = getattr(self.attr)
-            if isinstance(attr_val, list):
-                setattr(self, attr_name, np.array(attr_val))
+        feature_num = 1 + 2 * self.sentence_len + \
+            6 + 2 + 2 * self.sentence_len
 
+        feature = np.zeros((self.sentence_len, feature_num))
 
 
+        for i in range(self.sentence_len):
+            start_idx = 0
+            feature[i,start_idx] = self.sentence_len
+            start_idx += 1
+            feature[i, start_idx:start_idx+self.sentence_len] = self.sentence_word_id
+            start_idx += self.sentence_len
+            feature[i, start_idx:start_idx+self.sentence_len] = self.sentence_pos_id
+            start_idx += self.sentence_len
+            feature[i,start_idx] = self.cur_word_id[i]
+            start_idx += 1
+            feature[i,start_idx] = self.cur_verb_id[i]
+            start_idx += 1
+            feature[i,start_idx] = self.cur_word_pos_id[i]
+            start_idx += 1
+            feature[i,start_idx] = self.cur_verb_pos_id[i]
+            start_idx += 1
+            feature[i,start_idx] = self.cur_word_loc_id[i]
+            start_idx += 1
+            feature[i,start_idx] = self.cur_verb_loc_id[i]
+            start_idx += 1
+            feature[i,start_idx] = self.cur_word2verb_dist_id[i]
+            start_idx += 1
+            feature[i,start_idx] = self.cur_verb2word_dist_id[i]
+            start_idx += 1
+            feature[i, start_idx:start_idx+self.sentence_len] = self.other_word2verb_dist_id[i]
+            start_idx += self.sentence_len
+            feature[i, start_idx:start_idx+self.sentence_len] = self.other_word2word_dist_id[i]
+            start_idx += self.sentence_len
 
+        return feature
+
+
+
+import itertools
 
 class SRLProblem(Problem):
 
@@ -100,14 +134,15 @@ class SRLProblem(Problem):
                      ]
         '''
 
-        X = SRLFeatureBatch()
-        y = []
-
-        X.sentence_len =  sentence.word_num()
-        X.sentence_word_id = [word.id for word in sentence.words()]
-        X.sentence_pos_id = [PosTags.POSTAG_ID_MAP[prop.pos] for prop in sentence.word_properties()]
 
         for srl in sentence.srl_structs():
+            X = SRLFeatureBatch()
+            y = []
+
+            X.sentence_len =  sentence.word_num()
+            X.sentence_word_id = [word.id for word in sentence.words()]
+            X.sentence_pos_id = [PosTags.POSTAG_ID_MAP[prop.pos] for prop in sentence.word_properties()]
+
 
             label = [ SrlTypes.OTHERTYPE_LABEL]  * sentence.word_num()
 
@@ -147,12 +182,77 @@ class SRLProblem(Problem):
 
                 y.append(label[word_loc])
 
-        X.finsh_batch()
-        yield X, np.array(y)
+            yield X.get_sample(), np.array(y)
 
 
+    def pretty_srl_predict_label(self, sentence, labels):
 
-    def pretty_srl_label(self, sentence, labels):
+        word_column = [ "-" ] * sentence.word_num()
+        readable_type_columns = []
+
+        def get_tag(tag_str):
+            x = tag_str.split("_",1)
+            if len(x) >= 2:
+                return x[1]
+            else:
+                return x[0]
+
+
+        for idx, srl in enumerate(sentence.srl_structs()):
+            word_column[srl.verb_loc] = sentence.get_word(srl.verb_loc).content
+
+            label = labels[idx]
+            type_column = [SrlTypes.LABEL_SRLTYPE_MAP[l] for l in label]
+
+            readable_type_column = ["*"] * len(type_column)
+
+            unique_groups = []
+            start_idx = 0
+            for tag, group in itertools.groupby(type_column, key = lambda x:get_tag(x)):
+                group = list(group)
+                end_idx = start_idx + len(group)
+                if tag == "*":
+                    start_idx = end_idx
+                    continue
+                else:
+                    for i in range(1,len(group)-1):
+                        if group[i].startswith("E_") and group[i+1].startswith("B_"):
+
+                            unique_groups.append([start_idx, i, tag])
+                            start_idx = i + 1
+
+                    unique_groups.append([start_idx, end_idx, tag])
+                    start_idx = end_idx
+
+            try:
+                for start, end, tag in unique_groups:
+                    if start == end - 1:
+                        readable_type_column[start] = "(" + tag + "*)"
+                    else:
+                        readable_type_column[start] = "(" + tag + "*"
+                        for i in range(start + 1, end - 1):
+                            readable_type_column[i] = "*"
+                        readable_type_column[end-1] = "*)"
+            except:
+                print len(type_column)
+                print len(readable_type_column)
+                print unique_groups
+                raise
+
+            readable_type_columns.append(readable_type_column)
+
+        s = cStringIO.StringIO()
+
+        for idx in range(len(word_column)):
+            s.write(word_column[idx] + "\t")
+            s.write("\t".join([column[idx] for column in readable_type_columns]))
+            s.write("\n")
+
+        s.write("\n") # blank line after each sentence
+
+        return s.getvalue()
+
+    def pretty_srl_test_label(self, sentence, labels):
         """
         将句子与预测结果以Conll05可读形式输出出来
         :param sentence:
@@ -175,7 +275,7 @@ class SRLProblem(Problem):
                 if type.startswith("S_"):
                     readable_type_column[idx] = "(" + type[2:] + "*)"
                 elif type.startswith("B_"):
-                    readable_type_column[idx] = "(" + type[2:]
+                    readable_type_column[idx] = "(" + type[2:] + "*"
                 elif type.startswith("I_"):
                     readable_type_column[idx] = "*"
                 elif type.startswith("E_"):
@@ -205,11 +305,11 @@ class SRLProblem(Problem):
 
         for sentence in  self.__corpora.sentences():
 
-            X, y = self.get_dataset_for_sentence(sentence)
-            if len(y) == 0:
-                continue
+            for X, y in self.get_dataset_for_sentence(sentence):
+                if len(y) == 0:
+                    continue
 
-            yield X, y
+                yield X, y
 
     def get_trans_mat_prior(self):
         class_num = len(srltypes.SrlTypes.SRLTYPE_LABEL_MAP)

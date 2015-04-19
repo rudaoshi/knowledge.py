@@ -112,21 +112,27 @@ class SRLNetwork(GradientOptimizable):
             self.perception_layers.append(hidden_layer)
             input_dim = output_dim
 
-        self.cost = create_cost("cross_entropy")
+        out_layer = PerceptionLayer(
+                input_dim = input_dim,
+                output_dim = problem_character["SRL_type_num"],
+                activator_type = "softmax")
+        self.perception_layers.append(out_layer)
 
-        self.__make_behaviors()
+        self.cost = create_cost({"type": "cross_entropy"})
+
             # self.output_layer = PathTransitionLayer('output',
             #                             class_num=SRL_type_num,
             #                             trans_mat_prior= trans_mat_prior)
 #            self.output_layer = SoftMaxLayer(n_in= nn_architecture.hidden_layer_output_dims[-1],
 #                    n_out = SRL_type_num,)
 
+        X = theano.tensor.matrix("X")
 
+        self.__predict_expr = theano.tensor.argmax(self.__output(X), axis = 1)
+        self.__predict_func = theano.function([X],
+                                              outputs = self.__predict_expr)
 
-    def __make_behaviors(self):
-
-        X = theano.tensor.matrix()
-        y = theano.tensor.matrix()
+    def __output(self, X):
 
         # X.sentence_word_id = [] #当前句子的全局word id 列表
         # X.sentence_pos_id = [] #当前句子的全局词性 id 列表
@@ -143,21 +149,48 @@ class SRLNetwork(GradientOptimizable):
         # X.other_word2verb_dist_id = []  # 其他word 到当前verb的位置距离 id  # NOT IN USE
         # X.other_word2word_dist_id = []  # 其他word 到当前word的位置距离 id  # NOT IN USE
 
-
+        start_idx = 0
+        sentence_len = X[0, start_idx].astype('int32')
+        start_idx += 1
+        sentence_word_id = X[0, start_idx:start_idx+sentence_len].astype('int32')
+        start_idx += sentence_len
+        sentence_pos_id = X[0, start_idx:start_idx+sentence_len].astype('int32')
+        start_idx += sentence_len
+        cur_word_id = X[:, start_idx].astype('int32')
+        start_idx += 1
+        cur_verb_id = X[:, start_idx].astype('int32')
+        start_idx += 1
+        cur_word_pos_id = X[:, start_idx].astype('int32')
+        start_idx += 1
+        cur_verb_pos_id = X[:, start_idx].astype('int32')
+        start_idx += 1
+        cur_word_loc_id = X[:, start_idx].astype('int32')
+        start_idx += 1
+        cur_verb_loc_id = X[:, start_idx].astype('int32')
+        start_idx += 1
+        cur_word2verb_dist_id = X[:, start_idx].astype('int32')
+        start_idx += 1
+        cur_verb2word_dist_id = X[:,start_idx].astype('int32')
+        start_idx += 1
+        other_word2verb_dist_id = X[:, start_idx:start_idx+sentence_len].astype('int32')
+        start_idx += sentence_len
+        other_word2word_dist_id = X[:, start_idx:start_idx+sentence_len].astype('int32')
+        start_idx += sentence_len
+        
         wordvec = self.word_embedding_layer.output(
-            inputs = X.cur_word_id #word_id_input
+            inputs = cur_word_id #word_id_input
         )
 
         verbvec = self.word_embedding_layer.output(
-            inputs = X.cur_word_id #verb_id_input
+            inputs = cur_verb_id #verb_id_input
         )
 
         wordPOSvec = self.pos_embedding_layer.output(
-            inputs = X.cur_word_pos_id #word_pos_input
+            inputs = cur_word_pos_id #word_pos_input
         )
 
         verbPOSvec = self.pos_embedding_layer.output(
-            inputs = X.cur_verb_pos_id #verb_pos_input
+            inputs = cur_verb_pos_id #verb_pos_input
         )
 
 #        wordlocvec = self.loc_embedding_layer.output(
@@ -169,40 +202,40 @@ class SRLNetwork(GradientOptimizable):
 #        )
 
         locdiff_word2verb_vec = self.locdiff_verb_embedding_layer.output(
-            inputs = X.cur_word2verb_dist_id
+            inputs = cur_word2verb_dist_id
         )
 
         locdiff_verb2word_vec = self.locdiff_word_embedding_layer.output(
-            inputs = X.cur_verb2word_dist_id
+            inputs = cur_verb2word_dist_id
         )
 
         sentence_word_vec = self.word_embedding_layer.output(
-            inputs = X.sentence_word_id,
+            inputs = sentence_word_id,
         )
 
         sentence_pos_vec = self.pos_embedding_layer.output(
-            inputs = X.sentence_pos_id,
+            inputs = sentence_pos_id,
         )
 
         other_loc2word_vec = self.locdiff_word_embedding_layer.output(
-           inputs = X.other_word2word_dist_id
+           inputs = other_word2word_dist_id
         )
 
         other_loc2verb_vec = self.locdiff_verb_embedding_layer.output(
-           inputs = X.other_word2verb_dist_id
+           inputs = other_word2verb_dist_id
         )
 
-        batch_size = len(X.cur_word_id)
+        batch_size = sentence_len
 
         conv_input_feature = T.concatenate(
 
             (
-                wordvec.dimshuffle(0,"x", "x",1).repeat(X.sentence_len, axis=2),
-                verbvec.dimshuffle(0,"x", "x",1).repeat(X.sentence_len, axis=2),
-                wordPOSvec.dimshuffle(0,"x", "x",1).repeat(X.sentence_len, axis=2),
-                verbPOSvec.dimshuffle(0,"x", "x",1).repeat(X.sentence_len, axis=2),
-                locdiff_word2verb_vec.dimshuffle(0,"x", "x",1).repeat(X.sentence_len, axis=2),
-                locdiff_verb2word_vec.dimshuffle(0,"x", "x",1).repeat(X.sentence_len, axis=2),
+                wordvec.dimshuffle(0,"x", "x",1).repeat(sentence_len, axis=2),
+                verbvec.dimshuffle(0,"x", "x",1).repeat(sentence_len, axis=2),
+                wordPOSvec.dimshuffle(0,"x", "x",1).repeat(sentence_len, axis=2),
+                verbPOSvec.dimshuffle(0,"x", "x",1).repeat(sentence_len, axis=2),
+                locdiff_word2verb_vec.dimshuffle(0,"x", "x",1).repeat(sentence_len, axis=2),
+                locdiff_verb2word_vec.dimshuffle(0,"x", "x",1).repeat(sentence_len, axis=2),
                 sentence_word_vec.dimshuffle("x", "x", 0, 1).repeat(batch_size, axis=0),
                 sentence_pos_vec.dimshuffle("x", "x", 0, 1).repeat(batch_size, axis=0),
                 other_loc2word_vec.dimshuffle(0, "x", 1, 2),
@@ -211,28 +244,35 @@ class SRLNetwork(GradientOptimizable):
             axis=3
         )
 
-        conv_out = self.conv_layer.output(conv_input_feature).reshape((batch_size, -1))
+        conv_out = self.conv_layer.output(conv_input_feature).reshape((sentence_len, -1))
 
 
         hidden_input_feature = conv_out
         for hidden_layer in self.perception_layers:
             hidden_input_feature = hidden_layer.output(hidden_input_feature)
 
-        self.__output_expr = hidden_input_feature
-        self.__object_expr =  self.cost(self.__output_expr, y)
-        self.__object_func = theano.function([X,y], outputs=self.__object_expr)
+        return hidden_input_feature
+
+
+    def predict(self, X):
+        return self.__predict_func(X)
+
+
+    def object_gradient(self, X, y):
+
+        object_expr = self.cost.cost(self.__output(X), y)
 
         params = self.params()
 
-        grad = T.grad(self.__object_expr, params)
+        grad = T.grad(object_expr, params)
 
         gradient_vec = []
         for param in grad:
-            gradient_vec.append(param.reshape((-1,)))
+            gradient_vec.append(param.flatten())
 
-        self.__gradient_expr = theano.tensor.concatenate(gradient_vec)
-        self.__gradient_func = theano.function([X,y], outputs=self.__gradient_expr)
+        gradient_expr = theano.tensor.concatenate(gradient_vec)
 
+        return [object_expr, gradient_expr]
 
     def get_parameter(self):
 
@@ -252,14 +292,6 @@ class SRLNetwork(GradientOptimizable):
 
             layer.set_parameter(param_vec[start_idx[idx]:start_idx[idx] + parameter_size_vec[idx]])
 
-
-    def object(self, X, y = None):
-
-        return self.__object_func(X, y)
-
-    def gradient(self, X, y = None):
-
-        return self.__gradient_func(X, y)
 
     def params(self):
 

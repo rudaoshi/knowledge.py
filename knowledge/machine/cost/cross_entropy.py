@@ -15,7 +15,7 @@ class CrossEntropyCost(Cost):
         :return: the cross entropy between the predicted likely-hood and the real label
         """
 
-        return T.nnet.categorical_crossentropy(X, y)
+        return T.nnet.categorical_crossentropy(X, y).mean()
 
     def __getstate__(self):
         return {"type": "cross_entropy"}

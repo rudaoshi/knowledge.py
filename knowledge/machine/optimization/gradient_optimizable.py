@@ -2,7 +2,7 @@ __author__ = 'Sun'
 
 from abc import ABCMeta, abstractmethod
 
-class BatchStocasticGradientOptimizable(object):
+class GradientOptimizable(object):
 
     __metaclass__ = ABCMeta
 
@@ -15,9 +15,6 @@ class BatchStocasticGradientOptimizable(object):
         pass
 
     @abstractmethod
-    def object(self, batch_id):
+    def object_gradient(self, X, y):
         pass
 
-    @abstractmethod
-    def gradient(self, batch_id):
-        pass

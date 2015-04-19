@@ -1,43 +1,38 @@
 __author__ = 'Sun'
 
-from knowledge.machine.optimization.batchoptimizer import BatchOptimizer
+from knowledge.machine.optimization.batch_gradient_optimizer import BatchGradientOptimizer
 import theano
 
-class SGDOptimizer(BatchOptimizer):
+class SGDOptimizer(BatchGradientOptimizer):
 
     def __init__(self,
-                 max_epoches = 10,
                  learning_rate = 0.01,
                  decay_rate = 0.9,
                  batch_size = 10000):
+        super(SGDOptimizer, self).__init__(batch_size=batch_size,
+                                           max_epoches=1)
 
-        self.max_epoches = max_epoches
         self.learning_rate = learning_rate
         self.decay_rate = decay_rate
-        self.batch_size = batch_size
 
-    def get_batch_size(self):
-        return self.batch_size
+        self.cur_learning_rate = self.learning_rate
 
-    def optimize(self, machine, param):
 
-        cur_learning_rate = self.learning_rate
+    def optimize_internal(self, object_func, grad_func, param):
 
-        for i in range(self.max_epoches):
+        for batch_id in range(self.batch_num):
 
-            for batch_id in range(machine.get_batch_num()):
+            print "cost before opt:", object_func(batch_id, param)
 
-                machine.set_parameter(param)
-                print "cost before opt:", machine.object(batch_id)
-                gradient = machine.gradient(batch_id)
+            new_param = param - self.cur_learning_rate * grad_func(batch_id, param)
 
-                param = param - cur_learning_rate * gradient
+            print "cost after opt:", object_func(batch_id, new_param)
 
-                machine.set_parameter(param)
-                print "cost after opt:", machine.object(batch_id)
-
-            cur_learning_rate *= self.decay_rate
+            param = new_param
 
         return param
 
+
+    def one_turn_finished(self):
+        self.cur_learning_rate = self.learning_rate * self.decay_rate
 

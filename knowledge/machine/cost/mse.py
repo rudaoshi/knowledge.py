@@ -18,7 +18,7 @@ class MSECost(Cost):
 #        assert X.shape == y.shape, \
 #            "The size of the likely-hood is not equal to that of the label " + str(X.shape) + "\t" + str(y.shape)
 
-        return T.sum(T.pow(X-y, 2))
+        return T.pow(X-y, 2).mean()
 
     def __getstate__(self):
         return {"type": "mse"}

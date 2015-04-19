@@ -244,14 +244,14 @@ class SRLNetwork(GradientOptimizable):
             axis=3
         )
 
-        conv_out = self.conv_layer.output(conv_input_feature).reshape((sentence_len, -1))
+        conv_out = self.conv_layer.output(conv_input_feature).reshape((batch_size, -1))
 
 
-        hidden_input_feature = conv_out
-        for hidden_layer in self.perception_layers:
-            hidden_input_feature = hidden_layer.output(hidden_input_feature)
+        layer_input = conv_out
+        for layer in self.perception_layers:
+            layer_input = layer.output(layer_input)
 
-        return hidden_input_feature
+        return layer_input
 
 
     def predict(self, X):

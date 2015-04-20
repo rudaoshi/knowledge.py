@@ -32,18 +32,16 @@ class MultiLayerPerception(GradientOptimizable):
 
         self.cost = create_cost(cost_param)
 
-    def prepare_predict(self):
-
         X = theano.tensor.matrix("X")
-        y = theano.tensor.matrix("y")
 
 
         layer_out = X
         for layer in self.layers:
             layer_out = layer.output(layer_out)
 
-        self.__predict_func = theano.function([X, y],
+        self.__predict_func = theano.function([X],
                                               outputs=layer_out)
+
 
     def object_gradient(self, X, y ):
         """

@@ -14,7 +14,7 @@ class BinaryCrossEntropyCost(Cost):
         :param y: the correct label of the sample
         :return: the cross entropy between the predicted likely-hood and the real label
         """
-        return T.nnet.binary_crossentropy(X, y).mean()
+        return T.nnet.binary_crossentropy(X.T, y).mean()
 
     def __getstate__(self):
         return {"type": "binary_cross_entropy"}

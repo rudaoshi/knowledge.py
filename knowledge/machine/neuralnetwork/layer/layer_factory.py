@@ -11,6 +11,8 @@ def register_creator(layer_type, creator):
 
 def create_layer(layer_param):
 
+    layer_param = layer_param.copy()
+
     if "type" not in layer_param:
         raise Exception("Layer type is not provided")
 

@@ -18,7 +18,7 @@ class CGDOptimizer(BatchGradientOptimizer):
 
         for batch_id in range(self.batch_num):
 
-            print "cost before opt:", object_func(batch_id, param)
+#            print "cost before opt:", object_func(batch_id, param)
 
             best_param = fmin_cg(
                 f = lambda p: object_func(batch_id, p),
@@ -28,7 +28,7 @@ class CGDOptimizer(BatchGradientOptimizer):
                 maxiter=self.max_epoches
             )
 
-            print "cost after opt:", object_func(batch_id, best_param)
+#            print "cost after opt:", object_func(batch_id, best_param)
 
             param = best_param
 

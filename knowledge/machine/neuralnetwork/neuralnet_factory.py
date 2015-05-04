@@ -11,8 +11,10 @@ def register_creator(neuralnet_type, creator):
 
 def create_neuralnet(neuralnet_param):
 
+    neuralnet_param = neuralnet_param.copy()
+
     if "type" not in neuralnet_param:
-        raise Exception("Optimizer type is not provided")
+        raise Exception("Network type is not provided")
 
     neuralnet_type = neuralnet_param["type"]
 

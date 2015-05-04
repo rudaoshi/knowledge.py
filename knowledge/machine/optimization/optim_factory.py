@@ -11,6 +11,8 @@ def register_creator(optimizer_type, creator):
 
 def create_optimizer(optimizer_param):
 
+    optimizer_param = optimizer_param.copy()
+
     if "type" not in optimizer_param:
         raise Exception("Optimizer type is not provided")
 

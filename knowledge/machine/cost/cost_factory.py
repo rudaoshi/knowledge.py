@@ -11,6 +11,8 @@ def register_creator(cost_type, creator):
 
 def create_cost(cost_param):
 
+    cost_param = cost_param.copy()
+
     if "type" not in cost_param:
         raise Exception("Cost type is not provided")
 

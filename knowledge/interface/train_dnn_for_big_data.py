@@ -45,7 +45,7 @@ def train_dnn_for_big_data(config_file):
     neuralnet = create_neuralnet(network_arch)
     optimizer = create_optimizer(optim_settings)
 
-    neuralnet.prepare_learning(optimizer.get_batch_size())
+#    neuralnet.prepare_learning(optimizer.get_batch_size())
 
     sample_file_paths = []
     with open(sample_file_list,'r') as f:
@@ -68,12 +68,11 @@ def train_dnn_for_big_data(config_file):
 
             try:
 
-                for idx, (train_X, train_y_) in enumerate(train_data_set.sample_batches(batch_size=chunk_size)):
+                for idx, (train_X, train_y) in enumerate(train_data_set.sample_batches(batch_size=chunk_size)):
 
                     print time.ctime() + ":\tbegin new chunk : ", idx, "@epoch : ", i
-                    train_y = numpy.zeros((train_y_.shape[0], 1))
-                    train_y[:,0] = train_y_
-                    neuralnet.update_chunk(train_X, train_y)
+
+                    optimizer.update_chunk(train_X, train_y)
 
                     new_param = optimizer.optimize(neuralnet, neuralnet.get_parameter())
 

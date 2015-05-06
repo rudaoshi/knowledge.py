@@ -45,8 +45,6 @@ def train_dnn_for_big_data(config_file):
     neuralnet = create_neuralnet(network_arch)
     optimizer = create_optimizer(optim_settings)
 
-#    neuralnet.prepare_learning(optimizer.get_batch_size())
-
     sample_file_paths = []
     with open(sample_file_list,'r') as f:
         for line in f:
@@ -58,13 +56,16 @@ def train_dnn_for_big_data(config_file):
     for i in range(max_epoches):
         print time.ctime() + ":\tbegin epoche :", i
         shuffle(sample_file_paths)
-        for remote_file_path in sample_file_paths:
+        for file_path in sample_file_paths:
 
-            local_file_path = download_file(hadoop_bin, remote_file_path, temp_dir)
+            if file_path.startswith("hdfs:"):
+                local_file_path = download_file(hadoop_bin, file_path, temp_dir)
+            else:
+                local_file_path = file_path
 
             train_data_set = SupervisedDataSet(local_file_path, frame_name=frame_name)
 
-            print time.ctime() + ":\tbegin training with sample : " + remote_file_path
+            print time.ctime() + ":\tbegin training with sample : " + file_path
 
             try:
 
@@ -82,7 +83,8 @@ def train_dnn_for_big_data(config_file):
                 print e.message
 
 
-            os.system('rm ' + local_file_path)
+            if file_path.startswith("hdfs:"):
+                os.system('rm ' + local_file_path)
 
 
         with open(output_model_prefix + "_"  + str(i) + ".dat", 'w') as f:

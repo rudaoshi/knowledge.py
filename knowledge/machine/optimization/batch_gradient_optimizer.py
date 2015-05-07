@@ -46,9 +46,9 @@ class BatchGradientOptimizer(object):
 #                     outputs=object_,
 #                     updates = update)
 
-    def get_update(self, param, object_, gradient_):
+#    def get_update(self, param, object_, gradient_):
 
-        pass
+#        pass
 
     def wrapped_object(self, i, p):
         self.machine.set_parameter(p)

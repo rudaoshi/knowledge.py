@@ -61,14 +61,14 @@ class MultiLayerPerception(GradientOptimizable):
 
         grad = T.grad(cost, param)
 
-#        gradient_vec = []
-#        for gW, gb in chunks(grad, 2):
-#            gradient_vec.append(gW.flatten())
-#            gradient_vec.append(gb.flatten())
+        gradient_vec = []
+        for gW, gb in chunks(grad, 2):
+            gradient_vec.append(gW.flatten())
+            gradient_vec.append(gb.flatten())
 
-#        gradient = theano.tensor.concatenate(gradient_vec)
+        gradient = theano.tensor.concatenate(gradient_vec)
 
-        return [cost, grad]
+        return [cost, gradient]
 
     def params(self):
 

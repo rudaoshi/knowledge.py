@@ -18,13 +18,13 @@ class SGDOptimizer(BatchGradientOptimizer):
         self.cur_learning_rate = self.learning_rate
 
 
-    def optimize_internal(self, object_func, grad_func, param):
+    def optimize(self, param):
 
         for batch_id in range(self.batch_num):
 
 #            print "cost before opt:", object_func(batch_id, param)
 
-            new_param = param - self.cur_learning_rate * grad_func(batch_id, param)
+            new_param = param - self.cur_learning_rate * self.__grad(batch_id, param)
 
 #            print "cost after opt:", object_func(batch_id, new_param)
 

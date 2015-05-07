@@ -14,14 +14,9 @@ class BatchGradientOptimizer(object):
         self.chunk_X = theano.shared(numpy.zeros((self.batch_size, 1), dtype = theano.config.floatX))
         self.chunk_y = theano.shared(numpy.zeros((self.batch_size,), dtype = "int32"), )
 
-    def update_chunk(self, X, y):
+    def work_for(self, machine):
 
-        self.batch_num = (X.shape[0]+ self.batch_size - 1)/self.batch_size
-
-        self.chunk_X.set_value(X.astype(theano.config.floatX))
-        self.chunk_y.set_value(y.astype("int32"))
-
-    def optimize(self, machine, param):
+        self.machine = machine
 
         X = theano.tensor.matrix("X")
         y = theano.tensor.ivector("y")
@@ -33,28 +28,35 @@ class BatchGradientOptimizer(object):
 
         object_, gradient = machine.object_gradient(X, y)
 
-        object_func = theano.function([batch_id],
+        self.object_func = theano.function([batch_id],
                      givens =[(X, batch_X),
                                 (y, batch_y)],
                      outputs=object_)
 
-        gradient_func = theano.function([batch_id],
+        self.gradient_func = theano.function([batch_id],
                      givens =[(X, batch_X),
                                 (y, batch_y)],
                      outputs=gradient)
 
-        def object_func_(i, p):
-            machine.set_parameter(p)
-            return object_func(i)
+    def __object(self, i, p):
+        self.machine.set_parameter(p)
+        return self.object_func(i)
 
-        def grad_func_(i, p):
-            machine.set_parameter(p)
-            return gradient_func(i)
+    def __grad(self, i, p):
+        self.machine.set_parameter(p)
+        return self.gradient_func(i)
 
-        param = self.optimize_internal(object_func_,
-                                       grad_func_,
-                                       param)
-        return param
+
+    def update_chunk(self, X, y):
+
+        self.batch_num = (X.shape[0]+ self.batch_size - 1)/self.batch_size
+
+        self.chunk_X.set_value(X.astype(theano.config.floatX))
+        self.chunk_y.set_value(y.astype("int32"))
+
+    def optimize(self, param):
+
+        pass
 
 
     def optimize_internal(self, object_func, grad_func, param):

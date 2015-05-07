@@ -34,3 +34,4 @@ class CGDOptimizer(BatchGradientOptimizer):
 
         return param
 
+

@@ -77,9 +77,9 @@ def train_dnn_for_big_data(config_file):
 
                     optimizer.update_chunk(train_X, train_y)
 
-                    new_param = optimizer.optimize(neuralnet.get_parameter())
+                    new_param = optimizer.optimize(None)#neuralnet.get_parameter())
 
-                    neuralnet.set_parameter(new_param)
+#                    neuralnet.set_parameter(new_param)
             except Exception as e:
 
                 print e.message

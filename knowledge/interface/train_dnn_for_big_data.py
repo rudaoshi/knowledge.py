@@ -45,6 +45,8 @@ def train_dnn_for_big_data(config_file):
     neuralnet = create_neuralnet(network_arch)
     optimizer = create_optimizer(optim_settings)
 
+    optimizer.work_for(neuralnet)
+
     sample_file_paths = []
     with open(sample_file_list,'r') as f:
         for line in f:
@@ -75,7 +77,7 @@ def train_dnn_for_big_data(config_file):
 
                     optimizer.update_chunk(train_X, train_y)
 
-                    new_param = optimizer.optimize(neuralnet, neuralnet.get_parameter())
+                    new_param = optimizer.optimize(neuralnet.get_parameter())
 
                     neuralnet.set_parameter(new_param)
             except Exception as e:

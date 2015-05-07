@@ -34,7 +34,8 @@ class SGDOptimizer(BatchGradientOptimizer):
 
     def get_update(self, param, object_, gradient_):
 
-        return param - self.cur_learning_rate * gradient_
+        update = [param[i] - self.cur_learning_rate* gradient_[i] for i in range(len(param))]
+        return update
 
 
     def one_turn_finished(self):

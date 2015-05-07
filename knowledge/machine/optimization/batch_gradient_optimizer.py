@@ -38,13 +38,13 @@ class BatchGradientOptimizer(object):
                                 (y, batch_y)],
                      outputs=gradient_)
 
-        update = self.get_update(machine.params(), object_, gradient_)
+#        update = self.get_update(machine.params(), object_, gradient_)
 
-        self.train_func = theano.function([batch_id],
-                     givens =[(X, batch_X),
-                                (y, batch_y)],
-                     outputs=object_,
-                     updates = update)
+#        self.train_func = theano.function([batch_id],
+#                     givens =[(X, batch_X),
+#                                (y, batch_y)],
+#                     outputs=object_,
+#                     updates = update)
 
     def get_update(self, param, object_, gradient_):
 
@@ -58,8 +58,8 @@ class BatchGradientOptimizer(object):
         self.machine.set_parameter(p)
         return self.gradient_func(i)
 
-    def wrapped_train(self, i):
-        return self.train_func(i)
+#    def wrapped_train(self, i):
+#        return self.train_func(i)
 
 
     def update_chunk(self, X, y):
@@ -72,10 +72,6 @@ class BatchGradientOptimizer(object):
     def optimize(self, param):
 
         pass
-
-
-    def optimize_internal(self, object_func, grad_func, param):
-        return param
 
     def one_turn_finished(self):
         pass

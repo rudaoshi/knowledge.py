@@ -24,18 +24,18 @@ class SGDOptimizer(BatchGradientOptimizer):
 
 #            print "cost before opt:", object_func(batch_id, param)
 
-#            new_param = param - self.cur_learning_rate * self.wrapped_grad(batch_id, param)
-             self.wrapped_train(batch_id)
+            new_param = param - self.cur_learning_rate * self.wrapped_grad(batch_id, param)
+#             self.wrapped_train(batch_id)
 #            print "cost after opt:", object_func(batch_id, new_param)
 
-#            param = new_param
+            param = new_param
 
         return param
 
-    def get_update(self, param, object_, gradient_):
+#    def get_update(self, param, object_, gradient_):
 
-        update = [(param[i], param[i] - self.cur_learning_rate* gradient_[i]) for i in range(len(param))]
-        return update
+#        update = [(param[i], param[i] - self.cur_learning_rate* gradient_[i]) for i in range(len(param))]
+#        return update
 
 
     def one_turn_finished(self):

@@ -21,9 +21,9 @@ class CGDOptimizer(BatchGradientOptimizer):
 #            print "cost before opt:", object_func(batch_id, param)
 
             best_param = fmin_cg(
-                f = lambda p: object_func(batch_id, p),
+                f = lambda p: self.wrapped_object(batch_id, p),
                 x0=param,
-                fprime=lambda p: grad_func(batch_id, p),
+                fprime=lambda p: self.wrapped_grad(batch_id, p),
                 disp=0,
                 maxiter=self.max_epoches
             )

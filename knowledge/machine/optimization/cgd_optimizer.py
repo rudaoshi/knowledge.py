@@ -14,7 +14,7 @@ class CGDOptimizer(BatchGradientOptimizer):
                                            max_epoches=max_epoches)
 
 
-    def optimize_internal(self, object_func, grad_func, param):
+    def optimize(self, param):
 
         for batch_id in range(self.batch_num):
 

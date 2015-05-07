@@ -38,11 +38,11 @@ class BatchGradientOptimizer(object):
                                 (y, batch_y)],
                      outputs=gradient)
 
-    def __object(self, i, p):
+    def wrapped_object(self, i, p):
         self.machine.set_parameter(p)
         return self.object_func(i)
 
-    def __grad(self, i, p):
+    def wrapped_grad(self, i, p):
         self.machine.set_parameter(p)
         return self.gradient_func(i)
 

@@ -51,12 +51,10 @@ class BatchGradientOptimizer(object):
 #        pass
 
     def wrapped_object(self, i, p):
-        print ".",
         self.machine.set_parameter(p)
         return self.object_func(i)
 
     def wrapped_grad(self, i, p):
-        print "*",
         self.machine.set_parameter(p)
         return self.gradient_func(i)
 

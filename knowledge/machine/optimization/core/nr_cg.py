@@ -75,9 +75,8 @@ def mnbrak(func,ax,bx):
     # end while
     return ax,bx,cx
 
-def brent(f, ax, bx, cx, tol):
+def brent(f, ax, bx, cx, iter_num,  tol):
 
-    ITMAX = 100
     CGOLD = 0.3819660
     ZEPS = 1.0e-10
 
@@ -93,7 +92,7 @@ def brent(f, ax, bx, cx, tol):
     d = 0.0
     u = 0.0
 
-    for iter in range(ITMAX):
+    for iter in range(iter_num):
         xm = 0.5 * (a + b)
         tol1 = tol * abs(x) + ZEPS
         tol2 = 2.0 * tol1
@@ -147,12 +146,11 @@ def brent(f, ax, bx, cx, tol):
                 v = u
                 fv = fu
 
-    print >> sys.stderr, "Too many iterations in brent"
     xmin = x
     return xmin, fx
 
 
-def linmin(func, p, x, ftol):
+def linmin(func, p, x, iter_num, ftol):
     """Given a n dimensional vector x and a direction dir, find the
     minimum along dir from x"""
 
@@ -163,14 +161,14 @@ def linmin(func, p, x, ftol):
     bx = 1.0
     ax,bx,cx = mnbrak(func1d, ax,bx)
 #    print >>sys.stderr, "mnbrak result", ax, bx, cx
-    xmin, fx = brent(func1d, ax,bx,cx, ftol)
+    xmin, fx = brent(func1d, ax,bx,cx, iter_num, ftol)
 #    print >>sys.stderr, "brent result", xmin, fx
 
     return fx, p + xmin * x
 
 
 import numpy as np
-def cg_optimize(f, gf, x0, max_epoches, ftol):
+def cg_optimize(f, gf, x0, max_epoches, linesearch_iter, ftol):
     EPS = 1.0e-8
 
     n = len(x0)
@@ -187,7 +185,7 @@ def cg_optimize(f, gf, x0, max_epoches, ftol):
 
     for its in range(max_epoches):
 
-        fret, p = linmin(f, p, xi, ftol)
+        fret, p = linmin(f, p, xi,linesearch_iter, ftol)
 
         if 2.0 * abs(fret - fp) <= ftol * (abs(fret) + abs(fp) + EPS):
             break

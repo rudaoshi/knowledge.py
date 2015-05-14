@@ -7,11 +7,14 @@ from knowledge.machine.optimization.batch_gradient_optimizer import BatchGradien
 from knowledge.machine.optimization.core.nr_cg import cg_optimize
 class CGDOptimizer(BatchGradientOptimizer):
 
-    def __init__(self, max_epoches=10, batch_size=10000, ftol=1e-6):
+    def __init__(self, max_epoches=10, batch_size=10000,
+                 linesearch_iter = 5,
+                 ftol=1e-6):
 
         super(CGDOptimizer, self).__init__(batch_size=batch_size,
                                            max_epoches=max_epoches)
 
+        self.linesearch_iter = linesearch_iter
         self.ftol = ftol
 
 
@@ -34,6 +37,7 @@ class CGDOptimizer(BatchGradientOptimizer):
                                      gf = lambda p: self.wrapped_grad(batch_id, p),
                                      x0 =param,
                                      max_epoches= self.max_epoches,
+                                     linesearch_iter= self.linesearch_iter,
                                      ftol= self.ftol)
 
             print "\ncost after opt:", self.wrapped_object(batch_id, best_param)

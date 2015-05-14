@@ -8,7 +8,7 @@ def register_creator(optimizer_type, creator):
 
     __optimizer_creator[optimizer_type] = creator
 
-
+import ujson as json
 def create_optimizer(optimizer_param):
 
     optimizer_param = optimizer_param.copy()
@@ -19,6 +19,8 @@ def create_optimizer(optimizer_param):
     optimizer_type = optimizer_param["type"]
 
     del optimizer_param["type"]
+
+    print "optim setting  ", json.dumps(optimizer_param)
 
     if optimizer_type not in __optimizer_creator:
         raise Exception("Unknown optimizer type")

@@ -42,12 +42,8 @@ def train_dnn_for_big_data(config_file):
     chunk_size = int(config.get("train", 'chunk_size'))
     optim_settings = json.loads(config.get("train", 'optim_settings'))
 
-    print "optim setting  ", json.dumps(optim_settings)
-
     neuralnet = create_neuralnet(network_arch)
     optimizer = create_optimizer(optim_settings)
-
-
 
     optimizer.work_for(neuralnet)
 

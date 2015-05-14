@@ -45,6 +45,8 @@ def train_dnn_for_big_data(config_file):
     neuralnet = create_neuralnet(network_arch)
     optimizer = create_optimizer(optim_settings)
 
+    print "max epoches ", optimizer.max_epoches
+
     optimizer.work_for(neuralnet)
 
     sample_file_paths = []

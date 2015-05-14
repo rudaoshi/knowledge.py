@@ -162,8 +162,9 @@ def linmin(func, p, x, ftol):
     ax = 0.0
     bx = 1.0
     ax,bx,cx = mnbrak(func1d, ax,bx)
-
+    print >>sys.stderr, "mnbrak result", ax, bx, cx
     xmin, fx = brent(func1d, ax,bx,cx, ftol)
+    print >>sys.stderr, "brent result", xmin, fx
 
     return fx, p + xmin * x
 

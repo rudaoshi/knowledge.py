@@ -165,10 +165,10 @@ def linmin(func, p, x, ftol):
 
     xmin, fx = brent(func1d, ax,bx,cx, ftol)
 
-    return p + xmin * x
+    return fx, p + xmin * x
 
 
-
+import numpy as np
 def cg_optimize(f, gf, x0, max_epoches, ftol):
     EPS = 1.0e-8
 
@@ -186,18 +186,18 @@ def cg_optimize(f, gf, x0, max_epoches, ftol):
 
     for its in range(max_epoches):
 
-        fret, p, xi = linmin(f, p, xi, ftol)
+        fret, p = linmin(f, p, xi, ftol)
 
         if 2.0 * abs(fret - fp) <= ftol * (abs(fret) + abs(fp) + EPS):
             break
 
-        fp = f(x0)
-        xi = gf(x0)
+        fp = fret
+        xi = gf(p)
 
-        gg = g.squaredNorm()
-        dgg = xi.dot(xi + g)
+        gg = np.linalg.norm(g)**2
+        dgg = np.dot(xi, xi + g)
 
-        if (gg == 0.0):
+        if gg == 0.0:
             break
 
         gam = dgg / gg

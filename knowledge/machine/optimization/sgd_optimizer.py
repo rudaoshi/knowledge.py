@@ -22,11 +22,11 @@ class SGDOptimizer(BatchGradientOptimizer):
 
         for batch_id in range(self.batch_num):
 
-#            print "cost before opt:", object_func(batch_id, param)
+            print "cost before opt:", self.wrapped_object(batch_id, param)
 
             new_param = param - self.cur_learning_rate * self.wrapped_grad(batch_id, param)
 #             self.wrapped_train(batch_id)
-#            print "cost after opt:", object_func(batch_id, new_param)
+            print "cost after opt:", self.wrapped_object(batch_id, new_param)
 
             param = new_param
 

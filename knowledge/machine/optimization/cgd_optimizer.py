@@ -40,7 +40,7 @@ class CGDOptimizer(BatchGradientOptimizer):
                                      linesearch_iter= self.linesearch_iter,
                                      ftol= self.ftol)
 
-            print "\ncost after opt:", self.wrapped_object(batch_id, best_param)
+            print "cost after opt:", self.wrapped_object(batch_id, best_param)
 
             param = best_param
 

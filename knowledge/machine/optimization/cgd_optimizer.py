@@ -1,7 +1,6 @@
 __author__ = 'Sun'
 
-from scipy.optimize import fmin_cg
-
+from knowledge.machine.optimization.core.approx_fmin_cg import approx_fmin_cg
 
 from knowledge.machine.optimization.batch_gradient_optimizer import BatchGradientOptimizer
 
@@ -20,7 +19,7 @@ class CGDOptimizer(BatchGradientOptimizer):
 
             print "cost before opt:", self.wrapped_object(batch_id, param)
 
-            best_param = fmin_cg(
+            best_param = approx_fmin_cg(
                 f = lambda p: self.wrapped_object(batch_id, p),
                 x0=param,
                 fprime=lambda p: self.wrapped_grad(batch_id, p),

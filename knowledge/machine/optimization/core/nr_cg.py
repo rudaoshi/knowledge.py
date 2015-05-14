@@ -187,6 +187,7 @@ def cg_optimize(f, gf, x0, max_epoches, ftol):
 
     for its in range(max_epoches):
 
+        print "iteration :", its
         fret, p = linmin(f, p, xi, ftol)
 
         if 2.0 * abs(fret - fp) <= ftol * (abs(fret) + abs(fp) + EPS):

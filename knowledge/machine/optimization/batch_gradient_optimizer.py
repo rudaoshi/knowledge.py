@@ -8,7 +8,7 @@ class BatchGradientOptimizer(object):
 
         self.batch_size = batch_size
         self.batch_num = None
-        self.max_epoches = 100
+        self.max_epoches = max_epoches
 
 
         self.chunk_X = theano.shared(numpy.zeros((self.batch_size, 1), dtype = theano.config.floatX))

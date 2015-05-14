@@ -20,8 +20,6 @@ def create_optimizer(optimizer_param):
 
     del optimizer_param["type"]
 
-    print "optim setting  ", json.dumps(optimizer_param)
-
     if optimizer_type not in __optimizer_creator:
         raise Exception("Unknown optimizer type")
 

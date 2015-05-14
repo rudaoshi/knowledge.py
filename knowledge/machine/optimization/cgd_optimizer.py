@@ -30,14 +30,13 @@ class CGDOptimizer(BatchGradientOptimizer):
             #     xtol=self.xtol
             # )
 
-            print "max epoches: ", self.max_epoches
             best_param = cg_optimize(f=lambda p: self.wrapped_object(batch_id, p),
                                      gf = lambda p: self.wrapped_grad(batch_id, p),
                                      x0 =param,
                                      max_epoches= self.max_epoches,
                                      ftol= self.ftol)
 
-            print "cost after opt:", self.wrapped_object(batch_id, best_param)
+            print "\ncost after opt:", self.wrapped_object(batch_id, best_param)
 
             param = best_param
 

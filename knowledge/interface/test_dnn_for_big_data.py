@@ -55,10 +55,12 @@ def test_dnn_for_big_data(config_file):
 
     predict_file = open(predict_file_path, 'w')
 
-    for remote_file_path in sample_file_paths:
+    for file_path in sample_file_paths:
 
-        local_file_path = download_file(hadoop_bin, remote_file_path, temp_dir)
-
+        if file_path.startswith("hdfs:"):
+            local_file_path = download_file(hadoop_bin, file_path, temp_dir)
+        else:
+            local_file_path = file_path
         train_data_set = SupervisedDataSet(local_file_path, frame_name=frame_name)
 
         print time.ctime() + ":\tbegin predict with sample : " + remote_file_path

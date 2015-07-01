@@ -73,7 +73,8 @@ def test_dnn_for_big_data(config_file):
             predict_file.write("\n".join("\t".join(x) for x in output_val))
             predict_file.write("\n")
 
-        os.system('rm ' + local_file_path)
+        if file_path.startswith("hdfs:"):
+                os.system('rm ' + local_file_path)
     predict_file.close()
 
 
